@@ -1,0 +1,120 @@
+{% if section.settings.show_instagram_sec != blank %}
+<div class="instagramSec">
+  <div class="page-width">
+  {% if section.settings.title != blank or section.settings.sub_title != blank %}
+    <div class="section__header">
+      <div class="title__d apply-margin-bt">
+        {% if section.settings.title != blank %}
+        <h4 class="sub_title_name color-white">{{ section.settings.title }}</h4>
+        {% endif %}
+        {% if section.settings.sub_title != blank %}
+        <h5 class="color-white">{{ section.settings.sub_title }}</h5>
+        {% endif %}
+      </div>
+      {% comment %} <div class="arrow_d">
+        <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M46.5 16L47.2071 15.2929L47.9142 16L47.2071 16.7071L46.5 16ZM1.5 17C0.947716 17 0.5 16.5523 0.5 16C0.5 15.4477 0.947716 15 1.5 15V17ZM31.5 1L32.2071 0.292893L47.2071 15.2929L46.5 16L45.7929 16.7071L30.7929 1.70711L31.5 1ZM46.5 16L47.2071 16.7071L32.2071 31.7071L31.5 31L30.7929 30.2929L45.7929 15.2929L46.5 16ZM46.5 16V17H1.5V16V15H46.5V16Z" fill="#222222"/>
+        </svg>
+      </div> {% endcomment %}
+    </div>
+    {% endif %}
+     </div>
+      {% comment %} <div class="swiperInstagramSlider swiperInstagramSlider_{{ section.id }}">
+        <div class="swiper-wrapper">
+          {% for block in section.blocks %}
+            <div class="swiper-slide">
+              <div class="item_d">
+                <a href="{{ block.settings.link }}">
+                {% if block.settings.image != blank %}
+                  <div class="img_d">
+                    <img src="{{ block.settings.image | img_url: "master" }}">
+                  </div>
+                {% endif %}
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div> {% endcomment %}
+ 
+</div>
+{% endif %}
+
+{% comment %} <script>
+   var swiper = new Swiper('.swiperInstagramSlider_{{ section.id }}', {
+    slidesPerView:3.2,
+    spaceBetween: 10,
+     breakpoints: {
+       1: {
+        slidesPerView: 2.2,
+         spaceBetween: 0,
+
+      },
+      478: {
+         slidesPerView: 2.2,
+         spaceBetween: 0,
+
+      },
+      768: {
+        slidesPerView: 3.2,
+         spaceBetween: 0,
+      },
+      1000: {
+        slidesPerView: 3.2,
+         spaceBetween: 0,
+      },
+    },
+    navigation: {
+      nextEl: '.swiper-button-next55',
+      prevEl: '.swiper-button-prev55'
+    }
+  });
+</script> {% endcomment %}
+
+{% schema %}
+{
+  "name": "Instagram Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_instagram_sec",
+      "label": "Show Instagram Sec",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "text",
+      "id": "sub_title",
+      "label": "Sub Title"
+    },
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instagram Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

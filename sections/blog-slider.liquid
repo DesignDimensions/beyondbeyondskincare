@@ -1,0 +1,101 @@
+{% if section.settings.show_blog_slider_sec != blank %}
+<div class="blogSliderSec">
+  <div class="page-width">
+    {% if section.settings.title != blank or section.settings.description != blank %}
+    <div class="section__header">
+      <h2>{{ section.settings.title }}</h2>
+      <div class="desc_d">{{ section.settings.description }}</div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="hidden-xs">
+    <div class="swiper blogSlider blogSlider_{{ section.id }}">
+      <div class="swiper-wrapper">
+        {%- for article in section.settings.blog.articles limit: 3 -%}
+        <div class="swiper-slide">
+          <div class="item_d">
+            <a href="{{ article.url }}">
+              <div class="blog_img">
+                <img src="{{ article.metafields.custom.main_image | img_url:"master" }}" class="hidden-xs">
+                <img src="{{ article.metafields.custom.main_mobile_image | img_url:"master" }}" class="visible-xs">
+              </div>
+              <h4>{{ article.title }}</h4>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="visible-xs">
+    <div class="blogList">
+      {%- for article in section.settings.blog.articles limit: 3 -%}
+        <div class="item_d">
+          <a href="{{ article.url }}">
+            <div class="blog_img">
+              <img src="{{ article.metafields.custom.main_image | img_url:"master" }}" class="hidden-xs">
+              <img src="{{ article.metafields.custom.main_mobile_image | img_url:"master" }}" class="visible-xs">
+            </div>
+            <h4>{{ article.title }}</h4>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+    var swiper = new Swiper('.blogSlider_{{ section.id }}', {
+      slidesPerView: 1.5,
+      spaceBetween: 40,
+      slidesOffsetBefore: 64,
+      breakpoints: {
+      768: {
+        slidesPerView:1.5,
+        spaceBetween: 20,
+      slidesOffsetBefore: 24,
+      },
+      1200: {
+        slidesPerView: 1.5,
+         spaceBetween: 40,
+      slidesOffsetBefore: 64,
+      },
+    }
+    });
+</script>
+{% schema %}
+{
+  "name": "Blog Slider Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_blog_slider_sec",
+      "label": "Show Blog Slider Sec",
+      "default": true
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "title"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description"
+    },
+  ],
+  "presets": [
+    {
+      "name": "Blog Slider Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,279 @@
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --section-padding-top: {{ section.settings.padding_top }}px;
+    --section-padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  #shopify-section-{{ section.id }} .pdp-product-slider__header {
+    text-align: {{ section.settings.heading_alignment }};
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel__grid{
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    gap:0 20px;
+    padding-left:64px;
+    padding-right:64px;
+    padding-bottom:6px;
+    scroll-snap-type:x proximity;
+    scroll-behavior:smooth;
+    scroll-padding-left:64px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel__grid::-webkit-scrollbar{
+    display:none;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel__grid > *{
+    min-width:0;
+    flex:0 0 276px;
+    scroll-snap-align:start;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel .bestseller-card__atc{
+    display:block;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel .bestseller-card__atc{
+    position:static;
+    z-index:auto;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel .bestseller-card__variant-picker{
+    position:static;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel .bestseller-card__variant-dropdown{
+    position:static;
+    inset:auto;
+    width:100%;
+    margin-top:0;
+  }
+
+  #shopify-section-{{ section.id }} .shop-products-carousel .bestseller-card__body{
+    overflow:visible;
+  }
+
+  @media screen and (max-width: 989px){
+    #shopify-section-{{ section.id }} .pdp-product-slider__heading{
+      font-size:12px;
+      line-height:20px;
+      letter-spacing:5px;
+    }
+
+    #shopify-section-{{ section.id }} .shop-products-carousel__grid{
+      padding-left:12px;
+      padding-right:12px;
+      scroll-padding-left:12px;
+    }
+    {% comment %}
+    #shopify-section-{{ section.id }} .shop-products-carousel__grid > *{
+      flex-basis: 82vw;
+    }
+    {% endcomment %}
+    #shopify-section-{{ section.id }} .shop-products-carousel__grid > *{
+    flex:0 0 179px;
+  }
+  }
+
+  @media screen and (min-width: 990px){
+    #shopify-section-{{ section.id }} .shop-products-carousel__grid{
+      scroll-snap-type:none;
+    }
+  }
+{%- endstyle -%}
+
+<div class="FeaturedColSliderSec shop-products-carousel pdp-product-slider section--padding">
+  <div class="section_header page-width pdp-product-slider__header">
+    {%- if section.settings.heading != blank -%}
+      <h3 class="pdp-product-slider__heading">{{ section.settings.heading }}</h3>
+    {%- endif -%}
+  </div>
+
+  <div class="shop-products-carousel__grid" role="list" aria-label="{{ section.settings.heading | default: 'Products' | escape }}">
+    {%- if section.settings.collection != blank -%}
+      {%- for product in section.settings.collection.products -%}
+        <div role="listitem">
+          {% render 'bestseller-card',
+            product: product,
+            card_label: 'BESTSELLER',
+            show_add_to_cart: section.settings.show_add_to_cart,
+            show_rating: true,
+            skin_text: section.settings.skin_text,
+            size_source: 'variant'
+          %}
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (() => {
+    const scope = document.currentScript && document.currentScript.previousElementSibling;
+    if (!scope || scope.dataset.pdpSliderInit === '1') return;
+    scope.dataset.pdpSliderInit = '1';
+
+    const track = scope.querySelector('.shop-products-carousel__grid');
+    if (!track) return;
+
+    let isDown = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+
+    const stopDragging = () => {
+      isDown = false;
+      track.classList.remove('is-dragging');
+    };
+
+    track.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      if (event.target.closest('a, button, input, select, textarea, label, form, add-to-cart')) return;
+      isDown = true;
+      startX = event.clientX;
+      startScrollLeft = track.scrollLeft;
+      track.classList.add('is-dragging');
+      track.setPointerCapture(event.pointerId);
+    });
+
+    track.addEventListener('pointermove', (event) => {
+      if (!isDown) return;
+      event.preventDefault();
+      track.scrollLeft = startScrollLeft - (event.clientX - startX);
+    });
+
+  track.addEventListener('pointerup', stopDragging);
+  track.addEventListener('pointercancel', stopDragging);
+  track.addEventListener('lostpointercapture', stopDragging);
+
+  scope.querySelectorAll('[data-bestseller-card]').forEach((card) => {
+    const slides = Array.from(card.querySelectorAll('[data-bestseller-slide]'));
+    const dotsWrap = card.querySelector('[data-bestseller-dots]');
+    const prev = card.querySelector('[data-bestseller-prev]');
+    const next = card.querySelector('[data-bestseller-next]');
+
+    if (!slides.length) return;
+
+    let idx = 0;
+    const setSlide = (nextIndex) => {
+      idx = (nextIndex + slides.length) % slides.length;
+      slides.forEach((slide, slideIndex) => {
+        slide.classList.toggle('is-active', slideIndex === idx);
+      });
+      if (dotsWrap) {
+        dotsWrap.querySelectorAll('button').forEach((dot, dotIndex) => {
+          dot.classList.toggle('is-active', dotIndex === idx);
+        });
+      }
+    };
+
+    if (dotsWrap) {
+      dotsWrap.innerHTML = slides.map((_, slideIndex) => `<button type="button" class="${slideIndex === 0 ? 'is-active' : ''}" aria-label="Slide ${slideIndex + 1}"></button>`).join('');
+      dotsWrap.querySelectorAll('button').forEach((dot, slideIndex) => {
+        dot.addEventListener('click', () => setSlide(slideIndex));
+      });
+    }
+
+    if (slides.length < 2) {
+      if (prev) prev.style.display = 'none';
+      if (next) next.style.display = 'none';
+    } else {
+      prev && prev.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setSlide(idx - 1);
+      });
+      next && next.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setSlide(idx + 1);
+      });
+    }
+
+    setSlide(0);
+  });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "PDP Product Slider",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "skin_text",
+      "label": "Skin suitability text",
+      "default": "Suitable for normal, dry and sensitive skin."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_add_to_cart",
+      "label": "Show add to cart button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "More products to explore",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDP Product Slider"
+    }
+  ]
+}
+{% endschema %}

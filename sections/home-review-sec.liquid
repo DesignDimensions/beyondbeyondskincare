@@ -1,0 +1,106 @@
+{% if section.settings.show_home_review_sec != blank %}
+<div class="homeReviewSec_t">
+    <div class="page-width">
+        {% if section.settings.title != blank or section.settings.description != blank %}
+        <div class="section__header">
+            {% if section.settings.title != blank %}
+            <h4 class="sub_title_name">{{ section.settings.title }}</h4>
+            {% endif %}
+            {% if section.settings.description != blank %}
+            <h5>{{ section.settings.description }}</h5>
+            {% endif %}
+        </div>
+        {% endif %}
+        <div class="content">
+            <div class="imgVideoD">
+                {% if section.settings.image != blank %}
+                <div class="img_d">
+                    <img src="{{ section.settings.image | img_url:"master" }}" class="visible-xs">
+                </div>
+                {% else %}
+                {% if section.settings.video_link != blank %}
+                <div class="video_d hidden-xs">
+                    <video controls playsinline>
+                        <source src="{{ section.settings.video_link }}">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                {% endif %}
+                {% if section.settings.video_link_mobile != blank %}
+                 <div class="video_d visible-xs">
+                    <video controls playsinline>
+                        <source src="{{ section.settings.video_link_mobile }}">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="reviewsLists">
+                <!-- Start of Judge.me code --> 
+                <div class='jdgm-carousel-wrapper'> 
+                    {% assign jm_metafields = shop.metafields.judgeme %} 
+                    <div class='jdgm-carousel-title-and-link'> 
+                    <h2 class='jdgm-carousel-title'>Let customers speak for us</h2> 
+                    <span class='jdgm-all-reviews-rating-wrapper' href='javascript:void(0)'> 
+                        <span style='display:block' data-score='{{ jm_metafields.all_reviews_rating }}' class='jdgm-all-reviews-rating' aria-label='{{ jm_metafields.all_reviews_rating }} stars' tabindex='0' role='img'></span> 
+                        <span style='display: block' class='jdgm-carousel-number-of-reviews' data-number-of-reviews='{{ jm_metafields.all_reviews_count }}'> 
+                from {{ shop.metafields.judgeme.all_reviews_count }} reviews </span> 
+                    </span> 
+                    </div> 
+                    {{ jm_metafields.featured_carousel }} 
+                </div> 
+                <!-- End of Judge.me code -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+
+{% schema %}
+{
+  "name": "Home Review Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_home_review_sec",
+      "label": "Show Home Review Sec",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image"
+    },
+    {
+        "type": "textarea",
+        "id": "video_link",
+        "label": "Video Link"
+    },
+    {
+        "type": "textarea",
+        "id": "video_link_mobile",
+        "label": "Video Link Mobile"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home Review Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

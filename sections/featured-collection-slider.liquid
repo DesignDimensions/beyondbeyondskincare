@@ -1,0 +1,285 @@
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --section-padding-top: {{ section.settings.padding_top }}px;
+    --section-padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+{%- endstyle -%}
+
+<div class="FeaturedColSliderSec shop-products-carousel section--padding">
+  <div class="section_header">
+    {%- if section.settings.heading != blank -%}
+      <h3 class="">{{ section.settings.heading }}</h3>
+    {%- endif -%}
+      {%- if section.settings.show_view_all and section.settings.collection != blank -%}
+    <div class="aa action_d">
+      <a href="{{ section.settings.collection.url }}">
+        SHOP ALL 
+      <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7.71967 1.28033C7.42678 0.987437 7.42678 0.512563 7.71967 0.21967C8.01256 -0.0732233 8.48744 -0.0732233 8.78033 0.21967L12.7803 4.21967C13.0732 4.51256 13.0732 4.98744 12.7803 5.28033L8.78033 9.28033C8.48744 9.57322 8.01256 9.57322 7.71967 9.28033C7.42678 8.98744 7.42678 8.51256 7.71967 8.21967L10.4393 5.5H0.75C0.335787 5.5 0 5.16421 0 4.75C0 4.33579 0.335787 4 0.75 4H10.4393L7.71967 1.28033Z" fill="black"/>
+      </svg>
+      </a>
+    </div>
+   {% endif %}
+  </div>
+
+  <div class="shop-products-carousel__grid">
+    {%- assign rendered_handles = '|' -%}
+
+    {%- if section.settings.bestseller_products != blank -%}
+      {%- for selected_product in section.settings.bestseller_products -%}
+        {%- assign selected_product_handle_token = '|' | append: selected_product.handle | append: '|' -%}
+        {%- if rendered_handles contains selected_product_handle_token -%}
+          {%- continue -%}
+        {%- endif -%}
+        {%- assign rendered_handles = rendered_handles | append: selected_product.handle | append: '|' -%}
+        {% render 'bestseller-card',
+          product: selected_product,
+          card_label: 'BESTSELLER',
+          show_add_to_cart: true,
+          show_rating: true,
+          skin_text: section.settings.skin_text,
+          size_source: 'variant'
+        %}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- if section.settings.collection != blank -%}
+      {%- for product in section.settings.collection.products -%}
+        {%- assign product_handle_token = '|' | append: product.handle | append: '|' -%}
+        {%- if rendered_handles contains product_handle_token -%}
+          {%- continue -%}
+        {%- endif -%}
+        {%- assign rendered_handles = rendered_handles | append: product.handle | append: '|' -%}
+        {% render 'bestseller-card',
+          product: product,
+          card_label: 'BESTSELLER',
+          show_add_to_cart: true,
+          show_rating: true,
+          skin_text: section.settings.skin_text,
+          size_source: 'variant'
+        %}
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (() => {
+    const scope = document.currentScript && document.currentScript.previousElementSibling;
+    if (!scope || scope.dataset.bestsellerInit === '1') return;
+    scope.dataset.bestsellerInit = '1';
+
+    scope.querySelectorAll('[data-bestseller-card]').forEach((card) => {
+      const slides = Array.from(card.querySelectorAll('[data-bestseller-slide]'));
+      const dotsWrap = card.querySelector('[data-bestseller-dots]');
+      const prev = card.querySelector('[data-bestseller-prev]');
+      const next = card.querySelector('[data-bestseller-next]');
+
+      if (!slides.length) return;
+
+      let idx = 0;
+      const setSlide = (n) => {
+        idx = (n + slides.length) % slides.length;
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+        if (dotsWrap) {
+          dotsWrap.querySelectorAll('button').forEach((d, i) => d.classList.toggle('is-active', i === idx));
+        }
+      };
+
+      if (dotsWrap) {
+        dotsWrap.innerHTML = slides.map((_, i) => `<button type="button" class="${i === 0 ? 'is-active' : ''}" aria-label="Slide ${i + 1}"></button>`).join('');
+        dotsWrap.querySelectorAll('button').forEach((dot, i) => dot.addEventListener('click', () => setSlide(i)));
+      }
+
+      if (slides.length < 2) {
+        if (prev) prev.style.display = 'none';
+        if (next) next.style.display = 'none';
+      } else {
+        prev && prev.addEventListener('click', (e) => { e.preventDefault(); setSlide(idx - 1); });
+        next && next.addEventListener('click', (e) => { e.preventDefault(); setSlide(idx + 1); });
+      }
+
+      setSlide(0);
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('[data-bestseller-variant-picker]')) return;
+      closeAllPickers();
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Shop Products",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:sections.featured-collection.settings.collection.label"
+    },
+    {
+      "type": "product_list",
+      "id": "bestseller_products",
+      "label": "Products override",
+      "limit": 6
+    },
+    {
+      "type": "text",
+      "id": "skin_text",
+      "label": "Skin suitability text",
+      "default": "Suitable for normal, dry and sensitive skin."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "default": true,
+      "label": "t:sections.featured-collection.settings.show_view_all.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.heading.label"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "Featured collection",
+      "label": "t:sections.all.heading.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "t:sections.all.heading_alignment.label",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:sections.all.heading_alignment.options__1.label"
+        },
+        {
+          "value": "center",
+          "label": "t:sections.all.heading_alignment.options__2.label"
+        },
+        {
+          "value": "right",
+          "label": "t:sections.all.heading_alignment.options__3.label"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "options": [
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_tag.options__1.label"
+        },
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_tag.options__2.label"
+        },
+        {
+          "value": "h3",
+          "label": "t:sections.all.heading_tag.options__3.label"
+        },
+        {
+          "value": "h4",
+          "label": "t:sections.all.heading_tag.options__4.label"
+        },
+        {
+          "value": "h5",
+          "label": "t:sections.all.heading_tag.options__5.label"
+        },
+        {
+          "value": "h6",
+          "label": "t:sections.all.heading_tag.options__6.label"
+        },
+        {
+          "value": "div",
+          "label": "t:sections.all.heading_tag.options__7.label"
+        },
+        {
+          "value": "span",
+          "label": "t:sections.all.heading_tag.options__8.label"
+        },
+        {
+          "value": "p",
+          "label": "t:sections.all.heading_tag.options__9.label"
+        }
+      ],
+      "default": "h2",
+      "label": "t:sections.all.heading_tag.label",
+      "info": "t:sections.all.heading_tag.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.mobile_layout.header.content"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:sections.all.mobile_layout.columns_mobile.options__1.label"
+        },
+        {
+          "value": "2",
+          "label": "t:sections.all.mobile_layout.columns_mobile.options__2.label"
+        }
+      ],
+      "default": "1",
+      "label": "t:sections.all.mobile_layout.columns_mobile.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.header.content"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "t:sections.all.padding.padding_top.unit",
+      "label": "t:sections.all.padding.padding_top.label",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "t:sections.all.padding.padding_bottom.unit",
+      "label": "t:sections.all.padding.padding_bottom.label",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop Products"
+    }
+  ]
+}
+{% endschema %}

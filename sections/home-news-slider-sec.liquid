@@ -1,0 +1,301 @@
+{% if section.settings.show_news_slider_sec %}
+  {% if section.blocks.size > 0 or request.design_mode %}
+  <section class="home-news-slider home-news-slider--{{ section.id }}">
+    <div class="page-width">
+      {% if section.settings.heading != blank %}
+        <h2 class="home-news-slider__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+    </div>
+
+    <div class="home-news-slider__track">
+      {%- comment -%}
+        Pure CSS marquee: render blocks twice so animating -50% translateX
+        creates a seamless infinite loop — no Swiper, no JS timing issues.
+      {%- endcomment -%}
+      <div class="home-news-slider__inner" id="HomeNewsSlider-{{ section.id }}">
+        {% if section.blocks.size > 0 %}
+          {% comment %}Pass 1 — real blocks (with shopify_attributes for editor){% endcomment %}
+          {% for block in section.blocks %}
+            {% assign logo_link = block.settings.link %}
+            {% assign logo_label = block.settings.alt_text | default: block.settings.logo.alt %}
+            <div class="home-news-slider__slide" {{ block.shopify_attributes }}>
+              {% if logo_link != blank %}
+                <a href="{{ logo_link }}" class="home-news-slider__item"{% if logo_label != blank %} aria-label="{{ logo_label | escape }}"{% endif %}>
+              {% else %}
+                <div class="home-news-slider__item">
+              {% endif %}
+                {% if block.settings.logo != blank %}
+                  {{
+                    block.settings.logo
+                    | image_url: width: 500
+                    | image_tag:
+                      loading: 'lazy',
+                      class: 'home-news-slider__image',
+                      alt: logo_label | default: '' | escape
+                  }}
+                {% elsif request.design_mode %}
+                  <div class="home-news-slider__placeholder">Upload logo</div>
+                {% endif %}
+              {% if logo_link != blank %}
+                </a>
+              {% else %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+          {% comment %}Pass 2 — duplicate set (no shopify_attributes, invisible to editor){% endcomment %}
+          {% for block in section.blocks %}
+            {% assign logo_link = block.settings.link %}
+            {% assign logo_label = block.settings.alt_text | default: block.settings.logo.alt %}
+            <div class="home-news-slider__slide" aria-hidden="true">
+              {% if logo_link != blank %}
+                <a href="{{ logo_link }}" class="home-news-slider__item" tabindex="-1"{% if logo_label != blank %} aria-label="{{ logo_label | escape }}"{% endif %}>
+              {% else %}
+                <div class="home-news-slider__item">
+              {% endif %}
+                {% if block.settings.logo != blank %}
+                  {{
+                    block.settings.logo
+                    | image_url: width: 500
+                    | image_tag:
+                      loading: 'lazy',
+                      class: 'home-news-slider__image',
+                      alt: ''
+                  }}
+                {% elsif request.design_mode %}
+                  <div class="home-news-slider__placeholder">Upload logo</div>
+                {% endif %}
+              {% if logo_link != blank %}
+                </a>
+              {% else %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% elsif request.design_mode %}
+          {% for i in (1..10) %}
+            <div class="home-news-slider__slide">
+              <div class="home-news-slider__item">
+                <div class="home-news-slider__placeholder">Upload logo</div>
+              </div>
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .home-news-slider--{{ section.id }} {
+      background: #fff;
+      padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+      overflow: hidden;
+    }
+
+    .home-news-slider--{{ section.id }} .page-width {
+      max-width: 100%;
+      padding-left: 64px;
+      padding-right: 64px;
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__heading {
+      {% comment %} margin: 0 0 20px; {% endcomment %}
+        margin: 0 0 40px;
+      color: #000;
+      font-size: 24px;
+      font-weight: 500;
+      letter-spacing: 0.4em;
+      line-height: 1.4;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__track {
+      overflow: hidden;
+      width: 100%;
+    }
+
+    /* The inner row — display all slides in a single flex row, width = sum of all slides */
+    .home-news-slider--{{ section.id }} .home-news-slider__inner {
+      display: flex;
+      align-items: center;
+      width: max-content;
+      {% comment %} gap: 48px; {% endcomment %}
+       gap: 120px;
+      /* Animate from 0 → -50%: moves exactly one full set of logos, then snaps back seamlessly */
+      animation: home-news-marquee-{{ section.id }} {{section.settings.speed}}s linear infinite;
+      will-change: transform;
+    }
+
+    @keyframes home-news-marquee-{{ section.id }} {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__slide {
+      flex: 0 0 auto;
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__item {
+      align-items: center;
+      display: inline-flex;
+      justify-content: center;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__item:hover {
+      opacity: 0.78;
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__image {
+      display: block;
+      height: auto;
+      max-height: 80px;
+      object-fit: contain;
+      width: auto;
+    }
+
+    .home-news-slider--{{ section.id }} .home-news-slider__placeholder {
+      align-items: center;
+      border: 1px dashed rgba(0, 0, 0, 0.24);
+      border-radius: 12px;
+      color: rgba(0, 0, 0, 0.52);
+      display: inline-flex;
+      font-size: 12px;
+      justify-content: center;
+      min-height: 80px;
+      min-width: 160px;
+      padding: 0 24px;
+      text-transform: uppercase;
+    }
+
+    /* Pause on hover */
+    .home-news-slider--{{ section.id }} .home-news-slider__track:hover .home-news-slider__inner {
+      animation-play-state: paused;
+    }
+
+    @media only screen and (max-width: 767px) {
+
+      .home-news-slider--{{ section.id }} .home-news-slider__track:active .home-news-slider__inner {
+        animation-play-state: paused;
+      }
+      .home-news-slider--{{ section.id }} {
+        padding: {{ section.settings.padding_top_mobile }}px 0 {{ section.settings.padding_bottom_mobile }}px;
+      }
+
+      .home-news-slider--{{ section.id }} .page-width {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .home-news-slider--{{ section.id }} .home-news-slider__inner {
+        gap: 32px;
+      }
+
+      .home-news-slider--{{ section.id }} .home-news-slider__heading {
+        font-size: 12px;
+        margin: 0 0 20px;
+        letter-spacing: 0.4em;
+      }
+
+      .home-news-slider--{{ section.id }} .home-news-slider__image {
+        max-height: 48px;
+      }
+    }
+  </style>
+  {% endif %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Home News Slider Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_news_slider_sec",
+      "label": "Show section",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "IN THE NEWS"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Scroll speed (seconds — lower = faster)",
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop padding top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop padding bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "news_logo",
+      "name": "News logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Logo image"
+        },
+        {
+          "type": "text",
+          "id": "alt_text",
+          "label": "Alt text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home News Slider Sec"
+    }
+  ]
+}
+{% endschema %}

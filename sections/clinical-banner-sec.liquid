@@ -1,0 +1,49 @@
+{% if section.settings.show_clinical_banner_sec != blank %}
+<div class="clinicalBannerSec">
+  {% if section.settings.desktop_banner != blank or section.settings.mobile_banner != blank %}
+   <div class="img_d">
+      <img src="{{ section.settings.desktop_banner | img_url:"master" }}" class="hidden-xs">
+      <img src="{{ section.settings.mobile_banner | img_url:"master" }}" class="visible-xs">
+   </div>
+  {% endif %}
+  {% if section.settings.title != blank %}
+  <div class="content_d">
+      <h2>{{ section.settings.title }}</h2>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% schema %}
+{
+  "name": "Clinical Banner Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_clinical_banner_sec",
+      "label": "Show Clinical Banner Sec",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "title"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_banner",
+      "label": "Desktop Banner"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_banner",
+      "label": "Mobile Banner"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Clinical Banner Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

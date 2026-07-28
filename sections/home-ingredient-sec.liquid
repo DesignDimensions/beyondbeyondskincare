@@ -1,0 +1,133 @@
+{% if section.settings.show_home_ingredient_sec != blank %}
+<div class="homeIngredientSec">
+  <div class="page-width">
+    <div class="section_header">
+      {% if section.settings.title != blank %}
+      <h3 class="title_name">{{ section.settings.title }}</h3>
+      {% endif %}
+      {% if section.settings.description != blank %}
+      <div class="desc">{{ section.settings.description }}</div>
+      {% endif %}
+    </div>
+    <div class="ingredientsSlider ingredientsSlider_{{ section.id }}">
+      <div class="swiper-wrapper">
+         {% for block in section.blocks %}
+        <div class="swiper-slide">
+          <div class="item_d">
+            <div class="img_d">
+              <img src="{{ block.settings.image | img_url:"master" }}">
+            </div>
+            <div class="info_d">
+              <div class="inner_info">
+                {% if block.settings.title != blank %}
+                <h4 class="sub_title_name">{{ block.settings.title }}</h4>
+                {% endif %}
+                {% if block.settings.description != blank %}
+                <div class="desc">
+                  {{ block.settings.description }}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="swiperDotsButtons">
+        <div class="swiper-pagination"></div>
+        <div class="arrow_d">
+          <div class="swiper-button-prev">
+            <svg width="11" height="18" viewBox="0 0 11 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.66602 1L1.66602 9L9.66602 17" stroke="#292929" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="swiper-button-next">
+            <svg width="11" height="18" viewBox="0 0 11 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.33398 17L9.33399 9L1.33399 0.999999" stroke="#292929" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+</div>
+{% endif %}
+
+    <script>
+    var swiper = new Swiper('.ingredientsSlider_{{ section.id }}', {
+     slidesPerView: 1,
+     spaceBetween: 10,
+       keyboard: {
+      enabled: true,
+      onlyInViewport: true, // Set to true to allow keyboard control only when Swiper is in viewport
+    },
+    // If we need pagination
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    // Navigation arrows
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+      disabledClass: "is-disabled"
+    },
+    // And if we need scrollbar
+    scrollbar: {
+      el: '.swiper-scrollbar',
+    },
+   });
+</script>
+
+{% schema %}
+{
+  "name": "Home Ingredient Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_home_ingredient_sec",
+      "label": "Show Home Ingredient Sec",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description"
+    },
+  ],
+  "blocks": [
+    {
+      "type": "image-block",
+      "name": "Image Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title"
+        },
+         {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home Ingredient Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

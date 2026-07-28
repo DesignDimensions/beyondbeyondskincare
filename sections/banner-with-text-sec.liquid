@@ -1,0 +1,76 @@
+{% if section.settings.show_banner_with_text_sec != blank %}
+<div class="bannerWithTextSec">
+  <div class="inner_d">
+    {% if section.settings.desktop_banner != blank or section.settings.mobile_banner != blank %}
+    <div class="img_d">
+      <img src="{{ section.settings.desktop_banner | img_url:"master" }}" class="hidden-xs w_full">
+      <img src="{{ section.settings.mobile_banner |  img_url:"master"}}" class="visible-xs w_full">
+    </div>
+    {% endif %}
+    <div class="content_d">
+      {% if section.settings.sub_title != blank %}
+        <h4 class="sub_title_name top">{{ section.settings.sub_title }}</h4>
+      {% endif %}
+      {% if section.settings.title != blank %}
+        <h3 class="title_name">{{ section.settings.title }}</h3>
+      {% endif %}
+      {% if section.settings.btm_sub_title != blank %}
+        <h4 class="sub_title_name btm">{{ section.settings.btm_sub_title }}</h4>
+      {% endif %}
+      {% if section.settings.description != blank %}
+        <div class="desc">{{ section.settings.description }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Banner With Text Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_banner_with_text_sec",
+      "label": "Show Banner With Text Sec",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_banner",
+      "label": "Desktop Banner"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_banner",
+      "label": "Mobile Banner"
+    },
+    {
+      "type": "text",
+      "id": "sub_title",
+      "label": "Sub Title"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "text",
+      "id": "btm_sub_title",
+      "label": "Btm Sub Title"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner With Text Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

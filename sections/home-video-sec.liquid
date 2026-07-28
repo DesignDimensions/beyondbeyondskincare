@@ -1,0 +1,69 @@
+{% if section.settings.show_home_video_sec != blank %}
+<div class="homeVideoSec">
+  {% for block in section.blocks %}
+    <div class="item_d">
+      {% case block.type %}
+        {% when 'video_block' %}
+          <video loop autoplay playsinline muted>
+            <source src="{{ block.settings.video_url }}" type="video/mp4">
+          </video>
+        {% when 'image_block' %}
+          {% if block.settings.image != blank %}
+            <div class="img_d">
+              <img 
+                src="{{ block.settings.image | img_url:"master" }}" 
+                alt="Home section image" 
+                loading="lazy"
+              >
+            </div>
+          {% endif %}
+      {% endcase %}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Home Video Sec",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_home_video_sec",
+      "label": "Show Home Video Sec",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video_block",
+      "name": "Video Block",
+      "settings": [
+         {
+          "type": "url",
+          "id": "video_url",
+          "label": "MP4 Video URL"
+        }
+      ]
+    },
+    {
+      "type": "image_block",
+      "name": "Image Block",
+      "settings": [
+         {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home Video Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,180 @@
+.seasonal-deal__content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.8rem;
+  padding-inline: 2rem;
+}
+
+.seasonal-deal__content .banner {
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.seasonal-deal__content .banner > .media {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.seasonal-deal__content .text-group {
+  padding: 1.5rem;
+  color: #fff;
+}
+
+.seasonal-deal__content .text-group.on-side .button,
+.seasonal-deal__content .banner-text-overlay .button {
+  margin-block-end: 2rem;
+}
+
+.seasonal-deal__content .text-group.on-side .button {
+  border: none;
+}
+
+.banner-text-overlay {
+  position: absolute;
+  width: 80%;
+  z-index: 1;
+}
+
+.seasonal-deal__item .top-left { top: 0; left: 0; }
+.seasonal-deal__item .top-center { top: 0; left: 50%; transform: translateX(-50%); }
+.seasonal-deal__item .top-right { top: 0; right: 0; }
+.seasonal-deal__item .middle-left { top: 50%; left: 0; transform: translateY(-50%); }
+.seasonal-deal__item .middle-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.seasonal-deal__item .middle-right { top: 50%; right: 0; transform: translateY(-50%); }
+.seasonal-deal__item .bottom-left { bottom: 0; left: 0; }
+.seasonal-deal__item .bottom-center { bottom: 0; left: 50%; transform: translateX(-50%); }
+.seasonal-deal__item .bottom-right { bottom: 0; right: 0; }
+
+.seasonal-deal__content .layout-top { flex-direction: column; }
+.seasonal-deal__content .layout-bottom { flex-direction: column-reverse; }
+.seasonal-deal__content .layout-left { flex-direction: row; }
+.seasonal-deal__content .layout-right { flex-direction: row-reverse; }
+
+.seasonal-deal__item-text {
+  padding: 1rem;
+}
+
+.seasonal-deal__item.overlay-opacity {
+  position: relative;
+}
+
+.seasonal-deal__item.overlay-opacity .media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-overlay);
+  opacity: var(--opacity-overlay);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.seasonal-deal__content {
+  padding-inline-start: 2rem;
+  padding-inline-end: 2rem;
+}
+
+#deal-drawer:popover-open .popover-close-button.header__icon::after {
+  transform: scale(1);
+  transition-delay: var(--duration-long);
+}
+
+.seasonal-deal__header {
+  padding: 2rem;
+}
+
+.seasonal-deal__header .title {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: .3rem;
+}
+
+.seasonal-deal__border {
+  display: block;
+  margin-top: 1.5rem;
+  border-bottom: .1rem solid rgb(var(--color-border));
+}
+
+header-popover button.header__icon {
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+body.with-popover {
+  pointer-events: none;
+  height: 100vh;
+  overflow-y: hidden;
+  padding-right: 15px;
+}
+
+#deal-drawer {
+  pointer-events: auto;
+  border: none;
+  position: fixed;
+  inset: unset;
+  top: 0;
+  height: 100dvh;
+  right: 0;
+  transition: translate var(--duration-long) allow-discrete, display var(--duration-long) allow-discrete, overlay var(--duration-long) allow-discrete;
+  translate: 45rem 0;
+  z-index: 9;
+  padding: 0;
+}
+
+#deal-drawer:popover-open {
+  translate: 0 0;
+}
+
+#deal-drawer:popover-open::backdrop {
+  opacity: 0.7;
+}
+
+@starting-style {
+  #deal-drawer:popover-open::backdrop {
+    opacity: 0;
+  }
+}
+
+#deal-drawer::backdrop {
+  background-color: #000;
+  opacity: 0;
+  transition: opacity var(--duration-long), display var(--duration-long) allow-discrete, overlay var(--duration-long) allow-discrete;
+}
+
+@starting-style {
+  #deal-drawer:popover-open {
+    translate: 45rem 0;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  #deal-drawer {
+    width: 45rem;
+  }
+}
+
+header-popover .header__icon svg {
+  animation: wiggle 4s ease-in-out infinite; 
+}
+
+@keyframes wiggle {
+  0%, 90% {
+      transform: rotate(0deg);
+  }
+  92% {
+      transform: rotate(10deg);
+  }
+  94% {
+      transform: rotate(-10deg);
+  }
+  96% {
+      transform: rotate(5deg);
+  }
+  98% {
+      transform: rotate(0deg);
+  }
+}

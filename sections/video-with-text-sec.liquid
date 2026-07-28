@@ -1,0 +1,81 @@
+{% if section.settings.show_video_with_text_sec != blank %}
+<div class="videoTextSec">
+  <div class="inner_d">
+    {% if section.settings.desktop_video != blank or section.settings.mobile_video != blank %}
+      <div class="video__d">
+        <video loop autoplay playsinline class="hidden-xs">
+          <source src="{{ section.settings.desktop_video }}" type="video/mp4">
+        </video>
+        <video loop autoplay playsinline class="visible-xs">
+          <source src="{{ section.settings.mobile_video }}" type="video/mp4">
+        </video>
+      </div>
+    {% endif %}
+    <div class="content_d">
+      <div class="title_desc">
+        {% if section.settings.title != blank %}
+          <h3 class="title_name">{{ section.settings.title }}</h3>
+        {% endif %}
+        {% if section.settings.description != blank %}
+          <div class="desc">{{ section.settings.description }}</div>
+        {% endif %}
+        </div>
+      {% if section.settings.button_text != blank %}
+      <div class="action_btn">
+        <a href="{{ section.settings.button_link }}" class="btn">{{ section.settings.button_text }}</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Video With Text Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_video_with_text_sec",
+      "label": "Show Video With Text Sec",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "desktop_video",
+      "label": "Desktop Video"
+    },
+    {
+      "type": "url",
+      "id": "mobile_video",
+      "label": "Mobile Video"
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+  ],
+  "presets": [
+    {
+      "name": "Video With Text Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,181 @@
+{% if section.settings.show_home_slideshow != blank %}
+<div class="homeMainSliderSec">
+    <div class="homeMainSlider" id="homeMainSlider_{{ section.id }}">
+        <div class="swiper-wrapper">
+            {% for block in section.blocks %}
+            <div class="swiper-slide">
+                <div class="item_d">
+                    <a href="{{block.settings.link }}">
+                        {% if block.settings.desktop_banner != blank or block.settings.mobile_banner!= blank %}
+                        <div class="img_d">
+                            <img src="{{ block.settings.desktop_banner | img_url:"master" }}" class="hidden-xs">
+                            <img src="{{ block.settings.mobile_banner | img_url:"master" }}" class="visible-xs">
+                        </div>
+                        {% endif %}
+                        {% if block.settings.title != blank or block.settings.description != blank or block.settings.link_text != blank %}
+                        <div class="info_d">
+                            {% if block.settings.title != blank %}
+                            <h3 class="sub_title_name">{{ block.settings.title }}</h3>
+                            {% endif %}
+                            {% if block.settings.description != blank %}
+                            <div class="desc_d">
+                                {{ block.settings.description }}
+                            </div>
+                            {% endif %}
+                            {% if block.settings.link_text != blank %}
+                            <div class="action_d actionIcon_d">
+                                <span>
+                                    <svg width="39" height="26" viewBox="0 0 39 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16.5664 11.2031C16.5645 9.65743 16.7291 8.13521 17.1795 6.6506C17.9817 4.00625 19.5816 2.06878 22.1678 0.996971C23.6123 0.398536 25.1238 0.144018 26.6749 0.037521C27.9885 -0.052855 29.2904 0.0238423 30.583 0.226578C32.4643 0.521643 34.222 1.13815 35.6973 2.39804C36.753 3.29985 37.5151 4.40928 38.0393 5.69555C38.6773 7.25978 38.9157 8.89779 38.9841 10.5675C39.0632 12.4987 38.8551 14.399 38.2322 16.2353C37.5312 18.3003 36.2635 19.9271 34.3544 21.0111C33.307 21.6061 32.1736 21.9725 30.9851 22.1855C29.7955 22.399 28.5982 22.5187 27.3935 22.4781C26.0794 22.4337 24.7779 22.2842 23.499 21.9344C22.3759 21.6271 21.3383 21.1581 20.3945 20.4889C19.1649 19.6164 18.2665 18.4654 17.6529 17.0917C16.8156 15.2168 16.565 13.2334 16.5664 11.2036V11.2031Z" fill="black"></path>
+                                    <path d="M7.29849 2.28085e-05C11.9428 0.0112587 15.0718 3.90866 15.0576 9.809C15.0415 16.4612 10.8837 22.4768 4.09918 25.3478L3.72498 24.5921C6.36298 22.8417 8.00098 20.2086 8.00636 18.0757C8.01808 13.3058 -0.0151227 13.2863 2.13852e-05 7.01027C0.00930324 3.12068 3.15536 -0.00974757 7.29849 2.28085e-05Z" fill="black"></path>
+                                    </svg>
+                                    <u>{{ block.settings.link_text }}</u>
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                         {% endif %}
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="arrow_d">
+          <div class="swiper-button-prevB leftswiperArrow">
+            <svg width="11" height="18" viewBox="0 0 11 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.66602 1L1.66602 9L9.66602 17" stroke="#292929" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <div class="swiper-button-nextB rightswiperArrow">
+            <svg width="11" height="18" viewBox="0 0 11 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.33398 17L9.33399 9L1.33399 0.999999" stroke="#292929" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+        </div>
+        {% if section.settings.show_pagination %}
+          <div class="swiper-paginationHS swiper-pagination-beyond">
+            <span class="swiper-paginationHS__thumb"></span>
+          </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+  (function () {
+    var sliderSelector = '#homeMainSlider_{{ section.id }}';
+    var sliderElement = document.querySelector(sliderSelector);
+
+    if (!sliderElement) {
+      return;
+    }
+
+    function updatePaginationThumb(swiper) {
+      var root = sliderElement.querySelector('.swiper-paginationHS');
+      var thumb = root ? root.querySelector('.swiper-paginationHS__thumb') : null;
+
+      if (!root || !thumb) {
+        return;
+      }
+
+      var total = Math.max(swiper.slides.length - (swiper.loop ? swiper.loopedSlides * 2 : 0), 1);
+      var trackWidth = root.clientWidth;
+      var minThumbWidth = window.innerWidth <= 767 ? 32 : 40;
+      var maxThumbWidth = Math.max(trackWidth * 0.28, minThumbWidth);
+      var thumbWidth = total > 0 ? Math.round(trackWidth / total) : trackWidth;
+
+      thumbWidth = Math.max(minThumbWidth, Math.min(thumbWidth, maxThumbWidth));
+      thumb.style.width = thumbWidth + 'px';
+
+      var maxX = Math.max(trackWidth - thumbWidth, 0);
+      var step = total > 1 ? maxX / (total - 1) : 0;
+      thumb.style.transform = 'translateX(' + Math.round(step * (swiper.realIndex || 0)) + 'px)';
+    }
+
+    new Swiper(sliderSelector, {
+    loop: true,
+    navigation: {
+      nextEl: sliderSelector + ' .swiper-button-nextB',
+      prevEl: sliderSelector + ' .swiper-button-prevB',
+      disabledClass: "is-disabled"
+    },
+    {% if section.settings.show_pagination %}
+    on: {
+      init: updatePaginationThumb,
+      slideChange: function () {
+        updatePaginationThumb(this);
+      },
+      resize: updatePaginationThumb,
+      breakpoint: updatePaginationThumb
+    },
+    {% endif %}
+    {% comment %} autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    } {% endcomment %}
+  });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Home Main Slideshow",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_home_slideshow",
+      "label": "Show Home Slideshow",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pagination",
+      "label": "Show pagination",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "banner",
+      "name": "banner",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "desktop_banner",
+          "label": "Desktop Banner"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_banner",
+          "label": "Mobile Banner"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link Text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home Main Slideshow"
+    }
+  ]
+}
+{% endschema %}

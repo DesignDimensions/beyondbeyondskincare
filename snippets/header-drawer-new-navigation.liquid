@@ -1,0 +1,415 @@
+{% comment %}
+  Renders header drawer
+
+  Accepts:
+  - main_menu: {Object} Main menu
+  - language_selector: {HTML} Shows on the screen as customers scroll up when true
+  - country_selector: {HTML} Show filtering when true
+
+
+  Usage:
+  {% render 'header-drawer', main_menu: section.settings.menu, blocks: section.blocks %}
+{% endcomment %}
+
+{%- if section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
+  {%- capture language_selector -%}
+    <noscript>
+      {%- form 'localization', id: 'HeaderDrawerLanguageFormNoScript', class: 'localization-form' -%}
+        <div class="localization-form__select">
+          <p class="visually-hidden" id="HeaderDrawerLanguageLabelNoScript">{{ 'localization.language_label' | t }}</p>
+          <select class="localization-selector link" name="locale_code" aria-labelledby="HeaderDrawerLanguageLabelNoScript">
+            {%- for language in localization.available_languages -%}
+              <option value="{{ language.iso_code }}" lang="{{ language.iso_code }}" {%- if language.iso_code == localization.language.iso_code %} selected{% endif %}>
+                {{ language.endonym_name | capitalize }}
+              </option>
+            {%- endfor -%}
+          </select>
+          {% render 'icon', icon: 'caret' %}
+        </div>
+        <button class="button button--tertiary">{{ 'localization.update_language' | t }}</button>
+      {%- endform -%}
+    </noscript>
+    <localization-form>
+      {%- form 'localization', id: 'HeaderDrawerLanguageForm', class: 'localization-form' -%}
+        <div class="no-js-hidden">
+          <span class="visually-hidden" id="HeaderDrawerLanguageLabel">{{ 'localization.language_label' | t }}</span>
+          <div class="disclosure">
+            <button type="button" class="disclosure__button localization-form__select localization-selector" aria-expanded="false" aria-controls="HeaderDrawerLanguageList" aria-describedby="HeaderDrawerLanguageLabel">
+              {% render 'icon', icon: 'localization' %}
+              <span class="label">{{ localization.language.endonym_name | capitalize }}</span>
+              {% render 'icon', icon: 'caret' %}
+            </button>
+            <ul id="HeaderDrawerLanguageList" role="list" class="disclosure__list list-unstyled" hidden>
+              <li class="disclosure__item" tabindex="-1">
+                <a class="disclosure__link link disclosure__link--active focus-inset" href="#" hreflang="{{ localization.language.iso_code }}" lang="{{ localization.language.iso_code }}" aria-current="true" data-value="{{ localization.language.iso_code }}">
+                  {{ localization.language.endonym_name | capitalize }}
+                </a>
+              </li>
+              {%- for language in localization.available_languages -%}
+                {%- if language.iso_code != localization.language.iso_code -%}
+                  <li class="disclosure__item" tabindex="-1">
+                    <a class="disclosure__link link focus-inset" href="#" hreflang="{{ language.iso_code }}" lang="{{ language.iso_code }}" data-value="{{ language.iso_code }}">
+                      {{ language.endonym_name | capitalize }}
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+          <input type="hidden" name="locale_code" value="{{ localization.language.iso_code }}"/>
+        </div>
+      {%- endform -%}
+    </localization-form>
+  {%- endcapture -%}
+{%- endif -%}
+
+{%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
+  {%- capture country_selector -%}
+    <noscript>
+      {%- form 'localization', id: 'HeaderDrawerCountryFormNoScript', class: 'localization-form' -%}
+        <div class="localization-form__select">
+          <p class="visually-hidden" id="HeaderDrawerCountryLabelNoScript">{{ 'localization.country_label' | t }}</p>
+          <select class="localization-selector link" name="country_code" aria-labelledby="HeaderDrawerCountryLabelNoScript">
+            {%- for country in localization.available_countries -%}
+              <option value="{{ country.iso_code }}" {%- if country.iso_code == localization.country.iso_code %} selected{% endif %}>
+                {{ country.currency.iso_code }} {{ country.currency.symbol }}
+              </option>
+            {%- endfor -%}
+          </select>
+          {% render 'icon', icon: 'caret' %}
+        </div>
+        <button class="button button--tertiary">{{ 'localization.update_country' | t }}</button>
+      {%- endform -%}
+    </noscript>
+    <localization-form>
+      {%- form 'localization', id: 'HeaderDrawerCountryForm', class: 'localization-form' -%}
+        <div class="no-js-hidden">
+          <span class="visually-hidden" id="HeaderDrawerCountryLabel">{{ 'localization.country_label' | t }}</span>
+          <div class="disclosure">
+            <button type="button" class="disclosure__button localization-form__select localization-selector" aria-expanded="false" aria-controls="HeaderDrawerCountryList" aria-describedby="HeaderDrawerCountryLabel">
+              {%- unless section.settings.enable_language_selector and localization.available_languages.size > 1 -%}
+                {% render 'icon', icon: 'localization' %}
+              {%- endunless -%}
+              <span class="label">{{ localization.country.name }} ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})</span>
+              {% render 'icon', icon: 'caret' %}
+            </button>
+            <ul id="HeaderDrawerCountryList" role="list" class="disclosure__list list-unstyled" hidden>
+              <li class="disclosure__item" tabindex="-1">
+                <a class="disclosure__link link disclosure__link--active focus-inset" href="#" aria-current="true" data-value="{{ localization.country.iso_code }}">
+                  {{ localization.country.name }} ({{ localization.country.currency.iso_code }} {{ localization.country.currency.symbol }})
+                </a>
+              </li>
+              {%- for country in localization.available_countries -%}
+                {%- if country.iso_code != localization.country.iso_code -%}
+                  <li class="disclosure__item" tabindex="-1">
+                    <a class="disclosure__link link focus-inset" href="#" data-value="{{ country.iso_code }}">
+                      {{ country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+          <input type="hidden" name="country_code" value="{{ localization.country.iso_code }}"/>
+        </div>
+      {%- endform -%}
+    </localization-form>
+  {%- endcapture -%}
+{%- endif -%}
+
+{%- assign animate_count = 1 -%}
+<header-drawer class="new-navigation-enabled">
+  <details class="menu-drawer-container">
+    <summary class="header__icon header__icon--menu focus-inset" aria-label="{{ 'sections.header.menu' | t }}">
+      <span class="header__icon header__icon--summary">
+        {% render 'icon', icon: 'hamburger' %}
+        <svg class="icon icon-close" aria-hidden="true" focusable="false">
+          <use href="#icon-close"></use>
+        </svg>
+      </span>
+    </summary>
+    <div id="menu-drawer" class="menu-drawer motion-reduce" tabindex="-1">
+      <div class="menu-drawer__inner-container">
+        <div class="menu-drawer__navigation-container">
+          <drawer-close-button class="header__icon header__icon--menu medium-hide large-up-hide" data-animate data-animate-delay-{{ animate_count }}>
+            <svg class="icon icon-close" aria-hidden="true" focusable="false">
+              <use href="#icon-close"></use>
+            </svg>
+          </drawer-close-button>
+          <nav class="menu-drawer__navigation" data-animate data-animate-delay-{{ animate_count }}>
+            <ul class="menu-drawer__menu list-menu" role="list">
+              {%- for link in main_menu.links -%}
+                {%- liquid
+                  assign enable_mega_menu = false
+                  assign mega_menu_block = nil
+                  if blocks != blank
+                    assign link_title_handle = link.title | downcase | handle
+                    for block in blocks
+                      assign menu_title_handle = block.settings.menu_title | downcase | handle
+                      assign title_match = false
+                      if menu_title_handle == link_title_handle
+                        assign title_match = true
+                      endif
+                      if title_match == false
+                        if menu_title_handle == 'bestseller' and link_title_handle == 'bestsellers'
+                          assign title_match = true
+                        elsif menu_title_handle == 'bestsellers' and link_title_handle == 'bestseller'
+                          assign title_match = true
+                        elsif menu_title_handle == 'concern' and link_title_handle == 'concerns'
+                          assign title_match = true
+                        elsif menu_title_handle == 'concerns' and link_title_handle == 'concern'
+                          assign title_match = true
+                        endif
+                      endif
+                      if title_match
+                        assign enable_mega_menu = true
+                        assign mega_menu_block = block
+                        break
+                      endif
+                    endfor
+                  endif
+                -%}
+                <li>
+                  {%- if enable_mega_menu -%}
+                    {%- liquid
+                      assign link_handle = link.title | downcase | handle
+                      assign is_bestseller_mega = false
+                      assign is_concern_mega = false
+                      assign is_sets_offers_mega = false
+                      if link_handle == 'bestseller' or link_handle == 'bestsellers'
+                        assign is_bestseller_mega = true
+                      elsif link_handle == 'concern' or link_handle == 'concerns'
+                        assign is_concern_mega = true
+                      elsif link_handle == 'sets-and-offers' or link_handle == 'sets-offers'
+                        assign is_sets_offers_mega = true
+                      endif
+                    -%}
+                    <details>
+                      <summary>
+                        <span class="menu-drawer__menu-item list-menu__item animate-arrow focus-inset{% if link.active or link.child_active %} menu-drawer__menu-item--active{% endif %}">
+                          {%- liquid
+                            assign item_title = link.title | escape
+                            if enable_highlight and highlight_labels contains item_title
+                              render 'highlight-text', hl_enable: true, hl_input: item_title, hl_phrases: highlight_labels, hl_style: highlight_style, hl_animateWrap: true
+                            else
+                              echo item_title
+                            endif
+                            render 'icon', icon: 'arrow'
+                            render 'icon', icon: 'caret'
+                          -%}
+                        </span>
+                      </summary>
+                      <div id="link-{{ link.title | handle }}" class="menu-drawer__submenu motion-reduce" tabindex="-1">
+                        <div class="menu-drawer__inner-submenu">
+                          <div class="menu-drawer__topbar">
+                            <button type="button" class="menu-drawer__close-button focus-inset" aria-expanded="true" data-close>
+                              {% render 'icon', icon: 'arrow' %}
+                            </button>
+                            <a class="menu-drawer__menu-item" href="{{ link.url }}">{{ link.title | escape }}</a>
+                          </div>
+                          <div class="menu-drawer__mega-content">
+                            {%- if is_bestseller_mega -%}
+                              {% render 'bestseller-mega-menu-content', link: link, block: mega_menu_block %}
+                            {%- elsif is_concern_mega -%}
+                              {% render 'sets-offers-mega-menu-content', link: link, block: mega_menu_block %}
+                            {%- elsif is_sets_offers_mega -%}
+                              {% render 'concern-mega-menu-content', link: link, block: mega_menu_block %}
+                            {%- else -%}
+                              <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                {%- for childlink in link.links -%}
+                                  <li>
+                                    {%- if childlink.links == blank -%}
+                                      <a href="{{ childlink.url }}" class="menu-drawer__menu-item list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                                        {{ childlink.title | escape }}
+                                      </a>
+                                    {%- else -%}
+                                      <details>
+                                        <summary>
+                                          <span class="menu-drawer__menu-item list-menu__item animate-arrow focus-inset">
+                                            {%- liquid
+                                              echo childlink.title | escape
+                                              render 'icon', icon: 'arrow'
+                                              render 'icon', icon: 'caret'
+                                            -%}
+                                          </span>
+                                        </summary>
+                                        <div id="childlink-{{ childlink.title | handle }}" class="menu-drawer__submenu motion-reduce">
+                                          <div class="menu-drawer__topbar">
+                                            <button type="button" class="menu-drawer__close-button focus-inset" aria-expanded="true" data-close>
+                                              {% render 'icon', icon: 'arrow' %}
+                                            </button>
+                                            <a class="menu-drawer__menu-item" href="{{ childlink.url }}">{{ childlink.title | escape }}</a>
+                                          </div>
+                                          <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                            {%- for grandchildlink in childlink.links -%}
+                                              <li>
+                                                <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                                  {{ grandchildlink.title | escape }}
+                                                </a>
+                                              </li>
+                                            {%- endfor -%}
+                                          </ul>
+                                        </div>
+                                      </details>
+                                    {%- endif -%}
+                                  </li>
+                                {%- endfor -%}
+                              </ul>
+                            {%- endif -%}
+                            {%- assign mobile_promo_image = mega_menu_block.settings.promo_image_mobile_1 | default: mega_menu_block.settings.promo_image_1 -%}
+                            {%- if mega_menu_block.settings.show_menu_image and mobile_promo_image != blank -%}
+                              <div class="menu-drawer__promo">
+                                <a class="menu-drawer__promo-link"{% if mega_menu_block.settings.promo_link_1 != blank %} href="{{ mega_menu_block.settings.promo_link_1 }}"{% else %} role="link" aria-disabled="true"{% endif %}>
+                                  <div class="menu-drawer__promo-media">
+                                    {{ mobile_promo_image | image_url: width: 1200 | image_tag:
+                                      loading: 'lazy',
+                                      class: 'menu-drawer__promo-image',
+                                      sizes: "(min-width: 990px) 25vw, 100vw",
+                                      widths: "375, 550, 750, 950, 1200",
+                                      is: 'lazy-image'
+                                    }}
+                                  </div>
+                                  {%- if mega_menu_block.settings.promo_heading_1 != blank or mega_menu_block.settings.promo_text_1 != blank -%}
+                                    <div class="mega-menu__promo-content">
+                  {%- if mega_menu_block.settings.promo_heading_1 != blank -%}
+                    <div class="mega-menu__promo-heading">
+                      <span class="label">{{ mega_menu_block.settings.promo_heading_1  }}</span>
+                    </div>
+                  {%- endif -%}
+                  <div class="mega-menu__promo-subheading">
+                    <svg width="39" height="26" viewBox="0 0 39 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16.5664 11.2031C16.5645 9.65743 16.7291 8.13521 17.1795 6.6506C17.9817 4.00625 19.5816 2.06878 22.1678 0.996971C23.6123 0.398536 25.1238 0.144018 26.6749 0.037521C27.9885 -0.052855 29.2904 0.0238423 30.583 0.226578C32.4643 0.521643 34.222 1.13815 35.6973 2.39804C36.753 3.29985 37.5151 4.40928 38.0393 5.69555C38.6773 7.25978 38.9157 8.89779 38.9841 10.5675C39.0632 12.4987 38.8551 14.399 38.2322 16.2353C37.5312 18.3003 36.2635 19.9271 34.3544 21.0111C33.307 21.6061 32.1736 21.9725 30.9851 22.1855C29.7955 22.399 28.5982 22.5187 27.3935 22.4781C26.0794 22.4337 24.7779 22.2842 23.499 21.9344C22.3759 21.6271 21.3383 21.1581 20.3945 20.4889C19.1649 19.6164 18.2665 18.4654 17.6529 17.0917C16.8156 15.2168 16.565 13.2334 16.5664 11.2036V11.2031Z" fill="#000"></path>
+                    <path d="M7.29849 2.28085e-05C11.9428 0.0112587 15.0718 3.90866 15.0576 9.809C15.0415 16.4612 10.8837 22.4768 4.09918 25.3478L3.72498 24.5921C6.36298 22.8417 8.00098 20.2086 8.00636 18.0757C8.01808 13.3058 -0.0151227 13.2863 2.13852e-05 7.01027C0.00930324 3.12068 3.15536 -0.00974757 7.29849 2.28085e-05Z" fill="#000"></path>
+                    </svg>
+                    {{ mega_menu_block.settings.promo_text_1 }}</div>
+                </div>
+                                  {%- endif -%}
+                                </a>
+                              </div>
+                            {%- endif -%}
+                          </div>
+                        </div>
+                      </div>
+                    </details>
+                  {%- elsif link.links != blank -%}
+                    <details>
+                      <summary>
+                        <span class="menu-drawer__menu-item list-menu__item animate-arrow focus-inset{% if link.active or link.child_active %} menu-drawer__menu-item--active{% endif %}">
+                          {%- liquid
+                            assign item_title = link.title | escape
+                            if enable_highlight and highlight_labels contains item_title
+                              render 'highlight-text', hl_enable: true, hl_input: item_title, hl_phrases: highlight_labels, hl_style: highlight_style, hl_animateWrap: true
+                            else
+                              echo item_title
+                            endif
+                            render 'icon', icon: 'arrow'
+                            render 'icon', icon: 'caret'
+                          -%}
+                        </span>
+                      </summary>
+                      <div id="link-{{ link.title | handle }}" class="menu-drawer__submenu motion-reduce" tabindex="-1">
+                        <div class="menu-drawer__inner-submenu">
+                          <div class="menu-drawer__topbar">
+                            <button type="button" class="menu-drawer__close-button focus-inset" aria-expanded="true" data-close>
+                              {% render 'icon', icon: 'arrow' %}
+                            </button>
+                            <a class="menu-drawer__menu-item" href="{{ link.url }}">{{ link.title | escape }}</a>
+                          </div>
+                          <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                            {%- for childlink in link.links -%}
+                              <li>
+                                {%- if childlink.links == blank -%}
+                                  <a href="{{ childlink.url }}" class="menu-drawer__menu-item list-menu__item focus-inset{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"{% if childlink.current %} aria-current="page"{% endif %}>
+                                    {{ childlink.title | escape }}
+                                  </a>
+                                {%- else -%}
+                                  <details>
+                                    <summary>
+                                      <span class="menu-drawer__menu-item list-menu__item animate-arrow focus-inset">
+                                        {%- liquid
+                                          echo childlink.title | escape
+                                          render 'icon', icon: 'arrow'
+                                          render 'icon', icon: 'caret'
+                                        -%}
+                                      </span>
+                                    </summary>
+                                    <div id="childlink-{{ childlink.title | handle }}" class="menu-drawer__submenu motion-reduce">
+                                      <div class="menu-drawer__topbar">
+                                        <button type="button" class="menu-drawer__close-button focus-inset" aria-expanded="true" data-close>
+                                          {% render 'icon', icon: 'arrow' %}
+                                        </button>
+                                        <a class="menu-drawer__menu-item" href="{{ childlink.url }}">{{ childlink.title | escape }}</a>
+                                      </div>
+                                      <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1">
+                                        {%- for grandchildlink in childlink.links -%}
+                                          <li>
+                                            <a href="{{ grandchildlink.url }}" class="menu-drawer__menu-item list-menu__item focus-inset{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"{% if grandchildlink.current %} aria-current="page"{% endif %}>
+                                              {{ grandchildlink.title | escape }}
+                                            </a>
+                                          </li>
+                                        {%- endfor -%}
+                                      </ul>
+                                    </div>
+                                  </details>
+                                {%- endif -%}
+                              </li>
+                            {%- endfor -%}
+                          </ul>
+                        </div>
+                      </div>
+                    </details>
+                  {%- else -%}
+                    <a href="{{ link.url }}" class="{% if link.title == 'NAD+' %} NAD_have_bg_mobile{% endif %} menu-drawer__menu-item list-menu__item focus-inset{% if link.current %} menu-drawer__menu-item--active{% endif %}"{% if link.current %} aria-current="page"{% endif %}>
+                      {%- liquid
+                        assign item_title = link.title | escape
+                        if enable_highlight and highlight_labels contains item_title
+                          render 'highlight-text', hl_enable: true, hl_input: item_title, hl_phrases: highlight_labels, hl_style: highlight_style, hl_animateWrap: true
+                        else
+                          echo item_title
+                        endif
+                      -%}
+                    </a>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </nav>
+
+          {%- if language_selector != blank or country_selector != blank -%}
+            <div class="menu-drawer__localization" data-animate data-animate-delay-{{ animate_count }}>
+              {%- liquid
+                echo language_selector
+                echo country_selector
+                
+                assign animate_count = animate_count | plus: 1
+              -%}
+            </div>
+          {%- endif -%}
+
+          <div class="menu-drawer__utility-links" data-animate data-animate-delay-{{ animate_count }}>
+            {%- if shop.customer_accounts_enabled -%}
+              <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="menu-drawer__account link link-with-icon focus-inset">
+                {% render 'icon', icon: 'account' %}
+                <span class="label">
+                  {%- liquid
+                    if customer
+                      echo 'customer.account_fallback' | t
+                    else
+                      echo 'customer.log_in' | t
+                    endif
+                  -%}
+                </span>
+              </a>
+            {%- endif -%}
+            <ul class="list list-social list-unstyled" role="list">
+              {%- render 'social-icons' -%}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+</header-drawer>
+
+
+

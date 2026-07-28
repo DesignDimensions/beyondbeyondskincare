@@ -1,0 +1,248 @@
+{%- liquid
+  assign current_product = product
+  assign show_add_to_cart = show_add_to_cart | default: false
+  assign show_rating = show_rating | default: false
+  assign skin_text = skin_text | default: blank
+  assign card_label = card_label | default: 'BESTSELLER'
+  assign card_sizes = card_sizes | default: '(min-width: 1200px) 276px, 22vw'
+  assign size_source = size_source | default: 'metafield'
+  assign available_variants_count = 0
+  assign first_available_variant = blank
+
+  for variant in current_product.variants
+    if variant.available
+      assign available_variants_count = available_variants_count | plus: 1
+      if first_available_variant == blank
+        assign first_available_variant = variant
+      endif
+    endif
+  endfor
+
+  assign display_variant = first_available_variant
+  if display_variant == blank
+    assign display_variant = current_product.selected_or_first_available_variant
+  endif
+
+  assign supports_inline_variant_picker = false
+  if current_product.options.size == 1 and current_product.variants.size > 1
+    assign supports_inline_variant_picker = true
+  endif
+
+  assign use_direct_add_to_cart = false
+  if available_variants_count > 0 and current_product.variants.size == 1
+    assign use_direct_add_to_cart = true
+  elsif available_variants_count == 1
+    assign use_direct_add_to_cart = true
+  elsif current_product.has_only_default_variant and available_variants_count > 0
+    assign use_direct_add_to_cart = true
+  endif
+-%}
+
+<article class="bestseller-card" data-bestseller-card>
+  <div class="bestseller-card__media-wrap">
+    <a href="{{ current_product.url }}" class="bestseller-card__media-link" aria-label="{{ current_product.title | escape }}">
+      <div class="bestseller-card__badges">
+        <span class="bestseller-card__badge">{{ card_label }}</span>
+        {%- if display_variant != blank and display_variant.compare_at_price > display_variant.price -%}
+          {%- assign diff = display_variant.compare_at_price | minus: display_variant.price -%}
+          {%- assign pct = diff | times: 100 | divided_by: display_variant.compare_at_price -%}
+          <span class="bestseller-card__badge bestseller-card__badge--offer">-{{ pct }}% OFF</span>
+        {%- endif -%}
+      </div>
+      <div class="bestseller-card__image-frame" data-bestseller-slider>
+        <div class="bestseller-card__slides">
+          {%- if current_product.images.size > 0 -%}
+            {%- for pimg in current_product.images -%}
+              {%- if forloop.index == 2 -%}{%- continue -%}{%- endif -%}
+              <div class="bestseller-card__slide{% if forloop.first %} is-active{% endif %}" data-bestseller-slide>
+                {{ pimg | image_url: width: 700 | image_tag:
+                  loading: 'lazy',
+                  widths: '240,360,480,700',
+                  sizes: card_sizes,
+                  class: 'bestseller-card__image',
+                  alt: current_product.title | escape
+                }}
+              </div>
+            {%- endfor -%}
+          {%- elsif current_product.featured_image != blank -%}
+            <div class="bestseller-card__slide is-active" data-bestseller-slide>
+              {{ current_product.featured_image | image_url: width: 700 | image_tag:
+                loading: 'lazy',
+                widths: '240,360,480,700',
+                sizes: card_sizes,
+                class: 'bestseller-card__image',
+                alt: current_product.title | escape
+              }}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </a>
+    <button type="button" class="bestseller-card__nav bestseller-card__nav--prev" data-bestseller-prev aria-label="Previous image">&#8249;</button>
+    <button type="button" class="bestseller-card__nav bestseller-card__nav--next" data-bestseller-next aria-label="Next image">&#8250;</button>
+    <div class="bestseller-card__dots" data-bestseller-dots></div>
+  </div>
+
+  <div class="bestseller-card__body">
+    <a href="{{ current_product.url }}" class="bestseller-card__title">{{ current_product.title }}</a>
+
+    {%- if skin_text != blank -%}
+      <div class="bestseller-card__skin-text">{{ skin_text }}</div>
+    {%- endif -%}
+
+    {%- if show_rating -%}
+      {%- assign rating_value = current_product.metafields.reviews.rating.value -%}
+      {%- assign rating_count = current_product.metafields.reviews.rating_count | default: current_product.metafields.judgeme.review_count -%}
+      {%- if rating_value != blank -%}
+        {%- liquid
+          assign rating_decimal = 0
+          assign decimal = rating_value.rating | modulo: 1
+          if decimal >= 0.3 and decimal <= 0.7
+            assign rating_decimal = 0.5
+          elsif decimal > 0.7
+            assign rating_decimal = 1
+          endif
+          assign rating_number = rating_value.rating | round: 1
+        -%}
+        <div class="bestseller-card__rating" role="img" aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: rating_value, rating_max: rating_value.scale_max }}">
+          <span class="bestseller-card__rating-stars" aria-hidden="true">
+            <span class="bestseller-card__rating-star{% if rating_value.rating >= 1 %} is-active{% endif %}">&#9733;</span>
+            <span class="bestseller-card__rating-star{% if rating_value.rating >= 2 %} is-active{% endif %}">&#9733;</span>
+            <span class="bestseller-card__rating-star{% if rating_value.rating >= 3 %} is-active{% endif %}">&#9733;</span>
+            <span class="bestseller-card__rating-star{% if rating_value.rating >= 4 %} is-active{% endif %}">&#9733;</span>
+            <span class="bestseller-card__rating-star{% if rating_value.rating >= 5 %} is-active{% endif %}">&#9733;</span>
+          </span>
+          <span>
+            <span class="bestseller-card__rating-value" aria-hidden="true">{{ rating_number }}</span>
+            <span class="bestseller-card__rating-count" aria-hidden="true">({{ rating_count }})</span>
+          </span>
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- assign size_value = blank -%}
+    {%- assign metafield_size_value = current_product.metafields.custom.product_size | default: current_product.metafields.custom.size -%}
+    {%- if size_source == 'variant' -%}
+      {%- assign variant_size_value = blank -%}
+      {%- if display_variant != blank -%}
+        {%- assign variant_size_value = display_variant.option1 | strip -%}
+      {%- endif -%}
+      {%- assign variant_size_handle = variant_size_value | downcase | strip -%}
+      {%- assign variant_size_compact = variant_size_value | strip | replace: ' ', '' | replace: '.', '' | replace: ',', '' | replace: '-', '' | replace: '/', '' | replace: '+', '' -%}
+      {%- assign variant_size_letters_only = variant_size_compact | remove: '0' | remove: '1' | remove: '2' | remove: '3' | remove: '4' | remove: '5' | remove: '6' | remove: '7' | remove: '8' | remove: '9' -%}
+      {%- if variant_size_value != blank and variant_size_handle != 'default title' and variant_size_handle != 'title' and variant_size_compact != blank and variant_size_compact != '0' and variant_size_compact != '0.0' and variant_size_compact != '0.00' and variant_size_letters_only != blank -%}
+        {%- assign size_value = variant_size_value -%}
+      {%- else -%}
+        {%- assign size_value = metafield_size_value -%}
+      {%- endif -%}
+      {%- if size_value == blank and current_product.selected_or_first_available_variant != blank -%}
+        {%- assign size_value = display_variant.option1 -%}
+      {%- endif -%}
+    {%- else -%}
+      {%- assign size_value = metafield_size_value -%}
+      {%- if size_value == blank and current_product.selected_or_first_available_variant != blank -%}
+        {%- assign size_value = display_variant.option1 -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- assign size_value = size_value | replace: ',', ' |' | replace: '| ', ' | ' | strip -%}
+    {%- assign size_compact = size_value | strip | replace: ' ', '' | replace: '.', '' | replace: ',', '' | replace: '-', '' | replace: '/', '' | replace: '+', '' -%}
+    {%- if size_value == blank or size_compact == blank or size_compact == '0' or size_compact == '0.0' or size_compact == '0.00' -%}
+      {%- assign size_value = blank -%}
+    {%- endif -%}
+    {%- assign size_parts = size_value | split: '|' -%}
+    {%- assign size_first = size_parts.first | strip -%}
+    {%- if size_parts.size > 1 -%}
+      {%- assign size_second = size_parts | slice: 1, size_parts.size | join: '|' | strip -%}
+    {%- else -%}
+      {%- assign size_second = blank -%}
+    {%- endif -%}
+    <div class="bestseller-card__price-wrap">
+      <div class="bestseller-card__price-line">
+        {%- if display_variant != blank and display_variant.compare_at_price > display_variant.price -%}
+          <span class="bestseller-card__compare">{{ display_variant.compare_at_price | money_without_trailing_zeros }}</span>
+        {%- endif -%}
+        <span class="bestseller-card__price">{{ display_variant.price | money_without_trailing_zeros }}</span>
+      </div>
+      {%- if size_value != blank -%}
+        <div class="bestseller-card__size" data-size-display="{{ size_value | escape }}">
+          <span class="bestseller-card__size-value" data-size-display-value>
+            <span class="bestseller-card__size-main" data-size-display-main>{{ size_first }}</span>
+          </span>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- if show_add_to_cart -%}
+      <div class="bestseller-card__atc">
+        {%- if use_direct_add_to_cart and first_available_variant != blank -%}
+          <add-to-cart
+            class="bestseller-card__atc-button"
+            data-variant-id="{{ first_available_variant.id }}"
+          >
+            ADD TO CART
+          </add-to-cart>
+        {%- elsif supports_inline_variant_picker and current_product.options_with_values.first != blank -%}
+          {%- assign picker_option = current_product.options_with_values.first -%}
+          {%- assign picker_label = 'Select ' | append: picker_option.name -%}
+          {%- if available_variants_count > 0 -%}
+            <div
+              class="bestseller-card__variant-picker"
+              data-bestseller-variant-picker
+              data-option-name="{{ picker_option.name | escape }}"
+            >
+              <button
+                type="button"
+                class="bestseller-card__atc-button bestseller-card__atc-button--select"
+                data-bestseller-picker-toggle
+                data-default-label="{{ picker_label }}"
+                aria-expanded="false"
+                aria-haspopup="listbox"
+              >
+                {{ picker_label }}
+              </button>
+              <div class="bestseller-card__variant-dropdown" data-bestseller-picker-panel hidden>
+                <div class="bestseller-card__variant-options" role="listbox" aria-label="{{ picker_label }}">
+                  {%- for variant in current_product.variants -%}
+                    <button
+                      type="button"
+                      class="bestseller-card__variant-option"
+                      data-bestseller-variant-option
+                      data-variant-id="{{ variant.id }}"
+                      data-variant-option="{{ variant.option1 | escape }}"
+                      data-variant-price="{% if settings.currency_code_enabled %}{{ variant.price | money_with_currency }}{% else %}{{ variant.price | money_without_trailing_zeros }}{% endif %}"
+                      data-variant-compare="{% if settings.currency_code_enabled %}{{ variant.compare_at_price | money_with_currency }}{% else %}{{ variant.compare_at_price | money_without_trailing_zeros }}{% endif %}"
+                      {% unless variant.available %}disabled{% endunless %}
+                    >
+                      {{- variant.option1 -}}
+                    </button>
+                  {%- endfor -%}
+                </div>
+              </div>
+              <script type="application/json" data-bestseller-variants>
+                [
+                  {%- for variant in current_product.variants -%}
+                    {
+                      "id": {{ variant.id | json }},
+                      "available": {{ variant.available | json }},
+                      "option": {{ variant.option1 | json }}
+                    }{%- unless forloop.last -%},{%- endunless -%}
+                  {%- endfor -%}
+                ]
+              </script>
+            </div>
+          {%- else -%}
+            <button type="button" class="bestseller-card__atc-button" disabled>SOLD OUT</button>
+          {%- endif -%}
+        {%- elsif available_variants_count == 0 -%}
+          <button type="button" class="bestseller-card__atc-button" disabled>SOLD OUT</button>
+        {%- else -%}
+          <a href="{{ current_product.url }}" class="bestseller-card__atc-button bestseller-card__atc-button--link">
+            VIEW PRODUCT
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</article>
+
+

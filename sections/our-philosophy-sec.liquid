@@ -1,0 +1,80 @@
+{% if section.settings.show_our_philosophy_sec != blank %}
+<div class="ourPhilosophySec">
+  {% if section.settings.title != blank %}
+  <div class="section_header">
+    <h3 class="title_name">{{ section.settings.title }}</h3>
+  </div>
+  {% endif %}
+  <div class="inner_d">
+    {% for block in section.blocks %}
+      <div class="item_d">
+      {% if block.settings.image != blank %}
+        <div class="img_d">
+          <img src="{{ block.settings.image | img_url:"master" }}">
+        </div>
+        {% endif %}
+      {% if block.settings.title != blank or block.settings.description != blank %}
+        <div class="info_d">
+          {% if block.settings.title != blank %}
+          <h4>{{ block.settings.title }}</h4>
+          {% endif %}
+          {% if block.settings.description != blank %}
+          <div class="desc_d">
+            {{ block.settings.description }}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Our Philosophy Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_our_philosophy_sec",
+      "label": "Show Our Philosophy Sec",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image-block",
+      "name": "Image Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title"
+        },
+         {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Our Philosophy Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

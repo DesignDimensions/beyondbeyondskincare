@@ -1,0 +1,19 @@
+{%- liquid
+  assign effect_block = block
+-%}
+
+{%- liquid
+  assign effect_image = product.metafields.custom.before_after_effect.value
+
+  if effect_image != blank
+    assign effect_alt = effect_image.alt | default: product.title
+  endif
+-%}
+
+{%- if effect_image != blank -%}
+<div class="">
+  <div class="beyondEffectSec__media">
+    {{ effect_image | image_url: width: 1800 | image_tag: loading: 'lazy', alt: effect_alt }}
+  </div>
+</div>
+{%- endif -%}

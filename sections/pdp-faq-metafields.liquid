@@ -1,0 +1,303 @@
+{%- liquid
+  assign faq_heading = product.metafields.custom.faq_heading.value
+  if faq_heading == blank
+    assign faq_heading = product.metafields.custom.faq_title.value
+  endif
+  if faq_heading == blank
+    assign faq_heading = 'FAQ'
+  endif
+
+  assign faq_rows = ''
+
+  capture faq_rows
+    for faq_index in (1..10)
+      assign question_key = 'faq_q' | append: faq_index
+      assign question_alt_key = 'faq_question_' | append: faq_index
+      assign question_alt_2_key = 'faq_title_' | append: faq_index
+
+      assign answer_key = 'faq_a' | append: faq_index
+      assign answer_alt_key = 'faq_answer_' | append: faq_index
+      assign answer_alt_2_key = 'faq_description_' | append: faq_index
+      assign answer_alt_3_key = 'faq_text_' | append: faq_index
+
+      assign faq_question = product.metafields.custom[question_key].value
+      if faq_question == blank
+        assign faq_question = product.metafields.custom[question_alt_key].value
+      endif
+      if faq_question == blank
+        assign faq_question = product.metafields.custom[question_alt_2_key].value
+      endif
+
+      assign faq_answer = product.metafields.custom[answer_key].value
+      if faq_answer == blank
+        assign faq_answer = product.metafields.custom[answer_alt_key].value
+      endif
+      if faq_answer == blank
+        assign faq_answer = product.metafields.custom[answer_alt_2_key].value
+      endif
+      if faq_answer == blank
+        assign faq_answer = product.metafields.custom[answer_alt_3_key].value
+      endif
+
+      if faq_question != blank and faq_answer != blank
+        echo '<accordion-tab class="pdp-faq-metafields__accordion">'
+        echo '<details>'
+        echo '<summary>'
+        echo '<span>'
+        echo '<span class="icon icon-plus-alt" aria-hidden="true"></span>'
+        echo '<span class="pdp-faq-metafields__question">'
+        echo faq_question | escape
+        echo '</span>'
+        echo '</span>'
+        echo '</summary>'
+        echo '<div class="accordion__content rte typeset pdp-faq-metafields__answer">'
+        echo faq_answer
+        echo '</div>'
+        echo '</details>'
+        echo '</accordion-tab>'
+      endif
+    endfor
+  endcapture
+-%}
+
+{%- assign faq_rows = faq_rows | strip -%}
+
+{%- if faq_rows != blank -%}
+  {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+
+  {%- style -%}
+    #shopify-section-{{ section.id }} {
+      --section-padding-top: {{ section.settings.padding_top }}px;
+      --section-padding-bottom: {{ section.settings.padding_bottom }}px;
+      background: #171717;
+      color: rgb(255, 255, 255);
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields {
+      background: #171717;
+      color: #ffffff;
+      padding-top: var(--section-padding-top);
+      padding-bottom: var(--section-padding-bottom);
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__inner {
+      max-width: 1312px;
+      margin: 0 auto;
+      padding: 0;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__header {
+      display: grid;
+      grid-template-columns: minmax(0, 520px) minmax(0, 520px);
+      gap: 64px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__header-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__title {
+      margin: 0;
+      color: #ffffff;
+      font-family: var(--font-body-family);
+      font-size: 40px;
+      font-weight: 500;
+      line-height: 64px;
+      letter-spacing: 0.8px;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordions {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion {
+      display: block;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 1);
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion summary::-webkit-details-marker {
+      display: none;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion summary > span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion summary .icon-plus-alt {
+      position: relative;
+      flex: 0 0 16px;
+      width: 16px;
+      height: 16px;
+      color: #ffffff;
+      margin-inline-start: auto;
+      order: 2;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion summary .icon-plus-alt::before,
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion summary .icon-plus-alt::after {
+      background-color: currentColor;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__question {
+      flex: 1 1 auto;
+      color: #ffffff;
+      font-family: var(--font-body-family);
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 40px;
+      letter-spacing: 0.48px;
+      order: 1;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__answer {
+      padding-top: 12px;
+      padding-bottom: 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-family: var(--font-body-family);
+      font-size: 16px;
+      line-height: 28px;
+      letter-spacing: 0.32px;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion details[open] summary .icon-plus-alt::after {
+      width: 0 !important;
+      height: 0 !important;
+      opacity: 0 !important;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion details[open] summary .icon-plus-alt::before {
+      width: 12px !important;
+      height: 1px !important;
+    }
+
+    #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion details[open] summary .icon-plus-alt {
+      transform: none;
+    }
+
+    @media screen and (max-width: 749px) {
+      #shopify-section-{{ section.id }} .pdp-faq-metafields {
+        padding-left: 12px;
+        padding-right: 12px;
+        padding-top: var(--section-padding-top);
+        padding-bottom: var(--section-padding-bottom);
+      }
+
+      #shopify-section-{{ section.id }} .pdp-faq-metafields__header {
+        grid-template-columns: 1fr;
+        gap: 0;
+        margin-bottom: 24px;
+      }
+
+      #shopify-section-{{ section.id }} .pdp-faq-metafields__title {
+        font-size: 32px;
+        line-height: 52px;
+        letter-spacing: 0.64px;
+      }
+
+      #shopify-section-{{ section.id }} .pdp-faq-metafields__accordion {
+        padding-bottom: 16px;
+      }
+
+      #shopify-section-{{ section.id }} .pdp-faq-metafields__question {
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 28px;
+        letter-spacing: 0.32px;
+      }
+
+      #shopify-section-{{ section.id }} .pdp-faq-metafields__answer {
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: 0;
+      }
+    }
+  {%- endstyle -%}
+
+  <section class="pdp-faq-metafields">
+    <div class="pdp-faq-metafields__inner">
+      <div class="pdp-faq-metafields__header">
+        <div class="pdp-faq-metafields__header-stack">
+          <h2 class="pdp-faq-metafields__title">{{ faq_heading | escape }}</h2>
+        </div>
+        <div class="pdp-faq-metafields__header-stack" aria-hidden="true"></div>
+      </div>
+
+      <div class="pdp-faq-metafields__accordions">
+        {{ faq_rows }}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      const section = document.getElementById('shopify-section-{{ section.id }}');
+      if (!section) return;
+
+      const accordions = Array.from(section.querySelectorAll('.pdp-faq-metafields__accordion details'));
+      if (!accordions.length) return;
+
+      accordions.forEach((details) => {
+        details.addEventListener('toggle', () => {
+          if (!details.open) return;
+
+          accordions.forEach((otherDetails) => {
+            if (otherDetails !== details) {
+              otherDetails.open = false;
+            }
+          });
+        });
+      });
+    })();
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "PDP FAQ",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDP FAQ"
+    }
+  ]
+}
+{% endschema %}

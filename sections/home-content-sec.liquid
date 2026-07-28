@@ -1,0 +1,50 @@
+{% if section.settings.show_home_content_sec != blank %}
+<div class="homeContentSec_t ptb_64">
+    <div class="page-width">
+        <div class="inner_d">
+            {% if section.settings.title != blank %}
+            <div class="left_d">
+                <h2 class="sub_title_name">{{ section.settings.title }}</h2>
+            </div>
+            {% endif %}
+            {% if section.settings.description != blank %}
+            <div class="right_d">
+                <div class="desc_d">{{ section.settings.description }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+
+{% schema %}
+{
+  "name": "Home Content Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_home_content_sec",
+      "label": "Show Home Content Sec",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description"
+    },
+  ],
+  "presets": [
+    {
+      "name": "Home Content Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

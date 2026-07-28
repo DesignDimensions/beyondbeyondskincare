@@ -1,0 +1,117 @@
+{%- liquid
+  assign menu_handle = link.title | downcase | handle
+  assign menu_variant = menu_variant | default: blank
+  assign is_concern_tiles = false
+  if menu_variant == 'concern' or menu_handle == 'concern' or menu_handle == 'concerns'
+    assign is_concern_tiles = true
+  endif
+  if is_concern_tiles
+    assign tile_limit = block.settings.concern_upload_tiles | default: 10
+    assign mobile_cols = block.settings.concern_upload_tiles_mobile | default: 2
+    assign configured_products = block.settings.concern_products
+    assign configured_collection = block.settings.concern_collection
+    assign configured_heading = block.settings.concern_heading
+  else
+    assign tile_limit = block.settings.sets_offers_desktop_items | default: 12
+    assign mobile_cols = block.settings.sets_offers_mobile_columns | default: 2
+    assign configured_products = block.settings.sets_offers_products
+    assign configured_collection = block.settings.sets_offers_collection
+    assign configured_heading = block.settings.sets_offers_heading
+  endif
+  assign rendered_tiles = 0
+-%}
+
+<div class="sets-offers-mega" style="--sets-offers-mobile-columns: {{ mobile_cols }};">
+  {%- if configured_heading != blank -%}
+    <h3 class="sets-offers-mega__heading">{{ configured_heading }}</h3>
+  {%- endif -%}
+
+  <div class="sets-offers-mega__grid">
+    {%- if is_concern_tiles -%}
+      {%- for i in (1..12) -%}
+        {%- if rendered_tiles >= tile_limit -%}{% break %}{%- endif -%}
+        {%- capture image_key -%}concern_tile_image_{{ i }}{%- endcapture -%}
+        {%- capture label_key -%}concern_tile_label_{{ i }}{%- endcapture -%}
+        {%- capture link_key -%}concern_tile_link_{{ i }}{%- endcapture -%}
+        {%- assign tile_image = block.settings[image_key] -%}
+        {%- assign tile_label = block.settings[label_key] -%}
+        {%- assign tile_link = block.settings[link_key] -%}
+        {%- if tile_label == blank -%}
+          {%- assign tile_label = 'Concern ' | append: i -%}
+        {%- endif -%}
+        {%- if tile_image != blank -%}
+          {%- assign rendered_tiles = rendered_tiles | plus: 1 -%}
+          <article class="sets-offers-tile">
+            <a href="{{ tile_link | default: '#' }}" class="sets-offers-tile__link">
+              <div class="sets-offers-tile__media">
+                {{ tile_image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--primary', alt: tile_label | escape }}
+              </div>
+              <h4 class="sets-offers-tile__title">{{ tile_label }}</h4>
+            </a>
+          </article>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- if configured_products != blank -%}
+      {%- for mega_product in configured_products limit: tile_limit -%}
+        {%- if rendered_tiles >= tile_limit -%}{% break %}{%- endif -%}
+        {%- assign rendered_tiles = rendered_tiles | plus: 1 -%}
+        <article class="sets-offers-tile">
+          <a href="{{ mega_product.url }}" class="sets-offers-tile__link">
+            <div class="sets-offers-tile__media">
+              {%- if mega_product.images.size > 1 -%}
+                {{ mega_product.images[0] | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--primary', alt: mega_product.title | escape }}
+                {{ mega_product.images[1] | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--secondary', alt: mega_product.title | escape }}
+              {%- elsif mega_product.featured_image != blank -%}
+                {{ mega_product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--primary', alt: mega_product.title | escape }}
+              {%- endif -%}
+            </div>
+            <h4 class="sets-offers-tile__title">{{ mega_product.title }}</h4>
+          </a>
+        </article>
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- for childlink in link.links -%}
+      {%- if rendered_tiles >= tile_limit -%}{% break %}{%- endif -%}
+      {%- assign mega_product = blank -%}
+      {%- if childlink.type == 'product_link' and childlink.object -%}
+        {%- assign mega_product = childlink.object -%}
+      {%- elsif childlink.type == 'collection_link' and childlink.object and childlink.object.products_count > 0 -%}
+        {%- assign mega_product = childlink.object.products.first -%}
+      {%- endif -%}
+      {%- if mega_product != blank -%}
+        {%- assign rendered_tiles = rendered_tiles | plus: 1 -%}
+        <article class="sets-offers-tile">
+          <a href="{{ mega_product.url }}" class="sets-offers-tile__link">
+            <div class="sets-offers-tile__media">
+              {%- if mega_product.images.size > 1 -%}
+                {{ mega_product.images[0] | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--primary', alt: mega_product.title | escape }}
+                {{ mega_product.images[1] | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--secondary', alt: mega_product.title | escape }}
+              {%- elsif mega_product.featured_image != blank -%}
+                {{ mega_product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--primary', alt: mega_product.title | escape }}
+              {%- endif -%}
+            </div>
+            <h4 class="sets-offers-tile__title">{{ mega_product.title }}</h4>
+          </a>
+        </article>
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if rendered_tiles < tile_limit and configured_collection != blank -%}
+      {%- for fallback_product in configured_collection.products limit: tile_limit -%}
+        {%- if rendered_tiles >= tile_limit -%}{% break %}{%- endif -%}
+        {%- assign rendered_tiles = rendered_tiles | plus: 1 -%}
+        <article class="sets-offers-tile">
+          <a href="{{ fallback_product.url }}" class="sets-offers-tile__link">
+            <div class="sets-offers-tile__media">
+              {{ fallback_product.featured_image | image_url: width: 600 | image_tag: loading: 'lazy', class: 'sets-offers-tile__image sets-offers-tile__image--primary', alt: fallback_product.title | escape }}
+            </div>
+            <h4 class="sets-offers-tile__title">{{ fallback_product.title }}</h4>
+          </a>
+        </article>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>

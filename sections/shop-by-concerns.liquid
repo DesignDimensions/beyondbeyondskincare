@@ -1,0 +1,490 @@
+{% if section.blocks.size > 0 %}
+  {%- liquid
+    assign desktop_items = section.settings.desktop_items | default: 4
+    assign mobile_columns = section.settings.mobile_columns | default: 3
+    assign mobile_limit = section.settings.mobile_items | default: 9
+  -%}
+
+  <section class="shop-by-concerns shop-by-concerns--{{ section.id }}">
+    <div class="page-width">
+      {% if section.settings.heading != blank %}
+        <h2 class="shop-by-concerns__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      <div class="shop-by-concerns__desktop hidden-xs">
+        <div class="shop-by-concerns__slider swiper" id="ShopByConcerns-{{ section.id }}">
+          <div class="swiper-wrapper">
+            {% for block in section.blocks %}
+              <div class="shop-by-concerns__slide swiper-slide" {{ block.shopify_attributes }}>
+                {% assign concern_link = block.settings.link %}
+                {% if concern_link != blank %}
+                  <a href="{{ concern_link }}" class="shop-by-concerns__card">
+                {% else %}
+                  <div class="shop-by-concerns__card">
+                {% endif %}
+                  <div class="shop-by-concerns__media">
+                    {% assign desktop_image = block.settings.desktop_image | default: block.settings.mobile_image %}
+                    {% if desktop_image != blank %}
+                      {{
+                        desktop_image
+                        | image_url: width: 900
+                        | image_tag: loading: 'lazy', class: 'shop-by-concerns__image', alt: block.settings.label | escape
+                      }}
+                    {% endif %}
+                  </div>
+                  {% if block.settings.label != blank %}
+                    <h3 class="shop-by-concerns__label">{{ block.settings.label }}</h3>
+                  {% endif %}
+                {% if concern_link != blank %}
+                  </a>
+                {% else %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if section.blocks.size > desktop_items %}
+          <div class="shop-by-concerns__controls">
+            <button type="button" class="shop-by-concerns__arrow shop-by-concerns__arrow--prev" aria-label="Previous concern">
+              <img src="{{ 'left-arr-shop-by-concern.svg' | asset_url }}" alt="">
+            </button>
+            <div class="shop-by-concerns__progress">
+              <span class="shop-by-concerns__progress-thumb"></span>
+            </div>
+            <button type="button" class="shop-by-concerns__arrow shop-by-concerns__arrow--next" aria-label="Next concern">
+              <img src="{{ 'right-arr-shop-by-concern.svg' | asset_url }}" alt="">
+            </button>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="shop-by-concerns__mobile visible-xs">
+        <div class="shop-by-concerns__mobile-grid">
+          {% for block in section.blocks limit: mobile_limit %}
+            {% assign concern_link = block.settings.link %}
+            {% if concern_link != blank %}
+              <a href="{{ concern_link }}" class="shop-by-concerns__mobile-card" {{ block.shopify_attributes }}>
+            {% else %}
+              <div class="shop-by-concerns__mobile-card" {{ block.shopify_attributes }}>
+            {% endif %}
+              <div class="shop-by-concerns__mobile-media">
+                {% assign mobile_image = block.settings.mobile_image | default: block.settings.desktop_image %}
+                {% if mobile_image != blank %}
+                  {{
+                    mobile_image
+                    | image_url: width: 400
+                    | image_tag: loading: 'lazy', class: 'shop-by-concerns__mobile-image', alt: block.settings.label | escape
+                  }}
+                {% endif %}
+              </div>
+              {% if block.settings.label != blank %}
+                <h3 class="shop-by-concerns__mobile-label">{{ block.settings.label }}</h3>
+              {% endif %}
+            {% if concern_link != blank %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .shop-by-concerns--{{ section.id }} {
+      background: #ededed;
+      padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .page-width {
+      max-width: 100%;
+      padding-left: 64px;
+      padding-right: 0;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__heading {
+      margin: 0 0 40px;
+      color: #000;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.4em;
+      line-height: 1.667;
+      text-transform: uppercase;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__slide {
+      width: 298px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__card,
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__mobile-card {
+      display: block;
+      color: #000;
+      text-decoration: none;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__media {
+      {% comment %} width: 298px; {% endcomment %}
+      height: 298px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__image,
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__mobile-image {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__label {
+      margin: 8px 0 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.6;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__controls {
+      align-items: center;
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin: 40px auto 0;
+      width: 424px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__arrow {
+      align-items: center;
+      border: 0;
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      height: 24px;
+      justify-content: center;
+      padding: 0;
+      width: 24px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__progress {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 999px;
+      height: 1px;
+      position: relative;
+      width: 280px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__progress-thumb {
+      background: #000;
+      border-radius: 999px;
+      height: 3px;
+      left: 0;
+      position: absolute;
+      top: -1px;
+      transition: transform .3s ease, width .3s ease;
+      width: 40px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__mobile {
+      padding: 0 12px 20px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__mobile-grid {
+      column-gap: 20px;
+      display: grid;
+      grid-template-columns: repeat({{ mobile_columns }}, minmax(0, 1fr));
+      row-gap: 16px;
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__mobile-media {
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .shop-by-concerns--{{ section.id }} .shop-by-concerns__mobile-label {
+      margin: 8px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      line-height: 1.571;
+    }
+
+    @media only screen and (max-width: 767px) {
+      .shop-by-concerns--{{ section.id }} {
+        padding-top: {{ section.settings.padding_top_mobile }}px;
+        padding-bottom: {{ section.settings.padding_bottom_mobile }}px;
+      }
+
+      .shop-by-concerns--{{ section.id }} .page-width {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .shop-by-concerns--{{ section.id }} .shop-by-concerns__heading {
+        font-size: 12px;
+        line-height: 1.667;
+        margin: 0;
+        padding: 0 12px 24px;
+      }
+    }
+  </style>
+
+  <script>
+    (function () {
+      var root = document.getElementById('ShopByConcerns-{{ section.id }}');
+      var slider = null;
+      var onResize = null;
+      var onMediaQueryChange = null;
+      var onSectionUnload = null;
+
+      if (!root || typeof Swiper === 'undefined') {
+        return;
+      }
+
+      var sectionRoot = root.closest('.shop-by-concerns');
+      var progress = sectionRoot ? sectionRoot.querySelector('.shop-by-concerns__progress') : null;
+      var thumb = progress ? progress.querySelector('.shop-by-concerns__progress-thumb') : null;
+      var desktopMediaQuery = window.matchMedia('(min-width: 768px)');
+
+      function updateProgress(swiper) {
+        if (!progress || !thumb) {
+          return;
+        }
+
+        var total = Math.max(swiper.slides.length - (swiper.loop ? swiper.loopedSlides * 2 : 0), 1);
+        var visible = swiper.slidesPerViewDynamic
+  ? swiper.slidesPerViewDynamic()
+  : 1;
+        var pages = Math.max(total - visible + 1, 1);
+        var trackWidth = progress.clientWidth;
+        var thumbWidth = Math.max(Math.round(trackWidth / pages), 40);
+        var maxX = Math.max(trackWidth - thumbWidth, 0);
+        var step = pages > 1 ? maxX / (pages - 1) : 0;
+        var current = Math.min(swiper.realIndex || 0, pages - 1);
+
+        thumb.style.width = thumbWidth + 'px';
+        thumb.style.transform = 'translateX(' + Math.round(step * current) + 'px)';
+      }
+
+      function initializeSlider() {
+        if (slider || !desktopMediaQuery.matches) {
+          return;
+        }
+
+        slider = new Swiper(root, {
+          slidesPerView: 'auto',
+          spaceBetween: 40,
+          watchOverflow: true,
+          navigation: {
+            nextEl: '.shop-by-concerns--{{ section.id }} .shop-by-concerns__arrow--next',
+            prevEl: '.shop-by-concerns--{{ section.id }} .shop-by-concerns__arrow--prev'
+          },
+          on: {
+            init: updateProgress,
+            resize: updateProgress,
+            breakpoint: updateProgress,
+            slideChange: function () {
+              updateProgress(this);
+            }
+          }
+        });
+      }
+
+      function destroySlider(force) {
+        if (!slider) {
+          return;
+        }
+
+        if (!force && desktopMediaQuery.matches) {
+          return;
+        }
+
+        slider.destroy(true, true);
+        slider = null;
+      }
+
+      function syncSlider() {
+        if (desktopMediaQuery.matches) {
+          initializeSlider();
+          if (slider) {
+            slider.update();
+            updateProgress(slider);
+          }
+        } else {
+          destroySlider();
+        }
+      }
+
+      function cleanup() {
+        destroySlider(true);
+
+        if (onResize) {
+          window.removeEventListener('resize', onResize);
+        }
+
+        if (desktopMediaQuery) {
+          if (typeof desktopMediaQuery.removeEventListener === 'function' && onMediaQueryChange) {
+            desktopMediaQuery.removeEventListener('change', onMediaQueryChange);
+          } else if (typeof desktopMediaQuery.removeListener === 'function' && onMediaQueryChange) {
+            desktopMediaQuery.removeListener(onMediaQueryChange);
+          }
+        }
+
+        if (onSectionUnload) {
+          document.removeEventListener('shopify:section:unload', onSectionUnload);
+        }
+      }
+
+      onResize = function () {
+        syncSlider();
+      };
+
+      onMediaQueryChange = function () {
+        syncSlider();
+      };
+
+      onSectionUnload = function (event) {
+        if (!event || event.detail.sectionId !== '{{ section.id }}') {
+          return;
+        }
+
+        cleanup();
+      };
+
+      if (typeof desktopMediaQuery.addEventListener === 'function') {
+        desktopMediaQuery.addEventListener('change', onMediaQueryChange);
+      } else if (typeof desktopMediaQuery.addListener === 'function') {
+        desktopMediaQuery.addListener(onMediaQueryChange);
+      }
+
+      window.addEventListener('resize', onResize);
+      document.addEventListener('shopify:section:unload', onSectionUnload);
+      syncSlider();
+    })();
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Shop By Concerns",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "SHOP BY CONCERNS"
+    },
+    {
+      "type": "range",
+      "id": "desktop_items",
+      "label": "Desktop visible items",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile columns",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "range",
+      "id": "mobile_items",
+      "label": "Mobile items to show",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 9
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Desktop padding top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Desktop padding bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "label": "Mobile padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "label": "Mobile padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "concern",
+      "name": "Concern",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "desktop_image",
+          "label": "Desktop image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop By Concerns"
+    }
+  ]
+}
+{% endschema %}

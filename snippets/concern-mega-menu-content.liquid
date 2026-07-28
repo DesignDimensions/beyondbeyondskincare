@@ -1,0 +1,145 @@
+{%- liquid
+  assign rendered_cards = 0
+  assign menu_variant = menu_variant | default: blank
+  if menu_variant == 'sets_offers'
+    assign product_limit = block.settings.sets_offers_desktop_items | default: 4
+    assign configured_heading = block.settings.sets_offers_heading
+    assign configured_collection = block.settings.sets_offers_collection
+    assign show_all_label = block.settings.sets_offers_show_all_label
+    assign show_all_link = block.settings.sets_offers_show_all_link
+  else
+    assign product_limit = block.settings.concern_desktop_items | default: 4
+    assign configured_heading = block.settings.concern_heading
+    assign configured_collection = block.settings.concern_collection
+    assign show_all_label = block.settings.concern_show_all_label
+    assign show_all_link = block.settings.concern_show_all_link
+  endif
+-%}
+
+<div class="concern-mega" style="--concern-mobile-items: {% if menu_variant == 'sets_offers' %}{{ block.settings.sets_offers_mobile_items | default: 2 }}{% else %}{{ block.settings.concern_mobile_items | default: 2 }}{% endif %};">
+  {%- if configured_heading != blank -%}
+    <h3 class="concern-mega__heading">{{ configured_heading }}</h3>
+  {%- endif -%}
+  <div class="concern-mega__grid">
+    {%- if menu_variant == 'sets_offers' and block.settings.sets_offers_products != blank -%}
+      {%- for mega_product in block.settings.sets_offers_products limit: product_limit -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        <article class="concern-card" data-concern-card>
+          <a href="{{ mega_product.url }}" class="concern-card__media-wrap">
+            
+            <div class="concern-card__image-frame">
+              {%- if mega_product.images.size > 1 -%}
+                {{ mega_product.images[0] | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: mega_product.title | escape }}
+                {{ mega_product.images[1] | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--secondary', alt: mega_product.title | escape }}
+              {%- elsif mega_product.featured_image != blank -%}
+                {{ mega_product.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: mega_product.title | escape }}
+              {%- endif -%}
+            </div>
+          </a>
+          <div class="concern-card__body">
+            <a href="{{ mega_product.url }}" class="concern-card__title">{{ mega_product.title }}</a>
+            <div class="concern-card__meta-row">
+              <div class="concern-card__price-wrap">
+                {%- if mega_product.compare_at_price > mega_product.price -%}<span class="concern-card__compare">{{ mega_product.compare_at_price | money_without_trailing_zeros }}</span>{%- endif -%}
+                <span class="concern-card__price">{{ mega_product.price | money_without_trailing_zeros }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      {%- endfor -%}
+    {%- elsif menu_variant != 'sets_offers' and block.settings.concern_products != blank -%}
+      {%- for mega_product in block.settings.concern_products limit: product_limit -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        <article class="concern-card" data-concern-card>
+          <a href="{{ mega_product.url }}" class="concern-card__media-wrap">
+            <div class="concern-card__image-frame">
+              {%- if mega_product.images.size > 1 -%}
+                {{ mega_product.images[0] | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: mega_product.title | escape }}
+                {{ mega_product.images[1] | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--secondary', alt: mega_product.title | escape }}
+              {%- elsif mega_product.featured_image != blank -%}
+                {{ mega_product.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: mega_product.title | escape }}
+              {%- endif -%}
+            </div>
+          </a>
+          <div class="concern-card__body">
+            <a href="{{ mega_product.url }}" class="concern-card__title">{{ mega_product.title }}</a>
+            <div class="concern-card__meta-row">
+              <div class="concern-card__price-wrap">
+                {%- if mega_product.compare_at_price > mega_product.price -%}<span class="concern-card__compare">{{ mega_product.compare_at_price | money_without_trailing_zeros }}</span>{%- endif -%}
+                <span class="concern-card__price">{{ mega_product.price | money_without_trailing_zeros }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- for childlink in link.links -%}
+      {%- if rendered_cards >= product_limit -%}{% break %}{%- endif -%}
+      {%- assign mega_product = blank -%}
+      {%- if childlink.type == 'product_link' and childlink.object -%}
+        {%- assign mega_product = childlink.object -%}
+      {%- elsif childlink.type == 'collection_link' and childlink.object and childlink.object.products_count > 0 -%}
+        {%- assign mega_product = childlink.object.products.first -%}
+      {%- endif -%}
+      {%- if mega_product != blank -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        <article class="concern-card" data-concern-card>
+          <a href="{{ mega_product.url }}" class="concern-card__media-wrap">
+            <div class="concern-card__badges">
+              <span class="concern-card__badge">BESTSELLER</span>
+              {%- if mega_product.compare_at_price > mega_product.price -%}
+                {%- assign diff = mega_product.compare_at_price | minus: mega_product.price -%}
+                {%- assign pct = diff | times: 100 | divided_by: mega_product.compare_at_price -%}
+                <span class="concern-card__badge concern-card__badge--offer">-{{ pct }}% OFF</span>
+              {%- endif -%}
+            </div>
+            <div class="concern-card__image-frame">
+              {%- if mega_product.images.size > 1 -%}
+                {{ mega_product.images[0] | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: mega_product.title | escape }}
+                {{ mega_product.images[1] | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--secondary', alt: mega_product.title | escape }}
+              {%- elsif mega_product.featured_image != blank -%}
+                {{ mega_product.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: mega_product.title | escape }}
+              {%- endif -%}
+            </div>
+          </a>
+          <div class="concern-card__body">
+            <a href="{{ mega_product.url }}" class="concern-card__title">{{ mega_product.title }}</a>
+            <div class="concern-card__meta-row">
+              <div class="concern-card__price-wrap">
+                {%- if mega_product.compare_at_price > mega_product.price -%}<span class="concern-card__compare">{{ mega_product.compare_at_price | money_without_trailing_zeros }}</span>{%- endif -%}
+                <span class="concern-card__price">{{ mega_product.price | money_without_trailing_zeros }}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if rendered_cards < product_limit and configured_collection != blank -%}
+      {%- for fallback_product in configured_collection.products limit: product_limit -%}
+        {%- if rendered_cards >= product_limit -%}{% break %}{%- endif -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        <article class="concern-card">
+          <a href="{{ fallback_product.url }}" class="concern-card__media-wrap">
+            <div class="concern-card__badges"><span class="concern-card__badge">BESTSELLER</span></div>
+            <div class="concern-card__image-frame">
+              {{ fallback_product.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', class: 'concern-card__image concern-card__image--primary', alt: fallback_product.title | escape }}
+            </div>
+          </a>
+          <div class="concern-card__body">
+            <a href="{{ fallback_product.url }}" class="concern-card__title">{{ fallback_product.title }}</a>
+            <div class="concern-card__meta-row">
+              <div class="concern-card__price-wrap"><span class="concern-card__price">{{ fallback_product.price | money_without_trailing_zeros }}</span></div>
+            </div>
+          </div>
+        </article>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+
+  {%- if show_all_label != blank -%}
+    {%- assign show_all_url = show_all_link | default: link.url -%}
+    <a href="{{ show_all_url }}" class="concern-mega__show-all">{{ show_all_label }}</a>
+  {%- endif -%}
+</div>

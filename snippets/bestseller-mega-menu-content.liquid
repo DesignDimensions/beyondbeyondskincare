@@ -1,0 +1,88 @@
+{%- liquid
+  assign rendered_cards = 0
+  assign product_limit = block.settings.bestseller_desktop_items | default: 4
+-%}
+
+<div class="bestseller-mega" style="--bestseller-mobile-items: {{ block.settings.bestseller_mobile_items | default: 2 }}; --bestseller-desktop-items: {{ block.settings.bestseller_desktop_items | default: 4 }};">
+  {%- if block.settings.bestseller_heading != blank -%}
+    <h3 class="bestseller-mega__heading">{{ block.settings.bestseller_heading }}</h3>
+  {%- endif -%}
+
+  <div class="bestseller-mega__grid">
+    {%- if block.settings.bestseller_products != blank -%}
+      {%- for mega_product in block.settings.bestseller_products limit: product_limit -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        {% render 'bestseller-card', product: mega_product, card_label: 'BESTSELLER', size_source: 'variant' %}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- for childlink in link.links -%}
+      {%- if rendered_cards >= product_limit -%}{% break %}{%- endif -%}
+      {%- assign mega_product = blank -%}
+      {%- if childlink.type == 'product_link' and childlink.object -%}
+        {%- assign mega_product = childlink.object -%}
+      {%- elsif childlink.type == 'collection_link' and childlink.object and childlink.object.products_count > 0 -%}
+        {%- assign mega_product = childlink.object.products.first -%}
+      {%- endif -%}
+
+      {%- if mega_product != blank -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        {% render 'bestseller-card', product: mega_product, card_label: 'BESTSELLER', size_source: 'variant' %}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if rendered_cards < product_limit and block.settings.bestseller_collection != blank -%}
+      {%- for fallback_product in block.settings.bestseller_collection.products limit: product_limit -%}
+        {%- if rendered_cards >= product_limit -%}{% break %}{%- endif -%}
+        {%- assign rendered_cards = rendered_cards | plus: 1 -%}
+        {% render 'bestseller-card', product: fallback_product, card_label: 'BESTSELLER', size_source: 'variant' %}
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+
+  {%- assign show_all_url = block.settings.bestseller_show_all_link | default: link.url -%}
+  <a href="{{ show_all_url }}" class="bestseller-mega__show-all">
+    <span class="bestseller-mega__show-all-icon">&#10077;&#9679;</span>
+    <span>{{ block.settings.bestseller_show_all_label | default: 'Show All' }}</span>
+  </a>
+</div>
+
+<script>
+  (() => {
+    const scope = document.currentScript && document.currentScript.previousElementSibling;
+    if (!scope || scope.dataset.bestsellerInit === '1') return;
+    scope.dataset.bestsellerInit = '1';
+    scope.querySelectorAll('[data-bestseller-card]').forEach((card) => {
+      const slides = Array.from(card.querySelectorAll('[data-bestseller-slide]'));
+      const dotsWrap = card.querySelector('[data-bestseller-dots]');
+      const prev = card.querySelector('[data-bestseller-prev]');
+      const next = card.querySelector('[data-bestseller-next]');
+      if (!slides.length) return;
+      let idx = 0;
+      const setSlide = (n) => {
+        idx = (n + slides.length) % slides.length;
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+        if (dotsWrap) {
+          dotsWrap.querySelectorAll('button').forEach((d, i) => d.classList.toggle('is-active', i === idx));
+        }
+      };
+      if (dotsWrap) {
+        if (slides.length < 2) {
+          dotsWrap.hidden = true;
+        }
+        dotsWrap.innerHTML = slides.map((_, i) => `<button type="button" class="${i === 0 ? 'is-active' : ''}" aria-label="Slide ${i + 1}"></button>`).join('');
+        dotsWrap.querySelectorAll('button').forEach((dot, i) => dot.addEventListener('click', () => setSlide(i)));
+      }
+      if (slides.length < 2) {
+        if (prev) prev.style.display = 'none';
+        if (next) next.style.display = 'none';
+        if (dotsWrap) dotsWrap.style.display = 'none';
+      } else {
+        prev && prev.addEventListener('click', (e) => { e.preventDefault(); setSlide(idx - 1); });
+        next && next.addEventListener('click', (e) => { e.preventDefault(); setSlide(idx + 1); });
+      }
+      setSlide(0);
+    });
+  })();
+</script>
+

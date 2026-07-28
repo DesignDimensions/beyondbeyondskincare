@@ -1,0 +1,112 @@
+{% if product.metafields.custom.what_it_does_title_1 != blank or product.metafields.custom.what_it_does_description_1 != blank %}
+<div class="productFAQs" id="whatItDoess">
+  <div class="section__header">
+    {% if product.metafields.custom.what_it_does_heading != blank %}
+    <h4 class="sub_title_name">{{ product.metafields.custom.what_it_does_heading }}</h4>
+    {% else %}
+    <h4 class="sub_title_name">What Makes It Special?</h4>
+    {% endif %}
+  </div>
+  <div class="faqsList">
+      {% comment %} <div class="accordion_container">
+        <div class="accordion_head">
+          Rich Buttery Texture
+        </div>
+        <div class="accordion_body">
+          More than just a moisturiser, The Ultimate Night Repair SuperCream is intentionally formulated with a rich, buttery texture that deeply nourishes while locking in essential moisture - ensuring you wake up with skin that feels soft, supple, and replenished.
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Clean Clinical Formulation
+        </div>
+        <div class="accordion_body">
+          Our Clean Clinical Formulation combines the best of science and safety - powerful, research-backed actives without the unnecessary additives. Free from parabens, sulfates, and artificial fragrances, our products are designed to deliver visible results while being gentle on your skin. Clean, effective, and uncompromising - because skincare should simply work.
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Ingredients
+        </div>
+        <div class="accordion_body">
+          Squalane, Aqua, Caprylic/Capric Triglyceride, Petrolatum, Cyclopentasiloxane, Propylene Glycol, Ceteareth 25, Glycerin, Microcrystalline Wax, Glyceryl Monostearate. Polyglyceryl-2 Isostearate, Synthetic wax, Cetearyl Alcohol, Cetyl Alcohol, Maltodextrin, Allantoin, Butyrospermum Parkii, (Shea) Butter, Phenoxyethanol, Theobroma Cacao (Cocoa) Seed Butter, Panthenol, Disodium Ethylenediaminetetraacetate Ethylhexylglycerin, Sunflower sprout Extract, CI 47000, CI 26100
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          You Sleep. We Work
+        </div>
+        <div class="accordion_body">
+          While you sleep, The Ultimate Night Repair SuperCream goes into overdrive. NAD+ and high-grade Squalane work through the night to repair damage, restore hydration, and rebuild your skin's strength at a cellular level. No effort, no extra steps - just potent overnight renewal. Wake up to skin that's firmer, smoother, and visibly revived. Because while you sleep, we're hard at work.
+        </div>
+      </div> {% endcomment %}
+
+      {% if product.metafields.custom.what_it_does_title_1 != blank or product.metafields.custom.what_it_does_description_1 != blank %}
+      <div class="accordion_container">
+        <div class="accordion_head">
+          {{ product.metafields.custom.what_it_does_title_1 }}
+        </div>
+        <div class="accordion_body">
+          {{ product.metafields.custom.what_it_does_description_1 }}  
+        </div>
+      </div>
+    {% endif %}
+
+    {% if product.metafields.custom.what_it_does_title_2 != blank or product.metafields.custom.what_it_does_description_2 != blank %}
+      <div class="accordion_container">
+        <div class="accordion_head">
+          {{ product.metafields.custom.what_it_does_title_2 }}
+        </div>
+        <div class="accordion_body">
+          {{ product.metafields.custom.what_it_does_description_2 }}  
+        </div>
+      </div>
+    {% endif %}
+
+    {% if product.metafields.custom.what_it_does_title_3 != blank or product.metafields.custom.what_it_does_description_3 != blank %}
+      <div class="accordion_container">
+        <div class="accordion_head">
+          {{ product.metafields.custom.what_it_does_title_3 }}
+        </div>
+        <div class="accordion_body">
+          {{ product.metafields.custom.what_it_does_description_3 }}  
+        </div>
+      </div>
+    {% endif %}
+
+    {% if product.metafields.custom.what_it_does_title_4 != blank or product.metafields.custom.what_it_does_description_4 != blank %}
+      <div class="accordion_container">
+        <div class="accordion_head">
+          {{ product.metafields.custom.what_it_does_title_4 }}
+        </div>
+        <div class="accordion_body">
+          {{ product.metafields.custom.what_it_does_description_4 }}  
+        </div>
+      </div>
+    {% endif %}
+
+    {% if product.metafields.custom.what_it_does_title_5 != blank or product.metafields.custom.what_it_does_description_5 != blank %}
+      <div class="accordion_container">
+        <div class="accordion_head">
+          {{ product.metafields.custom.what_it_does_title_5 }}
+        </div>
+        <div class="accordion_body">
+          {{ product.metafields.custom.what_it_does_description_5 }}  
+        </div>
+      </div>
+    {% endif %}
+
+    {% if product.metafields.custom.what_it_does_title_6 != blank or product.metafields.custom.what_it_does_description_6 != blank %}
+      <div class="accordion_container">
+        <div class="accordion_head">
+          {{ product.metafields.custom.what_it_does_title_6 }}
+        </div>
+        <div class="accordion_body">
+          {{ product.metafields.custom.what_it_does_description_6 }}  
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endif %}

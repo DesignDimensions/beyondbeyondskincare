@@ -1,0 +1,122 @@
+{% if section.settings.show_press_section != blank %}
+<div class="press_sec">
+  <div class="page-width">
+    {% if section.settings.title != blank %}
+      <div class="section__header">
+        <h3 class="sub_title_name">{{ section.settings.title }}</h3>
+      </div>
+    {% endif %}
+    </div>
+    {% if section.settings.desktop_banner != blank or section.settings.mobile_banner != blank %}
+    <div class="press_banner">
+        <img src="{{ section.settings.desktop_banner |img_url:"master" }}" class="hidden-xs">
+        <img src="{{ section.settings.mobile_banner |img_url:"master" }}" class="visible-xs">
+    </div>
+    {% endif %}
+    <div class="page-width">
+        <div class="pressLists">
+        {% for block in section.blocks %}
+            <div class="item_d">
+                {% if block.settings.image != blank %}
+                <div class="img_d">
+                    <img src="{{ block.settings.image | img_url:"master" }}">
+                </div>
+            {% endif %}
+                <div class="info_d">
+                    {% if block.settings.date != blank %}
+                    <div class="date_d">{{ block.settings.date }}</div>
+                    {% endif %}
+                    {% if block.settings.title != blank %}
+                    <div class="press_title">{{ block.settings.title }}</div>
+                    {% endif %}
+                    {% if block.settings.sub_title != blank %}
+                    <div class="press_sub_title">{{ block.settings.sub_title }}</div>
+                    {% endif %}
+                    {% if block.settings.link_text != blank %}
+                    <div class="action_d">
+                        <a href="{{ block.settings.link }}">{{ block.settings.link_text }}</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+  </div>
+{% endif %}
+{% schema %}
+{
+  "name": "Press Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_press_section",
+      "label": "Show Press Sec",
+      "default": true,
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_banner",
+      "label": "Desktop Banner"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_banner",
+      "label": "Mobile Banner"
+    },
+  ],
+  "blocks": [
+    {
+      "type": "press",
+      "name": "press",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "image_picker",
+          "id": "mobile_banner",
+          "label": "Mobile Banner"
+        },
+        {
+          "type": "text",
+          "id": "date",
+          "label": "Date"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "textarea",
+          "id": "sub_title",
+          "label": "Sub Title"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Link Text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Press Sec"
+    }
+  ]
+}
+{% endschema %}

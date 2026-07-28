@@ -1,0 +1,173 @@
+{%- liquid
+  assign discount_coupon_blocks = section.blocks | where: 'type', 'discount_coupon'
+-%}
+
+{%- if discount_coupon_blocks.size > 0 -%}
+{%- if discount_coupon_blocks.size == 1 -%}
+  <style>
+    .product-discount-coupons--single{
+      max-width: 46rem;
+    }
+    .product-discount-out-div{
+      padding-left: 0rem;
+      padding-right: 0rem;
+    }
+  </style>
+{%- endif -%}
+  <div class="product-discount-coupons" data-product-discount-coupons="{{ section.id }}">
+    {%- if discount_coupon_blocks.size > 1 -%}
+      <div class="product-discount-coupons__slider product-discount-coupons__slider--{{ section.id }} swiper">
+        <div class="swiper-wrapper">
+    {%- else -%}
+      <div class="product-discount-coupons__slider product-discount-coupons__slider--{{ section.id }} {% if discount_coupon_blocks.size == 1 %} product-discount-out-div{% endif %}">
+    {%- endif -%}
+
+    {%- for block in discount_coupon_blocks -%}
+      {%- if discount_coupon_blocks.size > 1 -%}
+        <div class="swiper-slide">
+      {%- endif -%}
+          <article class="product-discount-coupons__card {% if discount_coupon_blocks.size == 1 %} product-discount-coupons--single{% endif %}" {{ block.shopify_attributes }}>
+            <div class="product-discount-coupons__content">
+              <div class="product-discount-coupons__heading-row">
+                <div class="product-discount-coupons__heading-stack">
+                  {%- if block.settings.kicker != blank -%}
+                    <p class="product-discount-coupons__kicker">{{ block.settings.kicker | escape }}</p>
+                  {%- endif -%}
+                  {%- if block.settings.title != blank -%}
+                    <h4 class="product-discount-coupons__title">{{ block.settings.title | escape }}</h4>
+                  {%- endif -%}
+                </div>
+                {%- if block.settings.coupon_code != blank -%}
+                  <button
+                    type="button"
+                    class="product-discount-coupons__copy"
+                    data-coupon-copy="{{ block.settings.coupon_code | escape }}"
+                    aria-label="Copy coupon code"
+                  >
+                    <span class="product-discount-coupons__copy-icon" aria-hidden="true">
+                      <img src="{{ 'Vector (1).png' | asset_url }}" alt="" loading="lazy">
+                    </span>
+                    <span class="product-discount-coupons__copy-status" aria-hidden="true">Copied</span>
+                    <span class="visually-hidden">{{ block.settings.coupon_code | escape }}</span>
+                  </button>
+                {%- endif -%}
+              </div>
+              {%- if block.settings.coupon_discount_text != blank -%}
+                <h4 class="product-discount-coupon_discount_text">{{ block.settings.coupon_discount_text | escape }}</h4>
+                <div class="coupon-divider"></div>
+              {%- endif -%}
+              {%- if block.settings.text != blank -%}
+                <div class="product-discount-coupons__text rte">{{ block.settings.text }}</div>
+              {%- endif -%}
+            </div>
+            {%- if block.settings.image != blank -%}
+              <div class="product-discount-coupons__media">
+                {{ block.settings.image | image_url: width: 800 | image_tag: loading: 'lazy', alt: block.settings.image.alt | default: block.settings.title | escape }}
+              </div>
+            {%- endif -%}
+          </article>
+      {%- if discount_coupon_blocks.size > 1 -%}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+
+    </div>
+
+    {%- if discount_coupon_blocks.size > 1 -%}
+      <div class="slider-buttons no-js-hidden product-discount-coupons__buttons discount-coupon_slider_buttons">
+        <button type="button" class="slider-button slider-button--prev" name="previous" aria-label="{{ 'general.slider.previous_slide' | t }}" disabled="disabled">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-chevron-left">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button type="button" class="slider-button slider-button--next" name="next" aria-label="{{ 'general.slider.next_slide' | t }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-chevron-right">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    {%- endif -%}
+  </div>
+
+  <script>
+    (function() {
+      var currentScript = document.currentScript;
+      if (!currentScript) return;
+      var container = document.querySelector('[data-product-discount-coupons="{{ section.id }}"]');
+      if (!container) return;
+
+      container.addEventListener('click', function(event) {
+        var button = event.target.closest('[data-coupon-copy]');
+        if (!button || !container.contains(button)) return;
+        var couponCode = button.getAttribute('data-coupon-copy');
+        if (!couponCode) return;
+
+        var copyText = function(text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
+          }
+
+          var fallbackInput = document.createElement('textarea');
+          fallbackInput.value = text;
+          fallbackInput.setAttribute('readonly', '');
+          fallbackInput.style.position = 'absolute';
+          fallbackInput.style.left = '-9999px';
+          document.body.appendChild(fallbackInput);
+          fallbackInput.select();
+          document.execCommand('copy');
+          document.body.removeChild(fallbackInput);
+          return Promise.resolve();
+        };
+
+        copyText(couponCode).then(function() {
+          button.classList.add('is-copied');
+          window.clearTimeout(button._copyTimer);
+          button._copyTimer = window.setTimeout(function() {
+            button.classList.remove('is-copied');
+          }, 1500);
+        });
+      });
+
+      {%- if discount_coupon_blocks.size > 1 -%}
+        var sliderElement = container.querySelector('.product-discount-coupons__slider');
+        var tries = 0;
+
+        var initSlider = function() {
+          if (!sliderElement || sliderElement.dataset.initialized === 'true') return;
+          if (typeof Swiper === 'undefined') {
+            tries += 1;
+            if (tries < 40) {
+              window.setTimeout(initSlider, 50);
+            }
+            return;
+          }
+
+          sliderElement.dataset.initialized = 'true';
+
+          new Swiper(sliderElement, {
+            slidesPerView: 1,
+            spaceBetween: 46,
+            watchOverflow: true,
+            grabCursor: true,
+            navigation: {
+              nextEl: container.querySelector('.slider-button--next'),
+              prevEl: container.querySelector('.slider-button--prev')
+            },
+            breakpoints: {
+              750: {
+                slidesPerView: 'auto',
+                spaceBetween: 46
+              },
+              990: {
+                slidesPerView: 'auto',
+                spaceBetween: 46
+              }
+            }
+          });
+        };
+
+        initSlider();
+      {%- endif -%}
+    })();
+  </script>
+{%- endif -%}

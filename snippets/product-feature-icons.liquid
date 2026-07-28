@@ -1,0 +1,24 @@
+{%- liquid
+  assign feature_icon_blocks = section.blocks | where: 'type', 'feature_icon'
+-%}
+
+{%- if feature_icon_blocks.size > 0 -%}
+  <div class="product-feature-icons">
+    <div class="product-feature-icons__grid">
+      {%- for block in feature_icon_blocks -%}
+        <div class="product-feature-icons__item" {{ block.shopify_attributes }}>
+          <span class="product-feature-icons__icon">
+            {%- if block.settings.image != blank -%}
+              {{ block.settings.image | image_url: width: 180 | image_tag: loading: 'lazy', class: 'product-feature-icons__image', alt: block.settings.label | escape }}
+            {%- elsif block.settings.icon != blank and block.settings.icon != 'none' -%}
+              {% render 'icon-accordion', icon: block.settings.icon %}
+            {%- endif -%}
+          </span>
+          {%- if block.settings.label != blank -%}
+            <span class="product-feature-icons__label">{{ block.settings.label | escape }}</span>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}

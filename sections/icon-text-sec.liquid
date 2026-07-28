@@ -1,0 +1,217 @@
+{% if section.settings.show_icon_with_text_sec %}
+  {% liquid
+    assign desktop_columns = section.settings.columns_desktop | at_least: 2 | at_most: 6
+    assign mobile_columns = section.settings.columns_mobile | at_least: 1 | at_most: 3
+  %}
+  <section class="no-nasties no-nasties-{{ section.id }}" id="NoNasties-{{ section.id }}">
+    <div class="page-width">
+      {% if section.settings.heading != blank %}
+        <h2 class="no-nasties__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+      <div class="no-nasties__grid" role="list">
+        {% for block in section.blocks %}
+          <div class="no-nasties__item" role="listitem" {{ block.shopify_attributes }}>
+            {% if block.settings.icon_image != blank %}
+              <div class="no-nasties__media">
+                {{
+                  block.settings.icon_image
+                  | image_url: width: 160
+                  | image_tag: loading: 'lazy', widths: '64,80,120,160', class: 'no-nasties__image'
+                }}
+              </div>
+            {% endif %}
+            {% if block.settings.title != blank %}
+              <p class="no-nasties__label">{{ block.settings.title }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+<style>
+  .no-nasties-{{ section.id }} {
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+  }
+
+  .no-nasties-{{ section.id }} .no-nasties__heading {
+    margin: 0 0 50px;
+    text-align: center;
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .no-nasties-{{ section.id }} .no-nasties__grid {
+    display: grid;
+    grid-template-columns: repeat({{ desktop_columns }}, minmax(0, 1fr));
+    gap: 28px 24px;
+    justify-items: center;
+  }
+
+  .no-nasties-{{ section.id }} .no-nasties__item {
+    text-align: center;
+    width: 100%;
+    max-width: 160px;
+  }
+
+  .no-nasties-{{ section.id }} .no-nasties__media {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .no-nasties-{{ section.id }} .no-nasties__image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+
+  .no-nasties-{{ section.id }} .no-nasties__label {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  @media screen and (max-width: 395px) {
+    .no-nasties-{{ section.id }} .no-nasties__heading{
+      text-align: left
+    }
+  }
+
+  @media screen and (max-width: 989px) {
+    .no-nasties-{{ section.id }} .no-nasties__heading {
+      margin-bottom: 24px;
+      font-size: 28px;
+      line-height: 1.2;
+    }
+
+    .no-nasties-{{ section.id }} .no-nasties__grid {
+      grid-template-columns: repeat({{ mobile_columns }}, minmax(0, 1fr));
+      gap: 20px 12px;
+    }
+
+    .no-nasties-{{ section.id }} .no-nasties__media {
+      height: 64px;
+      margin-bottom: 12px;
+    }
+
+    .no-nasties-{{ section.id }} .no-nasties__image {
+      width: 64px;
+      height: 64px;
+    }
+
+    .no-nasties-{{ section.id }} .no-nasties__label {
+      font-size: 14px;
+      line-height: 1.35;
+    }
+  }
+</style>
+{% endif %}
+{% schema %}
+{
+  "name": "Icon Text Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_icon_with_text_sec",
+      "label": "Show Icon With Text Sec",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "header",
+      "content": "Legacy media settings"
+    },
+    {
+      "type": "textarea",
+      "id": "bg_video",
+      "label": "Background Video (legacy)"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_banner",
+      "label": "Desktop Banner (legacy)"
+    },
+    {
+      "type": "image_picker",
+      "id": "desk_banner",
+      "label": "Desktop Banner Alt (legacy)"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_banner",
+      "label": "Mobile Banner (legacy)"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "icon_block",
+      "name": "Icon Block",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "Icon"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Title"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Icon Text Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

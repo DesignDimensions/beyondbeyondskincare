@@ -1,0 +1,94 @@
+{% if section.settings.show_image_text_sec != blank %}
+<div class="homeNADSec">
+  <div class="page-width">
+    <div class="inner_d">
+      <div class="content_d">
+        <div class="title_n_desc">
+          {% if section.settings.title != blank %}
+          <h3 class="title_name">{{ section.settings.title }}</h3>
+          {% endif %}
+           {% if section.settings.short_description != blank %}
+          <div class="short_desc">{{ section.settings.short_description }}</div>
+           {% endif %}
+        </div>
+        {% if section.settings.description != blank %}
+        <div class="desc">
+          {{ section.settings.description }}
+        </div>
+        {% endif %}
+        {% if section.settings.button_text != blank %}
+        <div class="action_d">
+          <a href="{{ section.settings.button_link }}">
+          <svg width="39" height="26" viewBox="0 0 39 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.5664 11.2031C16.5645 9.65743 16.7291 8.13521 17.1795 6.6506C17.9817 4.00625 19.5816 2.06878 22.1678 0.996971C23.6123 0.398536 25.1238 0.144018 26.6749 0.037521C27.9885 -0.052855 29.2904 0.0238423 30.583 0.226578C32.4643 0.521643 34.222 1.13815 35.6973 2.39804C36.753 3.29985 37.5151 4.40928 38.0393 5.69555C38.6773 7.25978 38.9157 8.89779 38.9841 10.5675C39.0632 12.4987 38.8551 14.399 38.2322 16.2353C37.5312 18.3003 36.2635 19.9271 34.3544 21.0111C33.307 21.6061 32.1736 21.9725 30.9851 22.1855C29.7955 22.399 28.5982 22.5187 27.3935 22.4781C26.0794 22.4337 24.7779 22.2842 23.499 21.9344C22.3759 21.6271 21.3383 21.1581 20.3945 20.4889C19.1649 19.6164 18.2665 18.4654 17.6529 17.0917C16.8156 15.2168 16.565 13.2334 16.5664 11.2036V11.2031Z" fill="black"/>
+          <path d="M7.29849 2.28085e-05C11.9428 0.0112587 15.0718 3.90866 15.0576 9.809C15.0415 16.4612 10.8837 22.4768 4.09918 25.3478L3.72498 24.5921C6.36298 22.8417 8.00098 20.2086 8.00636 18.0757C8.01808 13.3058 -0.0151227 13.2863 2.13852e-05 7.01027C0.00930324 3.12068 3.15536 -0.00974757 7.29849 2.28085e-05Z" fill="black"/>
+          </svg>
+          {{ section.settings.button_text }}
+          </a>
+        </div>
+        {% endif %}
+      </div>
+      {% if section.settings.desktop_image != blank or  section.settings.mobile_image != blank %}
+      <div class="img_d">
+        <img src="{{ section.settings.desktop_image | img_url:"master" }}" class="w_100 hidden-xs">
+        <img src="{{ section.settings.mobile_image | img_url:"master" }}" class="w_100 visible-xs">
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% schema %}
+{
+  "name": "Image Text Sec",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_image_text_sec",
+      "label": "Show Image Text Sec",
+      "default": true
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "title"
+    },
+    {
+      "type": "textarea",
+      "id": "short_description",
+      "label": "Short Description"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "description"
+    },
+     {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text"
+    },
+     {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "image_picker",
+      "id": "desktop_image",
+      "label": "Desktop Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile Image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home NAD Sec",
+      "category": "Custom"
+    }
+  ]
+}
+{% endschema %}

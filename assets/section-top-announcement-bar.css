@@ -1,0 +1,97 @@
+/* Top header announcement bar (Figma node 9:2184) */
+.shopify-section-top-announcement-bar .top-header-announcement {
+  background: var(--gradient-background);
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .page-width {
+  max-width: 100%;
+  padding-inline: 64px;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement-slider {
+  height: 28px;
+  width: auto;
+  min-width: 420px;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement announcement-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 40px;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .flickity-viewport {
+  height: 28px !important;
+  min-width: 420px;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement-text {
+  font-size: var(--font-size);
+  line-height: 28px;
+  letter-spacing: 0.4px;
+  font-weight: 500;
+  display: inline;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement-text strong {
+  font-weight: 700;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement__button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  border: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement__button .icon {
+  width: 8px;
+  height: 8px;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement__button--next .icon {
+  transform: scaleX(-1);
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement announcement-bar .flickity-enabled:not(:only-child) {
+  padding: 0;
+}
+
+.shopify-section-top-announcement-bar .top-header-announcement .announcement-slider__slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  width: auto;
+  min-width: 420px;
+}
+
+@media screen and (max-width: 749px) {
+  .shopify-section-top-announcement-bar .top-header-announcement .page-width {
+    padding-inline: 16px;
+  }
+
+  .shopify-section-top-announcement-bar .top-header-announcement announcement-bar {
+    column-gap: 16px;
+  }
+
+  .shopify-section-top-announcement-bar .top-header-announcement .announcement-text {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .shopify-section-top-announcement-bar .top-header-announcement .announcement-slider,
+  .shopify-section-top-announcement-bar .top-header-announcement .flickity-viewport,
+  .shopify-section-top-announcement-bar .top-header-announcement .announcement-slider__slide {
+    min-width: 220px;
+  }
+}

@@ -1,0 +1,558 @@
+{% comment %} <div class="proSingleBannerSec">
+  <div class="img_d">
+    <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Frame_943.png?v=1752562251" class="hidden-xs">
+    <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Frame_391.png?v=1752562251" class="visible-xs">
+  </div>
+</div> {% endcomment %}
+
+{% comment %} {% if product.metafields.custom.desktop_banner != blank or product.metafields.custom.mobile_banner != blank %}
+<div class="bannerWithVideoSec">
+  <a href="javascript:void(0);" class="" id="triggerVideo111">
+    {% if product.metafields.custom.desktop_banner != blank or product.metafields.custom.mobile_banner != blank %}
+    <div class="img_d">
+        {% if product.metafields.custom.desktop_banner != blank %}
+        <img src="{{ product.metafields.custom.desktop_banner | img_url:"master" }}" class="hidden-xs">
+        {% endif %}
+        {% if product.metafields.custom.mobile_banner != blank %}
+        <img src="{{ product.metafields.custom.mobile_banner | img_url:"master" }}" class="visible-xs">
+        {% endif %}
+    </div>
+    {% endif %}
+  </a>
+</div>
+{% endif %} {% endcomment %}
+
+{% if product.metafields.custom.ingredients_list != blank or product.metafields.custom.ingredient_desktop_image != blank or product.metafields.custom.ingredient_mobile_image != blank %}
+<div class="ingredientsOverviewSec">
+  <div class="page-width">
+    <div class="section_header">
+      <h3 class="sub_title_name">Ingredients Overview</h3>
+    </div>
+    <div class="content__d">
+      <div class="info_d">
+        <div class="ingredientLists">
+          {% if product.metafields.custom.ingredients_list != blank %}
+            {% for ingredient in product.metafields.custom.ingredients_list.value %}
+              {% assign parts = ingredient | split: '<!- Split -!>' %}
+              <div class="item_d">
+                {{ parts.first | strip }}
+                <span class="ingreInfo" data-info="{{ parts.last | strip }}">{%render 'info-icon' %}</span>
+                {% comment %} {% unless forloop.last %},{% endunless %} {% endcomment %}
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% comment %} <div class="item_d">
+            Niacinamide<span class="ingreInfo" data-info="Improves texture and strengthens skin barrier.">{%render 'info-icon' %}</span>
+          </div> {% endcomment %}
+        </div>
+        <div class="tooltip"></div>
+        <div class="action_d actionIcon_d">
+            <a href="javascript:void(0);" class="" id="triggerVideo">
+                <svg width="28" height="27" viewBox="0 0 28 27" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <rect width="28" height="27" fill="url(#pattern0_1610_59366)"/>
+                <defs>
+                <pattern id="pattern0_1610_59366" patternContentUnits="objectBoundingBox" width="1" height="1">
+                <use xlink:href="#image0_1610_59366" transform="matrix(0.00964286 0 0 0.01 0.0178571 0)"/>
+                </pattern>
+                <image id="image0_1610_59366" width="100" height="100" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFHklEQVR4nO2dTYgcRRTHfzNhA9JmYjxECF79OCSK6GZNjODHxe+roEYPilc/iCaX3SSgCag42RVySgRzUNhDLq4mOYo6+SDkIJ5cQd2DHyHksknErKal4I0uw2z69UxPd1X1+0ExMMx0v9f/qa56r171gGEYhmEYhmEYRr1YA2wGtgN7gWngEDArr9Py/gvAuHzeKJAGsA3YD5wG/gbSHG0JOAXsA7bK8YwBuAWYAn7MKUCa0eaBSWB91Q6Gwq3ADHClYCHSnnYZOABsqNphXxkDXgMWRyxE2keYPcDqqi+AT9wFfF+yEGlP+w7YWPWF8IEX5VeaetD+lF5aS9xs5wMPREj7NDeGNakR7n79WQEX7lfga+C4xCHu9RvgtwKO/WldxpXmEGL8BLwHPA6szTjPWuAJ4H3g5yFEib6nfJTzolwDPgceGiKoawAPA1/I8fKc30X+0fJqzovhIux7C7ZhHDiT045XiHRqqw32/gLeHOHtognsAK4q7XF2byKyoE8bZ/wBTJRk1xbgfI44xfkRBTuVTrvB97aSbbsd+EVpn+tVUeSmLil7RtliLBdF01MWY8h9zSjHjLJuUyvxgHJMaRN4Cl0zkLsB3AfeVth6OeTU/ZRyautL8LUKOKuw2a2nBEdDsbh0bQRxxrDcrxDkhxBXHrcpHJvDT44pbHdT5qDYr3DKpUN85BGF7e8QGKcVMYev3b4hiczr2d8hINYoqkNc1tZnPlRUs9xIIGxWdPnH8JunFD74NiFZke0KZ7LWM6pmncKH5wmEvYqVvhD4PcOP3QTCdIYj3xIGJzP8cHVdQfBxhiNfEgbHM/xwtcRBkLVmfpQwOJrhh/MzCOrSQw4TCHUZQ2YIhD01mWVNEQhus4zFIR4xrnDGFbuFHqlPEFAuaynDGVdR6DNtxbLzDQTEKUW215eVwl6cXQuRTEz+Y5+iy7vyTh95NMb1kK0Kp1ytrY+cUNh+D4HRkA2WWWvqLlUf2g9pnkCZVDh3xrOqk3MKm98iUNYrt6v5UqK5S2HrJYlRguWAwsmrHlRxPKiYqqeyDS9oNii3Op+XGtsquBO4oLDxInAzEbBD4WwqVeh3VCDGgtK+N4iEMdlfkSp7iit8Lus2dUFpV0cG/WjYmGM/+pIUPo/qAqySAVwzZnQHcteTouNl5QXotrNSa1t0nHEupx3PEjGaWVdvOyblnYPGK01Jh2StAPZr7jtR05T93+kAbUEqCp8Ebso4zzpJobdzDNq+718ZGauHEKV3G1xHck+z8tqR99OC25ycY3lzVSctIuopWWvvVbUTOT57MiZRuk8D0mwKLaNdEXscr+ecfASdTullU444ZVSt02dqO1fnnjImEX3ZT5S7KBF4v5hnNuexohOlm/tql/BQs0VJFF4vN5VXkGhF6abuJ2WDZZFCzMt6Rta0eVBBohalyxZZw+7kSHeky6pDXEHCuwMsuw4qSC1E6eK2kd0HPCcVku1lT7Y+LOWdU1LENjFkqc6hIXtjbUQpi5aivrd2U+KqaZko/tEyUfyjZaL4RwJ8ZaL4RWKi+EdiovhHYqL4R2Ki+EdiovhHYqL4R2Ki+EdioviHieJpmqUzpCgdEdfwSJQjRRljFCOK24N5txzL8ESUYJ6nUhdRPqna+FhpDSjKwaoNj5lkgCnxS1UbHTtJDlHc9j77P3hPbl//AM+UYYzxf085ssL/Krr9LU/L54wK/k5wt4hzUMaMYJ4pbxiGYRiGYRgGteRfgbzzBma91aAAAAAASUVORK5CYII="/>
+                </defs>
+                </svg>
+                <u>See Image</u>
+              </a>
+        </div>
+    </div>
+      <div class="img_d">
+        <img src="{{ product.metafields.custom.ingredient_desktop_image | img_url:"master" }}" class="hidden-xs">
+        <img src="{{ product.metafields.custom.ingredient_mobile_image | img_url:"master" }}" class="visible-xs">
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+ <div id="overlayVideo">
+    <div id="popupVideo">
+        <div class="popup-content11">
+            <div id="closeVideo">X</div>
+            <div class="popupInnerContent">
+                {% if product.metafields.custom.ingredient_popup_image != blank %}
+                  <img src="{{ product.metafields.custom.ingredient_popup_image | img_url:"master" }}">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+  {% if product.tags contains 'COMBOS' %}
+<div class="visible-xs" >
+          {% render 'product-faqs' %}
+</div>
+ {% endif %}
+
+{% unless product.tags contains 'COMBOS' %}
+  {% if product.metafields.custom.why_it_works_title_1 != blank or product.metafields.custom.why_it_works_description_1 != blank %}
+  <div class="proWhyItWorkSec ptb_64 {% if product.tags contains 'COMBOS' %} topPaddingRemove{% endif %}" id="whyItWorks">
+    <div class="page-width">
+      {% if product.metafields.custom.why_it_works_heading != blank %}
+      <div class="section_header">
+        <h3 class="sub_title_name">{{ product.metafields.custom.why_it_works_heading }}</h3>
+      </div>
+      {% endif %}
+      <div class="content__d">
+        <div class="productFAQs">
+          <div class="faqsList">
+            {% if product.metafields.custom.why_it_works_title_1 != blank or product.metafields.custom.why_it_works_description_1 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_1 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_1 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_1 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_1 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if product.metafields.custom.why_it_works_title_2 != blank or product.metafields.custom.why_it_works_description_2 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_2 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_2 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_2 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_2 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if product.metafields.custom.why_it_works_title_3 != blank or product.metafields.custom.why_it_works_description_3 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_3 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_3 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_3 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_3 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if product.metafields.custom.why_it_works_title_4 != blank or product.metafields.custom.why_it_works_description_4 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_4 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_4 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_4 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_4 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if product.metafields.custom.why_it_works_title_5 != blank or product.metafields.custom.why_it_works_description_5 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_5 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_5 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_5 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_5 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if product.metafields.custom.why_it_works_title_6 != blank or product.metafields.custom.why_it_works_description_6 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_6 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_6 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_6 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_6 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          {% if product.metafields.custom.why_it_works_title_7 != blank or product.metafields.custom.why_it_works_description_7 != blank %}
+            <div class="accordion_container">
+              {% if product.metafields.custom.why_it_works_title_7 != blank %}
+              <div class="accordion_head">{{ product.metafields.custom.why_it_works_title_7 }}</div>
+              {% endif %}
+              {% if product.metafields.custom.why_it_works_description_7 != blank %}
+              <div class="accordion_body">{{ product.metafields.custom.why_it_works_description_7 }}</div>
+              {% endif %}
+            </div>
+          {% endif %}
+          </div>
+        </div>
+        {% assign video = product.metafields.custom.why_it_works_video.value %}
+        {% if video != blank %}
+        <div class="pdp_video_d">{{ video | video_tag: controls: true, autoplay: true, loop: true, muted: true }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endunless %}
+
+{% comment %} {% if product.tags contains 'beautyBag' %}
+<div class="offer_product_banner img-DD">
+        <img  src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/beauty_bag_banner.png?v=1771317485" alt="">
+    </div> 
+{% endif %}
+{% if product.metafields.custom.bottom_desktop_banner != blank or product.metafields.custom.bottom_mobile_banner != blank %}
+<div class="proBtmBannerSec">
+  <img src="{{ product.metafields.custom.bottom_desktop_banner | img_url:"master" }}" class="hidden-xs">
+  <img src="{{ product.metafields.custom.bottom_mobile_banner | img_url:"master" }}" class="visible-xs">
+</div>
+{% endif %} {% endcomment %}
+
+{% comment %} <div class="proHowItsWorkSec" id="proHowItsWorkSec">
+  <div class="section_header">
+    <h3 class="title_name">How it works?</h3>
+    <div class="desc_d">
+      Sealing in hydration for lasting nourishment.
+    </div>
+  </div>
+  <div class="inner_d">
+    <div class="img_d">
+      <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Frame_562.png?v=1752562402">
+    </div>
+    <div class="workLists">
+      <div class="accordion_container">
+        <div class="accordion_head">
+          NAD+ for Cellular Repair & Rejuvenation
+        </div>
+        <div class="accordion_body">
+          NAD+ helps revitalize skin at a cellular level, supporting DNA repair, energy production, and collagen synthesis, so your skin doesn't just feel hydrated - it looks firmer, healthier, and visibly renewed over time
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Squalane for Long-Lasting Softness
+        </div>
+        <div class="accordion_body">
+          This skin-identical lipid, derived from high-grade olives, mimics your skin's natural oils, delivering deep, weightless hydration and improving moisture retention without clogging pores.
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Occlusive Barrier for Deep Hydration
+        </div>
+        <div class="accordion_body">
+          Petrolatum & Natural Waxes create a protective layer over the skin, preventing trans-epidermal water loss (TEWL) while sealing in hydration. This means moisture stays where it belongs - inside your skin, keeping it plump and dewy.
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Nourishing Butters for Intense Moisture
+        </div>
+        <div class="accordion_body">
+          Cocoa Butter & Shea Butter infuse the skin with essential fatty acids and antioxidants, repairing dryness, softening rough patches, and restoring elasticity while keeping skin calm and conditioned.
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Panthenol (Pro-Vitamin B5), Allantoin & Maltodextrin for Soothing and Skin Barrier Support
+        </div>
+        <div class="accordion_body">
+          Panthenol and Allantoin calm and reduce skin irritation, while Maltodextrin helps maintain hydration levels and improve skin texture, ensuring your skin remains smooth, resilient, and well-balanced.
+        </div>
+      </div>
+      <div class="accordion_container">
+        <div class="accordion_head">
+          Glycerin, Propylene Glycol & Cetearyl Alcohol* for Deep Hydration & Skin Softness
+        </div>
+        <div class="accordion_body">
+            Glycerin draws moisture from the air into your skin, ensuring continuous hydration and a plump, dewy appearance. Propylene Glycol enhances hydration penetration, allowing active ingredients to reach deeper layers for maximum nourishment and repair. Cetearyl Alcohol*, a fatty alcohol, acts as a rich emollient, giving the SuperCream its buttery-smooth texture, while strengthening the skin's natural barrier and ensuring long-lasting softness.
+            * Cetearyl Alcohol isn't a drying alcohol - it's a fatty alcohol, derived from natural sources, that acts as a rich emollient, helping to soften the skin, strengthen the barrier, and give the SuperCream its signature buttery texture.
+        </div>
+      </div>
+    </div>
+  </div>  
+</div>
+
+<div class="proBannerWithText" id="NoNasties">
+    <div class="img_d">
+      <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/pexels-merictuna-30374750_1.png?v=1752562805" class="hidden-xs">
+      <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/pexels-merictuna-30374750_1_1.png?v=1752562804" class="visible-xs">
+    </div>
+    <div class="content_d">
+      <h2 class="title_name">No Nasties<br> No Compromises</h2>
+    </div>
+</div>
+
+<div class="proRIconListSec">
+  <div class="inner_d">
+    <div class="item_d">
+      <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_2.svg?v=1752563509">
+        </div>
+        <div class="desc_d">Formulated & Tested By Dermatologist</div>
+      </div>
+    </div>
+    <div class="item_d">
+      <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_1_daa8772b-61b2-4021-8482-465c79a565c6.svg?v=1752563508">
+        </div>
+        <div class="desc_d">Vegan</div>
+      </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+          <div class="icon_d">
+            <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Vector_2.svg?v=1752563508">
+          </div>
+          <div class="desc_d">Cruelty Free</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_3.svg?v=1752563508">
+        </div>
+        <div class="desc_d">Fragrance Free</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_4.svg?v=1752563508">
+        </div>
+        <div class="desc_d">Alcohol Free</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_5.svg?v=1752563667">
+        </div>
+        <div class="desc_d">Paraben Free</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_6.svg?v=1752563667">
+        </div>
+        <div class="desc_d">No Essential Oil</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_7.svg?v=1752563667">
+        </div>
+        <div class="desc_d">Sulphate Free</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_8.svg?v=1752563666">
+        </div>
+        <div class="desc_d">Hypoallergenic</div>
+       </div>
+    </div>
+    <div class="item_d">
+       <div class="info_d">
+        <div class="icon_d">
+          <img src="https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Group_9.svg?v=1752563666">
+        </div>
+        <div class="desc_d">Non Comedogenic</div>
+       </div>
+    </div>
+</div> {% endcomment %}
+{% comment %} </div> {% endcomment %}
+<script>
+  $(document).ready(function() {
+    $('#triggerVideo').on('click', function () {
+      $('#overlayVideo').fadeIn(300);
+      $("body").css("overflow-y","hidden");
+      });
+    $('#closeVideo').click(function() {
+      $('#overlayVideo').fadeOut(300);
+        $("body").css("overflow-y","scroll");
+      });
+    $(document).mouseup(function (e) {
+      var popup = $("#popupVideo");
+        if (!$('#triggerVideo').is(e.target) && !popup.is(e.target) && popup.has(e.target).length == 0) {
+          $('#overlayVideo').fadeOut(300);
+          $("body").css("overflow-y","scroll");
+        }
+      });
+    });
+</script>
+
+<script>
+  $(function () {
+  const $tooltip = $('.tooltip');
+  const PADDING = 16;
+
+  $('.ingredientsOverviewSec .ingreInfo').on('click', function (e) {
+    e.stopPropagation();
+
+    const $icon = $(this);
+    const text = $icon.data('info');
+    const offset = $icon.offset();
+    const iconWidth = $icon.outerWidth();
+    const scrollTop = $(window).scrollTop();
+    const windowWidth = $(window).width();
+
+    $tooltip.text(text).show();
+
+    const tooltipWidth = $tooltip.outerWidth();
+    const tooltipHeight = $tooltip.outerHeight();
+
+    let top = offset.top - scrollTop - tooltipHeight - 10;
+    let left = offset.left + iconWidth / 2 - tooltipWidth / 2;
+
+    left = Math.max(
+      PADDING,
+      Math.min(left, windowWidth - tooltipWidth - PADDING)
+    );
+
+    if (top < PADDING) {
+      top = offset.top - scrollTop + 28;
+    }
+
+    const iconCenter = offset.left + iconWidth / 2;
+    const arrowLeft = iconCenter - left;
+
+    const safeArrowLeft = Math.max(
+      12,
+      Math.min(arrowLeft, tooltipWidth - 12)
+    );
+
+    $tooltip.css({
+      top,
+      left,
+      '--arrow-left': `${safeArrowLeft}px`
+    });
+  });
+
+  // Hide on document click
+  $(document).on('click', function () {
+    $tooltip.hide();
+  });
+
+  // Prevent closing when clicking tooltip
+  $tooltip.on('click', function (e) {
+    e.stopPropagation();
+  });
+
+  // ✅ Hide tooltip on scroll
+  $(window).on('scroll', function () {
+    $tooltip.hide();
+  });
+});
+</script>
+
+{% comment %} <script>
+  $(function () {
+  const $tooltip = $('.tooltip');
+  const PADDING = 16;
+
+  $('.ingredientsOverviewSec .ingreInfo').on('click', function (e) {
+    e.stopPropagation();
+
+    const $icon = $(this);
+    const text = $icon.data('info');
+    const offset = $icon.offset();
+    const iconWidth = $icon.outerWidth();
+    const scrollTop = $(window).scrollTop();
+    const windowWidth = $(window).width();
+
+    $tooltip.text(text).show();
+
+    const tooltipWidth = $tooltip.outerWidth();
+    const tooltipHeight = $tooltip.outerHeight();
+
+    // Default position (above icon)
+    let top = offset.top - scrollTop - tooltipHeight - 10;
+    let left = offset.left + iconWidth / 2 - tooltipWidth / 2;
+
+    // Clamp tooltip inside viewport
+    left = Math.max(
+      PADDING,
+      Math.min(left, windowWidth - tooltipWidth - PADDING)
+    );
+
+    // If no space above → show below
+    if (top < PADDING) {
+      top = offset.top - scrollTop + 28;
+    }
+
+    // 🔥 Calculate arrow position relative to tooltip
+    const iconCenter = offset.left + iconWidth / 2;
+    const arrowLeft = iconCenter - left;
+
+    // Prevent arrow overflow
+    const safeArrowLeft = Math.max(
+      12,
+      Math.min(arrowLeft, tooltipWidth - 12)
+    );
+
+    $tooltip.css({
+      top,
+      left,
+      '--arrow-left': `${safeArrowLeft}px`
+    });
+  });
+
+  $(document).on('click', function () {
+    $tooltip.hide();
+  });
+
+  $tooltip.on('click', function (e) {
+    e.stopPropagation();
+  });
+});
+</script> {% endcomment %}
+
+<style>
+  
+  .ingredientsOverviewSec .tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: var(--arrow-left, 50%);
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: #111 transparent transparent;
+}
+@media (max-width: 767px) {
+  .ingredientsOverviewSec .tooltip {
+    width: calc(100vw - 32px);
+    left: 16px !important;
+    right: 16px !important;
+  }
+}
+</style>
+{% comment %} <script>
+$(function () {
+
+  const $tooltip = $('.tooltip');
+
+  $('.ingredientsOverviewSec .ingreInfo').on('click', function (e) {
+    e.stopPropagation();
+
+    const $icon = $(this);
+    const text = $icon.data('info');
+    const offset = $icon.offset();
+    const iconWidth = $icon.outerWidth();
+
+    $tooltip.text(text).show();
+
+    const tooltipWidth = $tooltip.outerWidth();
+    const tooltipHeight = $tooltip.outerHeight();
+
+    const top = offset.top - $(window).scrollTop() - tooltipHeight - 10;
+    const left = offset.left + iconWidth / 2 - tooltipWidth / 2;
+
+    $tooltip.css({ top, left });
+  });
+
+  // Click outside to close
+  $(document).on('click', function () {
+    $tooltip.hide();
+  });
+
+  // Prevent close when clicking tooltip
+  $tooltip.on('click', function (e) {
+    e.stopPropagation();
+  });
+
+});
+</script> {% endcomment %}
