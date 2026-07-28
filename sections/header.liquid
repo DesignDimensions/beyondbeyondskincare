@@ -83,6 +83,7 @@
   .list-menu--inline {
     display: inline-flex;
     flex-wrap: wrap;
+    justify-content: end;
   }
 
   .list-menu__item--link {
@@ -127,14 +128,19 @@
 <link rel="stylesheet" href="{{ 'disclosure.css' | asset_url }}" media="print" onload="this.media='all'">
 
 {%- if settings.cart_drawer_enabled -%}
-<link rel="stylesheet" href="{{ 'component-cart-drawer.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-discounts.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'quantity-popover.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'component-cart-drawer.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'component-discounts.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'quantity-popover.css' | asset_url }}" media="print" onload="this.media='all'">
 {%- endif -%}
 
 {%- if settings.predictive_search_enabled -%}
   <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="{{ 'component-loading-overlay.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link
+    rel="stylesheet"
+    href="{{ 'component-loading-overlay.css' | asset_url }}"
+    media="print"
+    onload="this.media='all'"
+  >
 {%- endif -%}
 
 {%- if enable_dropdown_menu -%}
@@ -143,7 +149,12 @@
 {%- endif -%}
 
 {%- if enable_new_navigation -%}
-  <link rel="stylesheet" href="{{ 'component-menu-drawer-new-navigation.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link
+    rel="stylesheet"
+    href="{{ 'component-menu-drawer-new-navigation.css' | asset_url }}"
+    media="print"
+    onload="this.media='all'"
+  >
 {%- endif -%}
 
 {%- if enable_transparent_header -%}
@@ -160,7 +171,12 @@
 <script src="{{ 'search-modal.js' | asset_url }}" defer="defer"></script>
 {%- if settings.cart_recommendations_enabled -%}
   <script src="{{ 'cart-recommendations.js' | asset_url }}" defer="defer"></script>
-  <link rel="stylesheet" href="{{ 'component-cart-recommendations.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link
+    rel="stylesheet"
+    href="{{ 'component-cart-recommendations.css' | asset_url }}"
+    media="print"
+    onload="this.media='all'"
+  >
 {%- endif -%}
 
 <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
@@ -295,10 +311,13 @@
 
 <{% if enable_sticky_header %}sticky-header{% if section.settings.show_sticky_header_scroll_up %} data-scroll-up{% endif %}{% else %}header-wrapper{% endif %} class="header-wrapper{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}{% if section.settings.uppercase_menu_items %} header-wrapper--uppercase{% endif %}{% if enable_transparent_header %} header-transparent{% if section.settings.show_transparent_header_border %} header-transparent--border-bottom{% endif %}{% endif %}">
   <header class="header header--{{ logo_position }} header--mobile-{{ section.settings.mobile_logo_position }} page-width header-section--padding">
-    <div class="header__left
-      {%- if language_selector != blank or country_selector != blank -%}
-        {%- if logo_position == 'top-center' or logo_position == 'off-canvas' or logo_position == 'center-split' %} header__left--localization{% endif -%}
-      {%- endif -%}"
+    <div
+      class="
+        header__left
+        {%- if language_selector != blank or country_selector != blank -%}
+          {%- if logo_position == 'top-center' or logo_position == 'off-canvas' or logo_position == 'center-split' %} header__left--localization{% endif -%}
+        {%- endif -%}
+      "
     >
       {%- liquid
         if section.settings.menu_mobile != blank
@@ -316,7 +335,11 @@
         endif
       -%}
 
-      {%- if logo_position == 'top-center' or logo_position == 'top-left' and enable_sticky_header and section.settings.menu != blank -%}
+      {%- if logo_position == 'top-center'
+        or logo_position == 'top-left'
+        and enable_sticky_header
+        and section.settings.menu != blank
+      -%}
         <header-menu-toggle>
           <div class="header__icon header__icon--menu focus-inset" aria-label="{{ 'sections.header.menu' | t }}">
             <span class="header__icon header__icon--summary">
@@ -333,7 +356,11 @@
         {%- if logo_position == 'top-center' or logo_position == 'center-split' -%}
           <search-modal>
             <details>
-              <summary class="header__icon header__icon--summary header__icon--search focus-inset modal__toggle" aria-haspopup="dialog" aria-label="{{ 'general.search.search' | t }}">
+              <summary
+                class="header__icon header__icon--summary header__icon--search focus-inset modal__toggle"
+                aria-haspopup="dialog"
+                aria-label="{{ 'general.search.search' | t }}"
+              >
                 <span>
                   <svg class="icon icon-search modal__toggle-open" aria-hidden="true" focusable="false">
                     <use href="#icon-search"></use>
@@ -366,211 +393,232 @@
     {%- if request.page_type == 'index' -%}
       <h1 class="header__heading">
     {%- endif -%}
-      <div class="header__heading a">  
-        <a href="{{ routes.root_url }}" class="header__heading-link focus-inset">
-          {%- if section.settings.logo != blank -%}
-            {%- liquid
-              assign logo = section.settings.logo
-              assign logo_height = section.settings.logo_height
-              assign logo_height_2x = section.settings.logo_height | times: 2
+    <div class="header__heading a">
+      <a href="{{ routes.root_url }}" class="header__heading-link focus-inset">
+        {%- if section.settings.logo != blank -%}
+          {%- liquid
+            assign logo = section.settings.logo
+            assign logo_height = section.settings.logo_height
+            assign logo_height_2x = section.settings.logo_height | times: 2
 
-              assign mobile_logo = section.settings.mobile_logo | default: logo
-              assign mobile_logo_height = section.settings.mobile_logo_height
-              assign mobile_logo_height_2x = section.settings.mobile_logo_height | times: 2
+            assign mobile_logo = section.settings.mobile_logo | default: logo
+            assign mobile_logo_height = section.settings.mobile_logo_height
+            assign mobile_logo_height_2x = section.settings.mobile_logo_height | times: 2
 
-              assign transparent_logo = section.settings.transparent_logo
-              assign mobile_transparent_logo = section.settings.mobile_transparent_logo | default: transparent_logo
-            -%}
+            assign transparent_logo = section.settings.transparent_logo
+            assign mobile_transparent_logo = section.settings.mobile_transparent_logo | default: transparent_logo
+          -%}
 
-            {%- if mobile_logo -%}
-              <img srcset="{{ mobile_logo | image_url: height: mobile_logo_height }} 1x, {{ mobile_logo | image_url: height: mobile_logo_height_2x }} 2x"
-                src="{{ mobile_logo | image_url: height: mobile_logo_height }}"
-                loading="lazy"
-                width="{{ mobile_logo.width }}"
-                height="{{ mobile_logo.height }}"
-                alt="{{ mobile_logo.alt | default: shop.name | escape }}"
-                class="header__heading-logo{% if enable_transparent_header and transparent_logo != blank %} normal{% endif %} medium-hide large-up-hide"
-              />
-            {%- endif -%}
-
-            <img srcset="{{ logo | image_url: height: logo_height }} 1x, {{ logo | image_url: height: logo_height_2x }} 2x"
-              src="{{ logo | image_url: height: logo_height }}"
+          {%- if mobile_logo -%}
+            <img
+              srcset="{{ mobile_logo | image_url: height: mobile_logo_height }} 1x, {{ mobile_logo | image_url: height: mobile_logo_height_2x }} 2x"
+              src="{{ mobile_logo | image_url: height: mobile_logo_height }}"
               loading="lazy"
-              width="{{ logo.width }}"
-              height="{{ logo.height }}"
-              alt="{{ logo.alt | default: shop.name | escape }}"
-              class="header__heading-logo{% if enable_transparent_header and transparent_logo != blank %} normal{% endif %}{% if mobile_logo %} small-hide{% endif %}"
+              width="{{ mobile_logo.width }}"
+              height="{{ mobile_logo.height }}"
+              alt="{{ mobile_logo.alt | default: shop.name | escape }}"
+              class="header__heading-logo{% if enable_transparent_header and transparent_logo != blank %} normal{% endif %} medium-hide large-up-hide"
             />
+          {%- endif -%}
 
-            {%- if enable_transparent_header and transparent_logo != blank -%}
-              {%- if mobile_transparent_logo != blank -%}
-                <img
-                  srcset="{{ mobile_transparent_logo | image_url: height: mobile_logo_height }} 1x, {{ mobile_transparent_logo | image_url: height: mobile_logo_height_2x }} 2x"
-                  src="{{ mobile_transparent_logo | image_url: height: mobile_logo_height }}"
-                  loading="lazy"
-                  width="{{ mobile_transparent_logo.width }}"
-                  height="{{ mobile_transparent_logo.height }}"
-                  alt="{{ mobile_transparent_logo.alt | default: shop.name | escape }}"
-                  class="header__heading-logo inverse medium-hide large-up-hide"
-                />
-              {%- endif -%}
+          <img
+            srcset="{{ logo | image_url: height: logo_height }} 1x, {{ logo | image_url: height: logo_height_2x }} 2x"
+            src="{{ logo | image_url: height: logo_height }}"
+            loading="lazy"
+            width="{{ logo.width }}"
+            height="{{ logo.height }}"
+            alt="{{ logo.alt | default: shop.name | escape }}"
+            class="header__heading-logo{% if enable_transparent_header and transparent_logo != blank %} normal{% endif %}{% if mobile_logo %} small-hide{% endif %}"
+          />
 
+          {%- if enable_transparent_header and transparent_logo != blank -%}
+            {%- if mobile_transparent_logo != blank -%}
               <img
-                srcset="{{ transparent_logo | image_url: height: logo_height }} 1x, {{ transparent_logo | image_url: height: logo_height_2x }} 2x"
-                src="{{ transparent_logo | image_url: height: logo_height }}"
+                srcset="{{ mobile_transparent_logo | image_url: height: mobile_logo_height }} 1x, {{ mobile_transparent_logo | image_url: height: mobile_logo_height_2x }} 2x"
+                src="{{ mobile_transparent_logo | image_url: height: mobile_logo_height }}"
                 loading="lazy"
-                width="{{ transparent_logo.width }}"
-                height="{{ transparent_logo.height }}"
-                alt="{{ transparent_logo.alt | default: shop.name | escape }}"
-                class="header__heading-logo inverse{% if mobile_transparent_logo %} small-hide{% endif %}"
+                width="{{ mobile_transparent_logo.width }}"
+                height="{{ mobile_transparent_logo.height }}"
+                alt="{{ mobile_transparent_logo.alt | default: shop.name | escape }}"
+                class="header__heading-logo inverse medium-hide large-up-hide"
               />
             {%- endif -%}
-          {%- else -%}
-            <span class="h2">{{ shop.name }}</span>
+
+            <img
+              srcset="{{ transparent_logo | image_url: height: logo_height }} 1x, {{ transparent_logo | image_url: height: logo_height_2x }} 2x"
+              src="{{ transparent_logo | image_url: height: logo_height }}"
+              loading="lazy"
+              width="{{ transparent_logo.width }}"
+              height="{{ transparent_logo.height }}"
+              alt="{{ transparent_logo.alt | default: shop.name | escape }}"
+              class="header__heading-logo inverse{% if mobile_transparent_logo %} small-hide{% endif %}"
+            />
           {%- endif -%}
-        </a>
-      </div>
+        {%- else -%}
+          <span class="h2">{{ shop.name }}</span>
+        {%- endif -%}
+      </a>
+    </div>
     {%- if request.page_type == 'index' -%}
       </h1>
     {%- endif -%}
 
     <div class="menu_and_icons">
-  
-    <div class="header__right">
-      {%- liquid
-        if logo_position == 'top-left' or logo_position == 'middle-left'
-          echo language_selector
-          echo country_selector
-        endif
-      -%}
+      <div class="header__right">
+        {%- liquid
+          if logo_position == 'top-left' or logo_position == 'middle-left'
+            echo language_selector
+            echo country_selector
+          endif
+        -%}
 
-      {% comment %} {% endcomment %} <search-modal>
-        <details>
-          <summary class="header__icon header__icon--summary header__icon--search focus-inset modal__toggle" aria-haspopup="dialog" aria-label="{{ 'general.search.search' | t }}">
-            <span>
-              <!-- <svg class="icon icon-search modal__toggle-open" aria-hidden="true" focusable="false">
-                <use href="#icon-search"></use>
-              </svg> -->
-              
-              <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M25 25L19.2091 19.2091M19.2091 19.2091C21.1394 17.2789 22.3333 14.6122 22.3333 11.6667C22.3333 5.77563 17.5577 1 11.6667 1C5.77563 1 1 5.77563 1 11.6667C1 17.5577 5.77563 22.3333 11.6667 22.3333C14.6122 22.3333 17.2789 21.1394 19.2091 19.2091Z" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+        {% comment %} {% endcomment %}
+        <search-modal>
+          <details>
+            <summary
+              class="header__icon header__icon--summary header__icon--search focus-inset modal__toggle"
+              aria-haspopup="dialog"
+              aria-label="{{ 'general.search.search' | t }}"
+            >
+              <span>
+                <!--
+                  <svg class="icon icon-search modal__toggle-open" aria-hidden="true" focusable="false">
+                    <use href="#icon-search"></use>
+                  </svg>
+                -->
 
-              <svg class="icon icon-close modal__toggle-close" aria-hidden="true" focusable="false">
-                <use href="#icon-close"></use>
-              </svg>
-            </span>
-          </summary>
-          {% render 'search-modal' %}
-        </details>
-      </search-modal>
-
-      {%- if section.settings.enable_sidebar -%}
-        {%- assign seasonal_deals = section.blocks | where: 'type', 'seasonal_deal' -%}
-        {%- render 'seasonal-deals', deals: seasonal_deals, heading: section.settings.sidebar_heading -%}
-      {%- endif -%}
-
-      {%- if shop.customer_accounts_enabled -%}
-        <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="header__icon header__icon--account focus-inset small-hide">
-         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 20C1 17.7909 2.79086 16 5 16H21C23.2091 16 25 17.7909 25 20V23C25 24.1046 24.1046 25 23 25H3C1.89543 25 1 24.1046 1 23V20Z" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
-        <circle cx="13.5" cy="6.5" r="5.5" stroke="black" stroke-width="1.5"/>
-        </svg>
-        {% comment %}{% render 'icon', icon: 'account' %} {% endcomment %}
-          <span class="visually-hidden">
-            {%- liquid
-              if customer
-                echo 'customer.account_fallback' | t
-              else
-                echo 'customer.log_in' | t
-              endif
-            -%}
-          </span>
-        </a>
-      {%- endif -%}
-
-      {%- if request.page_type != 'cart' and settings.cart_drawer_enabled -%}
-        <cart-drawer data-header-section-id="{{ section.id }}">
-          <details class="cart-drawer-container">
-            <summary class="header__icon focus-inset">
-              <span class="header__icon header__icon--summary header__icon--cart" id="cart-icon-bubble">
-                <!-- <svg class="icon icon-cart" aria-hidden="true" focusable="false">
-                  <use href="#icon-cart"></use>
-                </svg> -->
                 <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 11.5V7C7 3.68629 9.68629 1 13 1C16.3137 1 19 3.68629 19 7V11.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M1 8.5H25L23.6654 23.1811C23.5717 24.2112 22.708 25 21.6736 25H4.32643C3.29202 25 2.42829 24.2112 2.33464 23.1811L1 8.5Z" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
+                  <path d="M25 25L19.2091 19.2091M19.2091 19.2091C21.1394 17.2789 22.3333 14.6122 22.3333 11.6667C22.3333 5.77563 17.5577 1 11.6667 1C5.77563 1 1 5.77563 1 11.6667C1 17.5577 5.77563 22.3333 11.6667 22.3333C14.6122 22.3333 17.2789 21.1394 19.2091 19.2091Z" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                <svg class="icon icon-close modal__toggle-close" aria-hidden="true" focusable="false">
+                  <use href="#icon-close"></use>
+                </svg>
+              </span>
+            </summary>
+            {% render 'search-modal' %}
+          </details>
+        </search-modal>
+
+        {%- if section.settings.enable_sidebar -%}
+          {%- assign seasonal_deals = section.blocks | where: 'type', 'seasonal_deal' -%}
+          {%- render 'seasonal-deals', deals: seasonal_deals, heading: section.settings.sidebar_heading -%}
+        {%- endif -%}
+
+        {%- if shop.customer_accounts_enabled -%}
+          <a
+            href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+            class="header__icon header__icon--account focus-inset small-hide"
+          >
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 20C1 17.7909 2.79086 16 5 16H21C23.2091 16 25 17.7909 25 20V23C25 24.1046 24.1046 25 23 25H3C1.89543 25 1 24.1046 1 23V20Z" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
+              <circle cx="13.5" cy="6.5" r="5.5" stroke="black" stroke-width="1.5"/>
+            </svg>
+            {% comment %}{% render 'icon', icon: 'account' %} {% endcomment %}
+            <span class="visually-hidden">
+              {%- liquid
+                if customer
+                  echo 'customer.account_fallback' | t
+                else
+                  echo 'customer.log_in' | t
+                endif
+              -%}
+            </span>
+          </a>
+        {%- endif -%}
+
+        {%- if request.page_type != 'cart' and settings.cart_drawer_enabled -%}
+          <cart-drawer data-header-section-id="{{ section.id }}">
+            <details class="cart-drawer-container">
+              <summary class="header__icon focus-inset">
+                <span class="header__icon header__icon--summary header__icon--cart" id="cart-icon-bubble">
+                  <!--
+                    <svg class="icon icon-cart" aria-hidden="true" focusable="false">
+                      <use href="#icon-cart"></use>
+                    </svg>
+                  -->
+                  <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 11.5V7C7 3.68629 9.68629 1 13 1C16.3137 1 19 3.68629 19 7V11.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M1 8.5H25L23.6654 23.1811C23.5717 24.2112 22.708 25 21.6736 25H4.32643C3.29202 25 2.42829 24.2112 2.33464 23.1811L1 8.5Z" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
+                  </svg>
+                  <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+                  {%- if cart != empty -%}
+                    <span class="cart-count-bubble{% if cart.item_count >= 100 %} cart-count-bubble--dot{% endif %}">
+                      {%- if cart.item_count < 100 -%}
+                        <span aria-hidden="true">{{ cart.item_count }}</span>
+                      {%- endif -%}
+                      <span class="visually-hidden">
+                        {{- 'sections.header.cart_count' | t: count: cart.item_count -}}
+                      </span>
+                    </span>
+                  {%- endif -%}
+                </span>
+              </summary>
+              <mini-cart
+                class="cart-drawer focus-inset"
+                id="mini-cart"
+                data-url="{{ routes.root }}?section_id=mini-cart"
+              >
+                <div class="loading-overlay">
+                  <div class="loading-overlay__spinner">
+                    {% render 'icon', icon: 'spinner' %}
+                  </div>
+                </div>
+              </mini-cart>
+            </details>
+            <noscript>
+              <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart focus-inset">
+                <svg class="icon icon-cart" aria-hidden="true" focusable="false">
+                  <use href="#icon-cart"></use>
                 </svg>
                 <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
                 {%- if cart != empty -%}
-                  <span class="cart-count-bubble{% if cart.item_count >= 100 %} cart-count-bubble--dot{% endif %}">
+                  <div class="cart-count-bubble{% if cart.item_count >= 100 %} cart-count-bubble--dot{% endif %}">
                     {%- if cart.item_count < 100 -%}
                       <span aria-hidden="true">{{ cart.item_count }}</span>
                     {%- endif -%}
                     <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
-                  </span>
+                  </div>
                 {%- endif -%}
-              </span>
-            </summary>
-            <mini-cart class="cart-drawer focus-inset" id="mini-cart" data-url="{{ routes.root }}?section_id=mini-cart">
-              <div class="loading-overlay">
-                <div class="loading-overlay__spinner">
-                  {% render 'icon', icon: 'spinner' %}
-                </div>
-              </div>
-            </mini-cart>
-          </details>
-          <noscript>
-            <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart focus-inset">
+              </a>
+            </noscript>
+          </cart-drawer>
+        {%- else -%}
+          <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart focus-inset" id="cart-icon-bubble">
+            {% comment %}
               <svg class="icon icon-cart" aria-hidden="true" focusable="false">
                 <use href="#icon-cart"></use>
               </svg>
-              <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
-              {%- if cart != empty -%}
-                <div class="cart-count-bubble{% if cart.item_count >= 100 %} cart-count-bubble--dot{% endif %}">
-                  {%- if cart.item_count < 100 -%}
-                    <span aria-hidden="true">{{ cart.item_count }}</span>
-                  {%- endif -%}
-                  <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
-                </div>
-              {%- endif -%}
-            </a>
-          </noscript>
-        </cart-drawer>
-      {%- else -%}
-        <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart focus-inset" id="cart-icon-bubble">
-          {% comment %} <svg class="icon icon-cart" aria-hidden="true" focusable="false">
-            <use href="#icon-cart"></use>
-          </svg> {% endcomment %}
-           <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 11.5V7C7 3.68629 9.68629 1 13 1C16.3137 1 19 3.68629 19 7V11.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M1 8.5H25L23.6654 23.1811C23.5717 24.2112 22.708 25 21.6736 25H4.32643C3.29202 25 2.42829 24.2112 2.33464 23.1811L1 8.5Z" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
-                </svg>
-          <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
-          {%- if cart != empty -%}
-            <span class="cart-count-bubble{% if cart.item_count >= 100 %} cart-count-bubble--dot{% endif %}">
-              {%- if cart.item_count < 100 -%}
-                <span aria-hidden="true">{{ cart.item_count }}</span>
-              {%- endif -%}
-              <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
-            </span>
-          {%- endif -%}
-        </a>
-      {%- endif -%}
-    </div>
+            {% endcomment %}
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 11.5V7C7 3.68629 9.68629 1 13 1C16.3137 1 19 3.68629 19 7V11.5" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M1 8.5H25L23.6654 23.1811C23.5717 24.2112 22.708 25 21.6736 25H4.32643C3.29202 25 2.42829 24.2112 2.33464 23.1811L1 8.5Z" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+            <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+            {%- if cart != empty -%}
+              <span class="cart-count-bubble{% if cart.item_count >= 100 %} cart-count-bubble--dot{% endif %}">
+                {%- if cart.item_count < 100 -%}
+                  <span aria-hidden="true">{{ cart.item_count }}</span>
+                {%- endif -%}
+                <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+              </span>
+            {%- endif -%}
+          </a>
+        {%- endif -%}
+      </div>
       {%- liquid
-      if section.settings.menu != blank
-        if logo_position == 'center-split'
-          render 'desktop-menu', menu: section.settings.menu, enable_dropdown_menu: enable_dropdown_menu, blocks: section.blocks, offset: link_count_half, enable_highlight: section.settings.enable_highlight, highlight_labels: highlight_labels, highlight_style: section.settings.highlight_style
-        else
-          render 'desktop-menu', menu: section.settings.menu, enable_dropdown_menu: enable_dropdown_menu, blocks: section.blocks, enable_highlight: section.settings.enable_highlight, highlight_labels: highlight_labels, highlight_style: section.settings.highlight_style
+        if section.settings.menu != blank
+          if logo_position == 'center-split'
+            render 'desktop-menu', menu: section.settings.menu, enable_dropdown_menu: enable_dropdown_menu, blocks: section.blocks, offset: link_count_half, enable_highlight: section.settings.enable_highlight, highlight_labels: highlight_labels, highlight_style: section.settings.highlight_style
+          else
+            render 'desktop-menu', menu: section.settings.menu, enable_dropdown_menu: enable_dropdown_menu, blocks: section.blocks, enable_highlight: section.settings.enable_highlight, highlight_labels: highlight_labels, highlight_style: section.settings.highlight_style
+          endif
         endif
-      endif
-    -%}
+      -%}
     </div>
   </header>
   <span class="header-background"></span>
-</{% if enable_sticky_header %}sticky-header{% else %}header-wrapper{% endif %}>
+</{% if enable_sticky_header %}sticky-header{% if section.settings.show_sticky_header_scroll_up %} data-scroll-up{% endif %}{% else %}header-wrapper{% endif %}>
 
 {% javascript %}
   class HeaderWrapper extends HTMLElement {
@@ -604,7 +652,6 @@
         this.header.classList.remove('is-active');
       }, 400);
     }
-
   }
   customElements.define('header-wrapper', HeaderWrapper);
 
@@ -622,7 +669,7 @@
       this.scrollUpActive = false;
 
       this.onScrollHandler = this.onScroll.bind(this);
-      this.hideHeaderOnScrollUp = () => this.preventReveal = true;
+      this.hideHeaderOnScrollUp = () => (this.preventReveal = true);
 
       window.addEventListener('scroll', this.onScrollHandler, false);
       this.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
@@ -647,7 +694,7 @@
 
           this.headerBounds = {
             top: scrollTop + boundingClientRect.top,
-            bottom: scrollTop + boundingClientRect.bottom
+            bottom: scrollTop + boundingClientRect.bottom,
           };
         }
 
@@ -667,12 +714,10 @@
       if (theme.config.mqlSmall || this.scrollUpActive) {
         if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
           requestAnimationFrame(this.hide.bind(this));
-        }
-        else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
           if (!this.preventReveal) {
             requestAnimationFrame(this.reveal.bind(this));
-          }
-          else {
+          } else {
             window.clearTimeout(this.isScrolling);
 
             this.isScrolling = setTimeout(() => {
@@ -681,22 +726,19 @@
 
             requestAnimationFrame(this.hide.bind(this));
           }
-        }
-        else if (scrollTop <= this.headerBounds.top) {
+        } else if (scrollTop <= this.headerBounds.top) {
           requestAnimationFrame(this.reset.bind(this));
         }
-      }
-      else {
+      } else {
         if (scrollTop > this.headerBounds.bottom) {
           if (this.sticky()) return;
-          
+
           requestAnimationFrame(this.hide.bind(this));
 
           setTimeout(() => {
             requestAnimationFrame(this.reveal.bind(this));
           }, 300);
-        }
-        else if (scrollTop <= this.headerBounds.top) {
+        } else if (scrollTop <= this.headerBounds.top) {
           requestAnimationFrame(this.reset.bind(this));
         }
       }
@@ -721,7 +763,12 @@
     }
 
     sticky() {
-      return this.header.classList.contains('shopify-section-header-sticky') && !this.header.classList.contains('shopify-section-header-hidden') && document.body.classList.contains('shopify-body-section-header-sticky') && !document.body.classList.contains('shopify-body-section-header-hidden');
+      return (
+        this.header.classList.contains('shopify-section-header-sticky') &&
+        !this.header.classList.contains('shopify-section-header-hidden') &&
+        document.body.classList.contains('shopify-body-section-header-sticky') &&
+        !document.body.classList.contains('shopify-body-section-header-hidden')
+      );
     }
   }
   customElements.define('sticky-header', StickyHeader);
@@ -751,7 +798,7 @@
 </script>
 
 {%- if request.page_type == 'index' -%}
-  {% assign potential_action_target = request.origin | append: routes.search_url | append: "?q={search_term_string}" %}
+  {% assign potential_action_target = request.origin | append: routes.search_url | append: '?q={search_term_string}' %}
   <script type="application/ld+json">
     {
       "@context": "http://schema.org",
@@ -1360,7 +1407,7 @@
           "max": 100,
           "step": 4,
           "unit": "t:sections.all.colors.overlay_opacity.unit"
-        },
+        }
       ]
     },
     {
