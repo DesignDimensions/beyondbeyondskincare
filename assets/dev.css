@@ -247,7 +247,6 @@ body{
   .header .header__inline-menu > ul > li{
     display:inline-flex;
     align-items:center;
-    margin-inline: 0 30px;
   }
   .header .header__inline-menu > ul > li:first-child{
     margin-inline-start: 0;
