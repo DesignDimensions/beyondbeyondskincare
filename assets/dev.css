@@ -313,7 +313,7 @@ body{
   }
   .header .header__heading-logo {
     /* width: 140px; */
-    width: 120px;
+    width: 100px;
   }
 }
 @media screen and (max-width: 1043px) {
