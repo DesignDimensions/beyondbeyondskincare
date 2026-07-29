@@ -25,13 +25,13 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--bb-ink);
+  background: var(--bb-accent);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(28, 26, 23, 0.25);
+  box-shadow: 0 6px 20px rgba(1, 7, 239, 0.35);
   z-index: 999998;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
