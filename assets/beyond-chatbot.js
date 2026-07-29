@@ -73,20 +73,33 @@
     var history = loadHistory();
     var sending = false;
 
+    function addToCart(variantId) {
+      return fetch("/cart/add.js", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] }),
+      }).then(function (res) {
+        if (!res.ok) throw new Error("add_to_cart_failed");
+        return res.json();
+      });
+    }
+
     function renderProducts(products) {
       if (!products || !products.length) return null;
       var wrap = el("div", "bb-products");
       products.forEach(function (p) {
-        var card = el("a", "bb-product-card");
-        card.href = p.url;
-        card.target = "_blank";
-        card.rel = "noopener";
+        var card = el("div", "bb-product-card");
+
+        var link = el("a", "bb-product-link");
+        link.href = p.url;
+        link.target = "_blank";
+        link.rel = "noopener";
 
         var img = document.createElement("img");
         img.src = p.image || "";
         img.alt = p.title;
         img.loading = "lazy";
-        card.appendChild(img);
+        link.appendChild(img);
 
         var info = el("div", "bb-product-info");
         var priceHtml = "";
@@ -99,8 +112,43 @@
         }
         info.appendChild(el("div", "bb-product-title", p.title));
         info.appendChild(el("div", "bb-product-price", priceHtml));
-        card.appendChild(info);
-        card.appendChild(el("div", "bb-product-arrow", "&#8594;"));
+        link.appendChild(info);
+        link.appendChild(el("div", "bb-product-arrow", "&#8594;"));
+        card.appendChild(link);
+
+        if (p.variant_id) {
+          var actions = el("div", "bb-product-actions");
+          var addBtn = el("button", "bb-add-to-cart-btn", "Add to Cart");
+          addBtn.type = "button";
+          addBtn.addEventListener("click", function () {
+            addBtn.disabled = true;
+            addBtn.textContent = "Adding…";
+            addToCart(p.variant_id)
+              .then(function () {
+                var confirm = el("div", "bb-cart-confirm");
+                confirm.appendChild(el("span", "bb-cart-confirm-label", "Added ✓"));
+                var viewCart = el("a", "", "View cart");
+                viewCart.href = "/cart";
+                var checkout = el("a", "", "Checkout →");
+                checkout.href = "/checkout";
+                confirm.appendChild(viewCart);
+                confirm.appendChild(checkout);
+                actions.replaceChildren(confirm);
+              })
+              .catch(function () {
+                addBtn.disabled = false;
+                addBtn.textContent = "Add to Cart";
+                var err = el("div", "bb-cart-error", "Couldn't add to cart — try again.");
+                actions.appendChild(err);
+                setTimeout(function () {
+                  err.remove();
+                }, 4000);
+              });
+          });
+          actions.appendChild(addBtn);
+          card.appendChild(actions);
+        }
+
         wrap.appendChild(card);
       });
       return wrap;
