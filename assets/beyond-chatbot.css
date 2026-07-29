@@ -37,7 +37,7 @@
 }
 .bb-chat-launcher:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(28, 26, 23, 0.3);
+  box-shadow: 0 10px 24px rgba(1, 7, 239, 0.4);
 }
 .bb-chat-launcher svg {
   width: 24px;
