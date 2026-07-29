@@ -1,9 +1,7 @@
 (function () {
   "use strict";
 
-  // TODO: replace with your live BigRock URL once chat.php is deployed, e.g.
-  // "https://yourdomain.com/beyondbeyond-chat/chat.php"
-  var CHAT_API_URL = "https://YOUR-BIGROCK-DOMAIN.example.com/beyondbeyond-chat/chat.php";
+  var CHAT_API_URL = "https://designdimensions.in/bb_chat_assisstant/chat.php";
 
   var STARTER_QUESTIONS = [
     "What should I use every morning?",
