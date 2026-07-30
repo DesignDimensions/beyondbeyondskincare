@@ -5,7 +5,7 @@ class MiniCart extends HTMLElement {
 
   connectedCallback() {
     this.header = document.querySelector('sticky-header');
-    this.drawer = document.querySelector('cart-drawer');
+    this.drawer = document.querySelector('theme-cart-drawer');
     new IntersectionObserver(this.handleIntersection.bind(this)).observe(this);
   }
 
