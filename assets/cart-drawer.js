@@ -5,7 +5,7 @@ class MiniCart extends HTMLElement {
 
   connectedCallback() {
     this.header = document.querySelector('sticky-header');
-    this.drawer = document.querySelector('cart-drawer');
+    this.drawer = document.querySelector('theme-cart-drawer');
     new IntersectionObserver(this.handleIntersection.bind(this)).observe(this);
   }
 
@@ -44,7 +44,11 @@ class MiniCart extends HTMLElement {
       }
     }));
 
-    this.open();
+    // GoKwik's side-cart owns the add-to-cart drawer once it's active; opening
+    // the native drawer too would stack both on top of each other.
+    if (!window.kwikCartActive) {
+      this.open();
+    }
   }
 
   getSectionsToRender() {
