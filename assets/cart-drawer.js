@@ -44,7 +44,11 @@ class MiniCart extends HTMLElement {
       }
     }));
 
-    this.open();
+    // GoKwik's side-cart owns the add-to-cart drawer once it's active; opening
+    // the native drawer too would stack both on top of each other.
+    if (!window.kwikCartActive) {
+      this.open();
+    }
   }
 
   getSectionsToRender() {
