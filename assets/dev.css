@@ -394,6 +394,7 @@ body {
     width: 80px;
     position: relative;
     left: 4px;
+    display: flex;
     top: 2px;
   }
 

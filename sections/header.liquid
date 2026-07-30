@@ -529,7 +529,7 @@
         {%- endif -%}
 
         {%- if request.page_type != 'cart' and settings.cart_drawer_enabled -%}
-          <cart-drawer data-header-section-id="{{ section.id }}">
+          <theme-cart-drawer data-header-section-id="{{ section.id }}">
             <details class="cart-drawer-container">
               <summary class="header__icon focus-inset">
                 <span class="header__icon header__icon--summary header__icon--cart" id="cart-icon-bubble">
@@ -583,7 +583,7 @@
                 {%- endif -%}
               </a>
             </noscript>
-          </cart-drawer>
+          </theme-cart-drawer>
         {%- else -%}
           <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart focus-inset" id="cart-icon-bubble">
             {% comment %}

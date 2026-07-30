@@ -986,7 +986,7 @@ class CartDrawer extends MenuDrawer {
     }
   }
 }
-customElements.define('cart-drawer', CartDrawer);
+customElements.define('theme-cart-drawer', CartDrawer);
 
 class FacetDrawer extends MenuDrawer {
   constructor() {
