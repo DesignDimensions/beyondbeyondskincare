@@ -225,20 +225,44 @@ class DiscountCode extends HTMLElement {
   constructor() {
     super();
 
+    this.input = this.querySelector('input[name="discount"]');
+
     if (isStorageSupported('session')) {
       this.setupDiscount();
 
       this.addEventListener('change', (event) => {
-        window.sessionStorage.setItem('discount', event.target.value);
+        if (event.target === this.input) {
+          window.sessionStorage.setItem('discount', event.target.value);
+        }
       });
     }
+
+    this.addEventListener('click', (event) => {
+      if (event.target.closest('.cart-discount__apply')) {
+        this.applyDiscount(this.input.value);
+        return;
+      }
+
+      const couponButton = event.target.closest('[data-coupon-code]');
+      if (couponButton) {
+        this.applyDiscount(couponButton.dataset.couponCode);
+      }
+    });
   }
 
   setupDiscount() {
     const discount = window.sessionStorage.getItem('discount');
-    if (discount !== null) {
-      this.querySelector('input[name="discount"]').value = discount;
+    if (discount !== null && this.input) {
+      this.input.value = discount;
     }
+  }
+
+  applyDiscount(code) {
+    if (!code) return;
+
+    // Shopify has no AJAX endpoint to apply a discount code to the cart, so this is a
+    // real navigation: the discount route sets the code for checkout, then redirects.
+    window.location.href = `${theme.routes.root_url}discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent(theme.routes.cart_url)}`;
   }
 }
 
