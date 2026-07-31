@@ -4848,6 +4848,45 @@
           "info": "Enter amount using number only. If using multiple currencies, separate each currency code with its amount (e.g: USD:100, EUR:95, JPY:13000)",
           "label": "Free shipping minimum amount"
         },
+        "gift_tier_1_label": {
+          "label": "Tier 1 display label"
+        },
+        "gift_tier_1_minimum_amount": {
+          "label": "Tier 1 minimum amount"
+        },
+        "gift_tier_1_product": {
+          "label": "Tier 1 gift product"
+        },
+        "gift_tier_2_label": {
+          "label": "Tier 2 display label"
+        },
+        "gift_tier_2_minimum_amount": {
+          "label": "Tier 2 minimum amount"
+        },
+        "gift_tier_2_product": {
+          "label": "Tier 2 gift product"
+        },
+        "gift_tier_3_label": {
+          "label": "Tier 3 display label"
+        },
+        "gift_tier_3_minimum_amount": {
+          "label": "Tier 3 minimum amount"
+        },
+        "gift_tier_3_product": {
+          "label": "Tier 3 gift product"
+        },
+        "gift_tier_label": {
+          "info": "Defaults to the product's title."
+        },
+        "gift_tier_minimum_amount": {
+          "info": "Enter amount using number only. If using multiple currencies, separate each currency code with its amount (e.g: USD:100, EUR:95, JPY:13000). Each tier's gift is kept once unlocked, as long as the tier below it still qualifies."
+        },
+        "gift_tiers_enabled": {
+          "label": "Enable gift-with-purchase tiers"
+        },
+        "gift_tiers_heading": {
+          "label": "Heading"
+        },
         "header__1": {
           "content": "Free shipping message",
           "info": "Make sure that you have properly configured your [shipping rates](/admin/settings/shipping)"
@@ -4858,6 +4897,17 @@
         },
         "header__3": {
           "content": "Empty cart recommendations"
+        },
+        "header__4": {
+          "content": "Promotional banner"
+        },
+        "header__5": {
+          "content": "Gift-with-purchase tiers",
+          "info": "Each tier needs a product picked below before it will show or take effect. Products are added to the customer's cart automatically as a $0 gift once their cart subtotal crosses the tier's minimum amount, and removed if it drops back below."
+        },
+        "header__6": {
+          "content": "Available coupons list",
+          "info": "Optional. Shown to customers via a \"View coupons\" link next to the discount code field."
         },
         "shipping_calculator_default_country": {
           "info": "If your customer is logged-in, the country in his default shipping address will be selected.",
