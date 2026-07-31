@@ -208,6 +208,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     {%- if linklists.gift-wrapping.links != blank and linklists.gift-wrapping.links.first.type == 'product_link' -%}
       <script src="{{ 'gift-wrapping.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+    {%- liquid
+      assign load_gift_tiers_js = false
+      if settings.gift_tiers_enabled
+        assign load_gift_tiers_js = true
+      endif
+      if shop.terms_of_service.url != blank and shop.privacy_policy.url != blank
+        assign load_gift_tiers_js = true
+      endif
+    -%}
+    {%- if load_gift_tiers_js -%}
+      <script src="{{ 'gift-tiers.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
 
     <script>
       $(document).ready(function() {
