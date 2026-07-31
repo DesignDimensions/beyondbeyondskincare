@@ -865,10 +865,83 @@
         </div>
       {%- endif -%}
 
+      {%- if cart != empty -%}
+        <discount-code class="cart-discount">
+          <div class="cart-discount__field field">
+            <label for="CartDiscountCode" class="visually-hidden">{{ 'general.cart.discount.caption' | t }}</label>
+            <input
+              type="text"
+              id="CartDiscountCode"
+              name="discount"
+              class="field__input"
+              placeholder="{{ 'general.cart.discount.caption' | t }}"
+              autocomplete="off"
+            />
+            {% render 'icon', icon: 'discount', class: 'cart-discount__icon' %}
+            <button type="button" class="cart-discount__apply">{{ 'general.cart.discount.button' | t }}</button>
+          </div>
+
+          {%- if cart_coupons_any_configured -%}
+            <details class="cart-discount__coupons disclosure-has-popup">
+              <summary>
+                <span>{{ 'general.cart.discount.view_coupons' | t }}</span>
+              </summary>
+              <div>
+                <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
+                  {% render 'icon', icon: 'close' %}
+                </button>
+                <p class="cart-discount__coupons-title">{{ 'general.cart.coupons.title' | t }}</p>
+                <ul class="cart-discount__coupons-list list-unstyled">
+                  {%- if settings.cart_coupon_1_code != blank -%}
+                    <li>
+                      <button type="button" class="cart-discount__coupon" data-coupon-code="{{ settings.cart_coupon_1_code | escape }}">
+                        <span class="cart-discount__coupon-code">{{ settings.cart_coupon_1_code }}</span>
+                        {%- if settings.cart_coupon_1_description != blank -%}
+                          <span class="cart-discount__coupon-description">{{ settings.cart_coupon_1_description | escape }}</span>
+                        {%- endif -%}
+                      </button>
+                    </li>
+                  {%- endif -%}
+                  {%- if settings.cart_coupon_2_code != blank -%}
+                    <li>
+                      <button type="button" class="cart-discount__coupon" data-coupon-code="{{ settings.cart_coupon_2_code | escape }}">
+                        <span class="cart-discount__coupon-code">{{ settings.cart_coupon_2_code }}</span>
+                        {%- if settings.cart_coupon_2_description != blank -%}
+                          <span class="cart-discount__coupon-description">{{ settings.cart_coupon_2_description | escape }}</span>
+                        {%- endif -%}
+                      </button>
+                    </li>
+                  {%- endif -%}
+                  {%- if settings.cart_coupon_3_code != blank -%}
+                    <li>
+                      <button type="button" class="cart-discount__coupon" data-coupon-code="{{ settings.cart_coupon_3_code | escape }}">
+                        <span class="cart-discount__coupon-code">{{ settings.cart_coupon_3_code }}</span>
+                        {%- if settings.cart_coupon_3_description != blank -%}
+                          <span class="cart-discount__coupon-description">{{ settings.cart_coupon_3_description | escape }}</span>
+                        {%- endif -%}
+                      </button>
+                    </li>
+                  {%- endif -%}
+                </ul>
+              </div>
+            </details>
+          {%- endif -%}
+        </discount-code>
+      {%- endif -%}
+
       {%- unless settings.disable_view_cart -%}
         <div class="subtotal">
           <div class="label h3">{{ 'sections.cart.subtotal' | t }}</div>
-          <div class="value price" id="mini-cart-subtotal">{{ cart.total_price | money_with_currency }}</div>
+          <div class="value price" id="mini-cart-subtotal">
+            {%- if cart.total_discount > 0 -%}
+              <s class="subtotal__compare-at">{{ cart.original_total_price | money_with_currency }}</s>
+              {{ cart.total_price | money_with_currency }}
+              {%- assign cart_discount_percent = cart.total_discount | times: 100.0 | divided_by: cart.original_total_price | round -%}
+              <span class="subtotal__savings">{{ 'general.cart.discount.percent_off' | t: percent: cart_discount_percent }}</span>
+            {%- else -%}
+              {{ cart.total_price | money_with_currency }}
+            {%- endif -%}
+          </div>
         </div>
       {%- endunless -%}
 
