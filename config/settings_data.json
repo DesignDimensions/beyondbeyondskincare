@@ -148,7 +148,7 @@
       },
       "1409715032340194113": {
         "type": "shopify://apps/gokwik-cart-slide-cart-drawer/blocks/app-embed/531cd8ff-cc36-43b1-9a44-c16d44927215",
-        "disabled": false,
+        "disabled": true,
         "settings": {}
       }
     }
