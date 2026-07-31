@@ -1011,14 +1011,14 @@
       </div>
 
       {%- if cart_terms_available -%}
-        <div class="cart-terms">
+        <cart-terms class="cart-terms">
           <label class="cart-terms__label">
             <input type="checkbox" id="CartTermsAgree" class="cart-terms__checkbox" />
             {%- capture terms_link -%}<a href="{{ shop.terms_of_service.url }}" target="_blank" rel="noopener">{{ 'general.cart.terms.terms_of_service' | t }}</a>{%- endcapture -%}
             {%- capture privacy_link -%}<a href="{{ shop.privacy_policy.url }}" target="_blank" rel="noopener">{{ 'general.cart.terms.privacy_policy' | t }}</a>{%- endcapture -%}
             <span>{{ 'general.cart.terms.label_html' | t: terms_link: terms_link, privacy_link: privacy_link }}</span>
           </label>
-        </div>
+        </cart-terms>
       {%- endif -%}
 
       <div class="button-container">
