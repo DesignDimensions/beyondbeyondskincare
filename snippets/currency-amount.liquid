@@ -1,0 +1,31 @@
+{% comment %}
+  Resolves a currency-list setting value to a single plain number for the shop's active cart currency.
+
+  Accepts:
+  - amount_setting: {String} Either a bare number ("100") or a comma-separated
+    "CURRENCY:amount" list ("USD:100,EUR:95,JPY:13000"), matching the format used by
+    the free_shipping_minimum_amount setting.
+
+  Usage:
+  {% capture resolved_amount %}{% render 'currency-amount', amount_setting: settings.gift_tier_1_minimum_amount %}{% endcapture %}
+  {% assign resolved_amount = resolved_amount | strip %}
+{% endcomment %}
+{%- liquid
+  assign amounts = amount_setting | remove: ' ' | split: ','
+  assign resolved_amount = blank
+
+  if amounts.size > 1
+    for amount_entry in amounts
+      assign amount_parts = amount_entry | split: ':'
+      if amount_parts.first | upcase == cart.currency.iso_code
+        assign resolved_amount = amount_parts.last
+        break
+      endif
+    endfor
+  else
+    assign resolved_amount = amounts.last
+    if resolved_amount contains ':'
+      assign resolved_amount = resolved_amount | split: ':' | last
+    endif
+  endif
+-%}{{- resolved_amount -}}
