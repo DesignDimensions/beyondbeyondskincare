@@ -922,3 +922,258 @@ details[open].menu-opening > .cart-drawer [data-animate] {
   align-items: center;
   justify-content: space-between;
 }
+
+.quantity--gift {
+  justify-content: center;
+  font-size: 1.3rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.mini-cart__count {
+  font-size: 1.2rem;
+  font-weight: 400;
+  letter-spacing: 0.1rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.mini-cart__promo-banner {
+  display: block;
+  margin: 0;
+  padding: 1.2rem 2rem;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+  line-height: 1.4;
+  color: rgb(var(--color-button-text));
+  background-color: rgb(var(--color-base-accent));
+  text-decoration: none;
+}
+
+a.mini-cart__promo-banner:hover {
+  text-decoration: underline;
+}
+
+.gift-tier-progress {
+  display: block;
+  padding: 2rem;
+  border-bottom: 0.1rem solid rgb(var(--color-border));
+}
+
+@media screen and (min-width: 750px) {
+  .gift-tier-progress {
+    padding: 2rem 3rem;
+  }
+}
+
+.gift-tier-progress__heading {
+  margin: 0 0 2rem;
+  text-align: center;
+  font-size: 1.4rem;
+  line-height: 1.4;
+}
+
+.gift-tier-progress__bar {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 0.3rem;
+  margin-bottom: 1.4rem;
+  background-color: rgb(var(--color-border));
+  border-radius: min(var(--button-radius), 0.4rem);
+}
+
+.gift-tier-progress__bar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: var(--gift-tier-progress, 0%);
+  background-color: rgb(var(--color-base-accent));
+  border-radius: min(var(--button-radius), 0.4rem);
+  transition: width var(--duration-long) ease;
+}
+
+.gift-tier-progress__track {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gift-tier-progress__tier {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  text-align: center;
+  row-gap: 0.6rem;
+}
+
+.gift-tier-progress__dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background-color: rgb(var(--color-background));
+  box-shadow: 0 0 0 0.1rem rgb(var(--color-border));
+  color: rgba(var(--color-foreground), 0.5);
+  transition-property: color, box-shadow, background-color;
+  transition-duration: var(--duration-default);
+  transition-timing-function: ease;
+}
+
+.gift-tier-progress__dot .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.gift-tier-progress__tier.is-unlocked .gift-tier-progress__dot {
+  background-color: rgb(var(--color-base-accent));
+  box-shadow: none;
+  color: rgb(var(--color-button-text));
+}
+
+.gift-tier-progress__label {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.1rem;
+  line-height: 1.3;
+  color: rgba(var(--color-foreground), 0.7);
+}
+
+.gift-tier-progress__amount {
+  font-family: var(--font-price-family);
+  font-weight: 600;
+  color: rgb(var(--color-foreground));
+}
+
+.cart-discount {
+  display: block;
+  margin-bottom: 2rem;
+}
+
+.cart-discount__field {
+  position: relative;
+  align-items: center;
+}
+
+.cart-discount__field .field__input {
+  padding-inline-start: 4.4rem;
+  padding-inline-end: 9rem;
+}
+
+.cart-discount__icon {
+  position: absolute;
+  inset-inline-start: 1.5rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: rgba(var(--color-foreground), 0.5);
+  pointer-events: none;
+}
+
+.cart-discount__apply {
+  position: absolute;
+  inset-inline-end: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  padding: 0.8rem 1rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  color: rgb(var(--color-link));
+  cursor: pointer;
+}
+
+.cart-discount__coupons {
+  margin-top: 1rem;
+}
+
+.cart-discount__coupons summary {
+  font-size: 1.2rem;
+  color: rgb(var(--color-link));
+  cursor: pointer;
+}
+
+.cart-discount__coupons-title {
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.cart-discount__coupons-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-discount__coupon {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1.2rem 1.5rem;
+  text-align: start;
+  background-color: transparent;
+  border: 0.1rem dashed rgb(var(--color-border));
+  border-radius: min(var(--card-radius), 0.4rem);
+  cursor: pointer;
+}
+
+.cart-discount__coupon-code {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+.cart-discount__coupon-description {
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.subtotal__compare-at {
+  margin-inline-end: 0.8rem;
+  font-size: 1.4rem;
+  color: rgba(var(--color-foreground), 0.5);
+}
+
+.subtotal__savings {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--color-sale-price);
+}
+
+.cart-terms {
+  margin-bottom: 1.5rem;
+}
+
+.cart-terms__label {
+  display: flex;
+  align-items: flex-start;
+  column-gap: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  color: rgba(var(--color-foreground), 0.7);
+  cursor: pointer;
+}
+
+.cart-terms__checkbox {
+  flex: 0 0 auto;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-top: 0.1rem;
+}
+
+.cart-terms__label a {
+  color: rgb(var(--color-link));
+}
