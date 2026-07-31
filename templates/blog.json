@@ -1,1 +1,72 @@
-{"sections":{"main":{"type":"main-blog","blocks":{"title":{"type":"title","settings":{"show_date":true,"show_author":true,"show_comment_count":true}},"summary":{"type":"summary","settings":{}},"read_more":{"type":"read_more","settings":{}}},"block_order":["title","summary","read_more"],"disabled":true,"settings":{"per_page":12,"show_tag_filter":true,"show_image":true,"image_ratio":"landscape","image_position":"center center","padding_top":60,"padding_bottom":72}},"blog_slider_amYcRy":{"type":"blog-slider","name":"Blog Slider Sec","settings":{"show_blog_slider_sec":true,"blog":"blog","title":"Let’s Talk Skincare!","description":"Our top pick for you."}},"blog_grid_sec_hWniGD":{"type":"blog-grid-sec","name":"Blog Grid Sec","settings":{"show_blog_slider_sec":true,"blog":"blog","title":"Latest Journals"}}},"order":["main","blog_slider_amYcRy","blog_grid_sec_hWniGD"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-blog",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {
+            "show_date": true,
+            "show_author": true,
+            "show_comment_count": true
+          }
+        },
+        "summary": {
+          "type": "summary",
+          "settings": {}
+        },
+        "read_more": {
+          "type": "read_more",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "title",
+        "summary",
+        "read_more"
+      ],
+      "disabled": true,
+      "settings": {
+        "per_page": 12,
+        "show_tag_filter": true,
+        "show_image": true,
+        "image_ratio": "landscape",
+        "image_position": "center center",
+        "padding_top": 60,
+        "padding_bottom": 72
+      }
+    },
+    "blog_slider_amYcRy": {
+      "type": "blog-slider",
+      "name": "Blog Slider Sec",
+      "settings": {
+        "show_blog_slider_sec": true,
+        "blog": "blog",
+        "title": "Let’s Talk Skincare!",
+        "description": "Our top pick for you."
+      }
+    },
+    "blog_grid_sec_hWniGD": {
+      "type": "blog-grid-sec",
+      "name": "Blog Grid Sec",
+      "settings": {
+        "blog": "blog",
+        "title": "Latest Journals"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "blog_slider_amYcRy",
+    "blog_grid_sec_hWniGD"
+  ]
+}
