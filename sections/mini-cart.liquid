@@ -109,6 +109,18 @@
       assign gift_tier_progress_percent = gift_tiers_subtotal | times: 1.0 | divided_by: gift_tier_max_cents | at_most: 1 | times: 100 | round
     endif
   endif
+
+  assign cart_coupons_any_configured = false
+  if settings.cart_coupons_enabled
+    if settings.cart_coupon_1_code != blank or settings.cart_coupon_2_code != blank or settings.cart_coupon_3_code != blank
+      assign cart_coupons_any_configured = true
+    endif
+  endif
+
+  assign cart_terms_available = false
+  if shop.terms_of_service.url != blank and shop.privacy_policy.url != blank
+    assign cart_terms_available = true
+  endif
 -%}
 
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
