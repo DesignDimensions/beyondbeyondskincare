@@ -121,7 +121,10 @@
           <use href="#icon-close"></use>
         </svg>
       </drawer-close-button>
-      <div class="title h4">{{ 'sections.cart.title' | t }}</div>
+      <div class="title h4">
+        {{ 'sections.cart.title' | t }}
+        {%- if cart.item_count > 0 %} <span class="mini-cart__count">({{ 'sections.header.cart_count' | t: count: cart.item_count }})</span>{% endif -%}
+      </div>
       {%- liquid
         if settings.show_free_shipping_message and settings.free_shipping_minimum_amount != blank
           assign free_shipping_minimum_amounts = settings.free_shipping_minimum_amount | remove: ' ' | split: ','
