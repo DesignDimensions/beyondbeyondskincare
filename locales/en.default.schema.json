@@ -4903,7 +4903,7 @@
         },
         "header__5": {
           "content": "Gift-with-purchase tiers",
-          "info": "Each tier needs a product picked below before it will show or take effect. Products are added to the customer's cart automatically as a $0 gift once their cart subtotal crosses the tier's minimum amount, and removed if it drops back below."
+          "info": "Each tier needs a product picked below before it will show or take effect. The chosen product is added to the customer's cart automatically once their cart subtotal crosses the tier's minimum amount, and removed if it drops back below. IMPORTANT: adding the product does not make it free — theme code cannot change a line item's price. For each tier, also create a matching Automatic Discount in Shopify Admin (Discounts → Create discount → Amount off products) set to 100% off that specific product/variant, with a minimum purchase amount matching the tier below, so the gift actually rings up as free."
         },
         "header__6": {
           "content": "Available coupons list",
