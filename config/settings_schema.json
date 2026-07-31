@@ -653,6 +653,138 @@
         "id": "empty_cart_button_secondary",
         "default": true,
         "label": "t:settings_schema.cart-drawer.settings.empty_cart_button_secondary.label"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.cart-drawer.settings.header__4.content"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_promo_banner_enabled",
+        "default": false,
+        "label": "t:settings_schema.cart-drawer.settings.cart_promo_banner_enabled.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_promo_banner_text",
+        "default": "Get 10% off sitewide",
+        "label": "t:settings_schema.cart-drawer.settings.cart_promo_banner_text.label"
+      },
+      {
+        "type": "url",
+        "id": "cart_promo_banner_link",
+        "label": "t:settings_schema.cart-drawer.settings.cart_promo_banner_link.label"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.cart-drawer.settings.header__5.content",
+        "info": "t:settings_schema.cart-drawer.settings.header__5.info"
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_tiers_enabled",
+        "default": false,
+        "label": "t:settings_schema.cart-drawer.settings.gift_tiers_enabled.label"
+      },
+      {
+        "type": "text",
+        "id": "gift_tiers_heading",
+        "default": "Unlock complimentary gifts as your cart value grows",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tiers_heading.label"
+      },
+      {
+        "type": "product",
+        "id": "gift_tier_1_product",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_1_product.label"
+      },
+      {
+        "type": "text",
+        "id": "gift_tier_1_minimum_amount",
+        "default": "50",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_1_minimum_amount.label",
+        "info": "t:settings_schema.cart-drawer.settings.gift_tier_minimum_amount.info"
+      },
+      {
+        "type": "text",
+        "id": "gift_tier_1_label",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_1_label.label",
+        "info": "t:settings_schema.cart-drawer.settings.gift_tier_label.info"
+      },
+      {
+        "type": "product",
+        "id": "gift_tier_2_product",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_2_product.label"
+      },
+      {
+        "type": "text",
+        "id": "gift_tier_2_minimum_amount",
+        "default": "100",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_2_minimum_amount.label",
+        "info": "t:settings_schema.cart-drawer.settings.gift_tier_minimum_amount.info"
+      },
+      {
+        "type": "text",
+        "id": "gift_tier_2_label",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_2_label.label",
+        "info": "t:settings_schema.cart-drawer.settings.gift_tier_label.info"
+      },
+      {
+        "type": "product",
+        "id": "gift_tier_3_product",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_3_product.label"
+      },
+      {
+        "type": "text",
+        "id": "gift_tier_3_minimum_amount",
+        "default": "200",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_3_minimum_amount.label",
+        "info": "t:settings_schema.cart-drawer.settings.gift_tier_minimum_amount.info"
+      },
+      {
+        "type": "text",
+        "id": "gift_tier_3_label",
+        "label": "t:settings_schema.cart-drawer.settings.gift_tier_3_label.label",
+        "info": "t:settings_schema.cart-drawer.settings.gift_tier_label.info"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.cart-drawer.settings.header__6.content"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_coupons_enabled",
+        "default": false,
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupons_enabled.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_coupon_1_code",
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_1_code.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_coupon_1_description",
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_1_description.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_coupon_2_code",
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_2_code.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_coupon_2_description",
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_2_description.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_coupon_3_code",
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_3_code.label"
+      },
+      {
+        "type": "text",
+        "id": "cart_coupon_3_description",
+        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_3_description.label"
       }
     ]
   },
