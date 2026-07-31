@@ -15,6 +15,100 @@
   endif
 
   assign animate_count = 1
+
+  comment
+    Gift-with-purchase tiers: resolve which of the (up to 3) configured tiers the
+    customer has unlocked, based on cart subtotal minus any tier gifts already in cart.
+  endcomment
+  assign gift_tiers_any_configured = false
+  assign gift_tier_max_cents = 0
+
+  if settings.gift_tiers_enabled and cart != empty
+    assign tier_1_product = settings.gift_tier_1_product
+    assign tier_2_product = settings.gift_tier_2_product
+    assign tier_3_product = settings.gift_tier_3_product
+
+    assign tier_1_present = false
+    assign tier_1_present_price = 0
+    assign tier_2_present = false
+    assign tier_2_present_price = 0
+    assign tier_3_present = false
+    assign tier_3_present_price = 0
+
+    for item in cart.items
+      case item.properties._gift_tier
+        when '1'
+          assign tier_1_present = true
+          assign tier_1_present_price = item.original_price
+        when '2'
+          assign tier_2_present = true
+          assign tier_2_present_price = item.original_price
+        when '3'
+          assign tier_3_present = true
+          assign tier_3_present_price = item.original_price
+      endcase
+    endfor
+
+    assign gift_tiers_subtotal = cart.total_price | minus: tier_1_present_price | minus: tier_2_present_price | minus: tier_3_present_price
+
+    if tier_1_product != blank and settings.gift_tier_1_minimum_amount != blank
+      capture tier_1_amount
+        render 'currency-amount', amount_setting: settings.gift_tier_1_minimum_amount
+      endcapture
+      assign tier_1_amount = tier_1_amount | strip
+      if tier_1_amount != blank
+        assign gift_tiers_any_configured = true
+        assign tier_1_variant_id = tier_1_product.selected_or_first_available_variant.id
+        assign tier_1_label = settings.gift_tier_1_label | default: tier_1_product.title
+        assign tier_1_cents = tier_1_amount | times: 100
+        assign tier_1_qualifies = false
+        if gift_tiers_subtotal >= tier_1_cents
+          assign tier_1_qualifies = true
+        endif
+        assign gift_tier_max_cents = tier_1_cents
+      endif
+    endif
+
+    if tier_2_product != blank and settings.gift_tier_2_minimum_amount != blank
+      capture tier_2_amount
+        render 'currency-amount', amount_setting: settings.gift_tier_2_minimum_amount
+      endcapture
+      assign tier_2_amount = tier_2_amount | strip
+      if tier_2_amount != blank
+        assign gift_tiers_any_configured = true
+        assign tier_2_variant_id = tier_2_product.selected_or_first_available_variant.id
+        assign tier_2_label = settings.gift_tier_2_label | default: tier_2_product.title
+        assign tier_2_cents = tier_2_amount | times: 100
+        assign tier_2_qualifies = false
+        if gift_tiers_subtotal >= tier_2_cents
+          assign tier_2_qualifies = true
+        endif
+        assign gift_tier_max_cents = tier_2_cents
+      endif
+    endif
+
+    if tier_3_product != blank and settings.gift_tier_3_minimum_amount != blank
+      capture tier_3_amount
+        render 'currency-amount', amount_setting: settings.gift_tier_3_minimum_amount
+      endcapture
+      assign tier_3_amount = tier_3_amount | strip
+      if tier_3_amount != blank
+        assign gift_tiers_any_configured = true
+        assign tier_3_variant_id = tier_3_product.selected_or_first_available_variant.id
+        assign tier_3_label = settings.gift_tier_3_label | default: tier_3_product.title
+        assign tier_3_cents = tier_3_amount | times: 100
+        assign tier_3_qualifies = false
+        if gift_tiers_subtotal >= tier_3_cents
+          assign tier_3_qualifies = true
+        endif
+        assign gift_tier_max_cents = tier_3_cents
+      endif
+    endif
+
+    if gift_tiers_any_configured
+      assign gift_tier_progress_percent = gift_tiers_subtotal | times: 1.0 | divided_by: gift_tier_max_cents | at_most: 1 | times: 100 | round
+    endif
+  endif
 -%}
 
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
