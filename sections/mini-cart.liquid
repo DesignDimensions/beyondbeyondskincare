@@ -40,12 +40,15 @@
         when '1'
           assign tier_1_present = true
           assign tier_1_present_price = item.original_price
+          assign tier_1_key = item.key
         when '2'
           assign tier_2_present = true
           assign tier_2_present_price = item.original_price
+          assign tier_2_key = item.key
         when '3'
           assign tier_3_present = true
           assign tier_3_present_price = item.original_price
+          assign tier_3_key = item.key
       endcase
     endfor
 
