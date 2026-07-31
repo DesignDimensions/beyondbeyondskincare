@@ -547,7 +547,12 @@
                 -%}
                 <div class="product-quantity">
                   <dt class="cart-item__quantity{% if has_qty_rules or has_vol_pricing %} cart-item__quantity--info{% endif %}">
-                    {%- if gift_wrap_id == nil or item.id != gift_wrap_id -%}
+                    {%- if item.properties._gift_tier != blank -%}
+                      <span class="quantity quantity--gift">
+                        <span class="visually-hidden">{{ 'products.product.quantity.label' | t }}</span>
+                        {{ item.quantity }}
+                      </span>
+                    {%- elsif gift_wrap_id == nil or item.id != gift_wrap_id -%}
                       <quantity-popover>
                         <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
                           <div class="quantity-popover-container{% if has_qty_rules or has_vol_pricing %} quantity-popover-container--hover{% endif %}">
