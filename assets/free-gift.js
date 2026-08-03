@@ -66,31 +66,33 @@
 
   /* ── Session memory ───────────────────────────────────────────────────── */
 
-  function readSet(key) {
+  // Flags are stored against the cart token they were set for. A new cart (the
+  // customer checked out, or the cart expired) therefore starts clean instead
+  // of inheriting a stale "already added" / "dismissed" state.
+  function readMap(key) {
     try {
       var raw = window.sessionStorage.getItem(key);
-      return raw ? JSON.parse(raw) : [];
+      var parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === 'object' ? parsed : {};
     } catch (e) {
-      return [];
+      return {};
     }
   }
 
-  function writeSet(key, list) {
+  function flagged(key, id, token) {
+    return !!token && readMap(key)[id] === token;
+  }
+
+  function setFlag(key, id, token) {
+    var map = readMap(key);
+    if (token) {
+      map[id] = token;
+    } else {
+      delete map[id];
+    }
     try {
-      window.sessionStorage.setItem(key, JSON.stringify(list));
+      window.sessionStorage.setItem(key, JSON.stringify(map));
     } catch (e) {}
-  }
-
-  function flagged(key, id) {
-    return readSet(key).indexOf(id) > -1;
-  }
-
-  function setFlag(key, id, on) {
-    var list = readSet(key);
-    var index = list.indexOf(id);
-    if (on && index === -1) list.push(id);
-    if (!on && index > -1) list.splice(index, 1);
-    writeSet(key, list);
   }
 
   /* ── Planning ─────────────────────────────────────────────────────────── */
@@ -102,6 +104,7 @@
   // Returns the single action needed to bring `rule` in line with `cart`, or
   // null when the cart is already correct.
   function planFor(rule, cart) {
+    var token = cart.token;
     var triggerQuantity = 0;
     var giftLine = null;
     var giftQuantity = 0;
