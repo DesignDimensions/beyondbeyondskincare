@@ -554,13 +554,6 @@
         "label": "t:settings_schema.cart-drawer.settings.cart_drawer_enabled.label"
       },
       {
-        "type": "color",
-        "id": "cart_accent_color",
-        "default": "#0107ef",
-        "label": "t:settings_schema.cart-drawer.settings.cart_accent_color.label",
-        "info": "t:settings_schema.cart-drawer.settings.cart_accent_color.info"
-      },
-      {
         "type": "checkbox",
         "id": "show_cart_note",
         "default": true,
@@ -672,9 +665,9 @@
         "label": "t:settings_schema.cart-drawer.settings.cart_promo_banner_enabled.label"
       },
       {
-        "type": "inline_richtext",
+        "type": "text",
         "id": "cart_promo_banner_text",
-        "default": "Get <strong>10% OFF</strong> sitewide",
+        "default": "Get 10% off sitewide",
         "label": "t:settings_schema.cart-drawer.settings.cart_promo_banner_text.label"
       },
       {
@@ -718,12 +711,6 @@
         "info": "t:settings_schema.cart-drawer.settings.gift_tier_label.info"
       },
       {
-        "type": "text",
-        "id": "gift_tier_1_range_label",
-        "label": "t:settings_schema.cart-drawer.settings.gift_tier_1_range_label.label",
-        "info": "t:settings_schema.cart-drawer.settings.gift_tier_range_label.info"
-      },
-      {
         "type": "product",
         "id": "gift_tier_2_product",
         "label": "t:settings_schema.cart-drawer.settings.gift_tier_2_product.label"
@@ -742,12 +729,6 @@
         "info": "t:settings_schema.cart-drawer.settings.gift_tier_label.info"
       },
       {
-        "type": "text",
-        "id": "gift_tier_2_range_label",
-        "label": "t:settings_schema.cart-drawer.settings.gift_tier_2_range_label.label",
-        "info": "t:settings_schema.cart-drawer.settings.gift_tier_range_label.info"
-      },
-      {
         "type": "product",
         "id": "gift_tier_3_product",
         "label": "t:settings_schema.cart-drawer.settings.gift_tier_3_product.label"
@@ -764,12 +745,6 @@
         "id": "gift_tier_3_label",
         "label": "t:settings_schema.cart-drawer.settings.gift_tier_3_label.label",
         "info": "t:settings_schema.cart-drawer.settings.gift_tier_label.info"
-      },
-      {
-        "type": "text",
-        "id": "gift_tier_3_range_label",
-        "label": "t:settings_schema.cart-drawer.settings.gift_tier_3_range_label.label",
-        "info": "t:settings_schema.cart-drawer.settings.gift_tier_range_label.info"
       },
       {
         "type": "header",
@@ -810,20 +785,6 @@
         "type": "text",
         "id": "cart_coupon_3_description",
         "label": "t:settings_schema.cart-drawer.settings.cart_coupon_3_description.label"
-      },
-      {
-        "type": "header",
-        "content": "t:settings_schema.cart-drawer.settings.header__7.content"
-      },
-      {
-        "type": "text",
-        "id": "cart_powered_by_text",
-        "label": "t:settings_schema.cart-drawer.settings.cart_powered_by_text.label"
-      },
-      {
-        "type": "image_picker",
-        "id": "cart_powered_by_image",
-        "label": "t:settings_schema.cart-drawer.settings.cart_powered_by_image.label"
       }
     ]
   },

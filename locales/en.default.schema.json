@@ -1926,7 +1926,7 @@
           "content": "Language selector",
           "info": "To add a language, go to your [language settings.](/admin/settings/languages)"
         },
-        "header_sidebar": {
+        "header_sidebar":{
           "header": {
             "content": "Sidebar",
             "info": "Add a sidebar to your header, where you can display promotions or seasonal deals."
@@ -1934,7 +1934,7 @@
           "enable": {
             "label": "Enable sidebar"
           },
-          "heading": {
+          "heading":  {
             "label": "Heading"
           }
         },
@@ -4780,10 +4780,6 @@
     "cart-drawer": {
       "name": "Cart drawer",
       "settings": {
-        "cart_accent_color": {
-          "label": "Drawer accent colour",
-          "info": "Used by the promo banner, unlocked gift tiers, coupon actions and links inside the cart drawer."
-        },
         "cart_coupon_1_code": {
           "label": "Coupon 1 code"
         },
@@ -4807,12 +4803,6 @@
         },
         "cart_drawer_enabled": {
           "label": "Enable cart drawer"
-        },
-        "cart_powered_by_image": {
-          "label": "Logo"
-        },
-        "cart_powered_by_text": {
-          "label": "Text"
         },
         "cart_promo_banner_enabled": {
           "label": "Show promotional banner"
@@ -4867,9 +4857,6 @@
         "gift_tier_1_product": {
           "label": "Tier 1 gift product"
         },
-        "gift_tier_1_range_label": {
-          "label": "Tier 1 range label"
-        },
         "gift_tier_2_label": {
           "label": "Tier 2 display label"
         },
@@ -4878,9 +4865,6 @@
         },
         "gift_tier_2_product": {
           "label": "Tier 2 gift product"
-        },
-        "gift_tier_2_range_label": {
-          "label": "Tier 2 range label"
         },
         "gift_tier_3_label": {
           "label": "Tier 3 display label"
@@ -4891,17 +4875,11 @@
         "gift_tier_3_product": {
           "label": "Tier 3 gift product"
         },
-        "gift_tier_3_range_label": {
-          "label": "Tier 3 range label"
-        },
         "gift_tier_label": {
           "info": "Defaults to the product's title."
         },
         "gift_tier_minimum_amount": {
           "info": "Enter amount using number only. If using multiple currencies, separate each currency code with its amount (e.g: USD:100, EUR:95, JPY:13000). Each tier's gift is kept once unlocked, as long as the tier below it still qualifies."
-        },
-        "gift_tier_range_label": {
-          "info": "Shown above the tier dot, e.g. \"3500-4500\". Defaults to the minimum amount."
         },
         "gift_tiers_enabled": {
           "label": "Enable gift-with-purchase tiers"
@@ -4930,9 +4908,6 @@
         "header__6": {
           "content": "Available coupons list",
           "info": "Optional. Shown to customers via a \"View coupons\" link next to the discount code field."
-        },
-        "header__7": {
-          "content": "Powered by"
         },
         "shipping_calculator_default_country": {
           "info": "If your customer is logged-in, the country in his default shipping address will be selected.",
