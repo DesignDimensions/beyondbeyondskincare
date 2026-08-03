@@ -216,19 +216,42 @@
   function applyActions(actions) {
     var chain = Promise.resolve();
 
-    actions
-      .filter(function (action) { return action.type === 'change'; })
-      .forEach(function (action) {
-        chain = chain.then(function () {
-          return postJSON(cfg.routes.change, { id: action.key, quantity: action.quantity })
-            .then(function () {
-              if (action.quantity === 0) setFlag(ADDED_KEY, action.rule.id, null);
-            })
-            .catch(function (error) {
-              log('failed to update gift line', action.rule.id, error);
-            });
+    var changes = actions.filter(function (action) { return action.type === 'change'; });
+
+    if (changes.length) {
+      // Re-read the cart immediately before writing. A key we planned against
+      // can go stale if KwikCart moved the cart underneath us, and a stale key
+      // must never be allowed to resolve to a line the customer owns. Every
+      // write is gated on the line still carrying our own property, so this
+      // script structurally cannot modify anything it did not create.
+      chain = chain.then(getCart).then(function (fresh) {
+        var byKey = {};
+        (fresh.items || []).forEach(function (item) { byKey[item.key] = item; });
+
+        var writes = Promise.resolve();
+
+        changes.forEach(function (action) {
+          writes = writes.then(function () {
+            var line = byKey[action.key];
+            if (!line || !isGiftLine(line, action.rule)) {
+              log('skipped change — line is not ours:', action.key);
+              return null;
+            }
+            if (line.quantity === action.quantity) return null;
+
+            return postJSON(cfg.routes.change, { id: action.key, quantity: action.quantity })
+              .then(function () {
+                if (action.quantity === 0) setFlag(ADDED_KEY, action.rule.id, null);
+              })
+              .catch(function (error) {
+                log('failed to update gift line', action.rule.id, error);
+              });
+          });
         });
+
+        return writes;
       });
+    }
 
     var adds = actions.filter(function (action) { return action.type === 'add'; });
     if (adds.length) {

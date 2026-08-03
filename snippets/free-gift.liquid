@@ -70,6 +70,12 @@
       respectManualRemoval: true,
       // Pull the gift line back to the entitled quantity if it gets edited.
       lockGiftQuantity: true,
+      // Name of the automatic discount in Shopify admin. Used to read exactly
+      // how many units it covered, so an unrelated promotion stacking on the
+      // same product cannot be mistaken for gift coverage. If it does not match
+      // a discount, the line's total discount is used instead — so a wrong
+      // value degrades rather than breaks.
+      discountTitle: 'FREE LIP BUTTER',
       debug: false
     };
   </script>
