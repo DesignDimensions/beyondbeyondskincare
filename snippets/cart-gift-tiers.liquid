@@ -11,167 +11,217 @@
 {% endcomment %}
 
 {%- liquid
-  unless settings.gift_tiers_enabled and cart != empty
-    break
-  endunless
+  assign gift_tier_count = 0
 
-  comment
-    Gifts already in the cart must not count towards unlocking further gifts, or each tier
-    would bootstrap the next one.
-  endcomment
-  assign gift_subtotal = cart.total_price
-
-  for item in cart.items
-    if item.properties._gift_tier != blank
-      assign gift_subtotal = gift_subtotal | minus: item.original_price
-    endif
-  endfor
-
-  assign tier_variant_ids = ''
-  assign tier_keys = ''
-  assign tier_qualifies_list = ''
-  assign tier_present_list = ''
-  assign tier_labels = ''
-  assign tier_ranges = ''
-  assign tier_minimums = ''
-
-  for tier_number in (1..3)
-    assign product_key = 'gift_tier_' | append: tier_number | append: '_product'
-    assign minimum_key = 'gift_tier_' | append: tier_number | append: '_minimum_amount'
-    assign label_key = 'gift_tier_' | append: tier_number | append: '_label'
-    assign range_key = 'gift_tier_' | append: tier_number | append: '_range_label'
-
-    assign tier_product = settings[product_key]
-    assign tier_minimum_setting = settings[minimum_key]
-
-    if tier_product == blank or tier_minimum_setting == blank
-      continue
-    endif
-
-    capture tier_amount
-      render 'currency-amount', amount_setting: tier_minimum_setting
-    endcapture
-    assign tier_amount = tier_amount | strip
-
-    if tier_amount == blank
-      continue
-    endif
-
-    assign tier_cents = tier_amount | times: 100
-
-    assign tier_present = false
-    assign tier_key = ''
+  if settings.gift_tiers_enabled and cart != empty
+    comment
+      Gifts already in the cart must not count towards unlocking further gifts, or each tier
+      would bootstrap the next one.
+    endcomment
+    assign gift_subtotal = cart.total_price
     for item in cart.items
-      if item.properties._gift_tier == tier_number
-        assign tier_present = true
-        assign tier_key = item.key
-        break
+      if item.properties._gift_tier != blank
+        assign gift_subtotal = gift_subtotal | minus: item.original_price
       endif
     endfor
 
-    assign tier_qualifies = false
-    if gift_subtotal >= tier_cents
-      assign tier_qualifies = true
-    endif
+    for tier_number in (1..3)
+      assign tier_product = settings['gift_tier_' | append: tier_number | append: '_product']
+      assign tier_minimum_setting = settings['gift_tier_' | append: tier_number | append: '_minimum_amount']
 
-    assign tier_variant_ids = tier_variant_ids | append: tier_product.selected_or_first_available_variant.id | append: '|'
-    assign tier_keys = tier_keys | append: tier_key | append: '|'
-    assign tier_qualifies_list = tier_qualifies_list | append: tier_qualifies | append: '|'
-    assign tier_present_list = tier_present_list | append: tier_present | append: '|'
-    assign tier_labels = tier_labels | append: settings[label_key] | default: tier_product.title | append: '|'
-    assign tier_minimums = tier_minimums | append: tier_cents | append: '|'
-
-    capture tier_range
-      if settings[range_key] != blank
-        echo settings[range_key]
-      elsif settings.currency_code_enabled
-        echo tier_cents | money_with_currency
-      else
-        echo tier_cents | money
+      assign tier_cents = 0
+      if tier_product != blank and tier_minimum_setting != blank
+        capture tier_amount
+          render 'currency-amount', amount_setting: tier_minimum_setting
+        endcapture
+        assign tier_amount = tier_amount | strip
+        if tier_amount != blank
+          assign tier_cents = tier_amount | times: 100
+        endif
       endif
-    endcapture
-    assign tier_ranges = tier_ranges | append: tier_range | strip | append: '|'
-  endfor
 
-  if tier_minimums == blank
-    break
+      if tier_cents == 0
+        continue
+      endif
+
+      assign gift_tier_count = gift_tier_count | plus: 1
+
+      assign tier_key = ''
+      assign tier_present = false
+      assign tier_number_string = tier_number | append: ''
+      for item in cart.items
+        if item.properties._gift_tier == tier_number_string
+          assign tier_present = true
+          assign tier_key = item.key
+          break
+        endif
+      endfor
+
+      assign tier_qualifies = false
+      if gift_subtotal >= tier_cents
+        assign tier_qualifies = true
+      endif
+
+      assign tier_label = settings['gift_tier_' | append: tier_number | append: '_label']
+      if tier_label == blank
+        assign tier_label = tier_product.title
+      endif
+
+      assign tier_range = settings['gift_tier_' | append: tier_number | append: '_range_label']
+      if tier_range == blank
+        if settings.currency_code_enabled
+          assign tier_range = tier_cents | money_with_currency
+        else
+          assign tier_range = tier_cents | money
+        endif
+      endif
+
+      case tier_number
+        when 1
+          assign tier_1_on = true
+          assign tier_1_variant_id = tier_product.selected_or_first_available_variant.id
+          assign tier_1_cents = tier_cents
+          assign tier_1_key = tier_key
+          assign tier_1_present = tier_present
+          assign tier_1_qualifies = tier_qualifies
+          assign tier_1_label = tier_label
+          assign tier_1_range = tier_range
+        when 2
+          assign tier_2_on = true
+          assign tier_2_variant_id = tier_product.selected_or_first_available_variant.id
+          assign tier_2_cents = tier_cents
+          assign tier_2_key = tier_key
+          assign tier_2_present = tier_present
+          assign tier_2_qualifies = tier_qualifies
+          assign tier_2_label = tier_label
+          assign tier_2_range = tier_range
+        when 3
+          assign tier_3_on = true
+          assign tier_3_variant_id = tier_product.selected_or_first_available_variant.id
+          assign tier_3_cents = tier_cents
+          assign tier_3_key = tier_key
+          assign tier_3_present = tier_present
+          assign tier_3_qualifies = tier_qualifies
+          assign tier_3_label = tier_label
+          assign tier_3_range = tier_range
+      endcase
+    endfor
   endif
 
-  assign tier_variant_ids = tier_variant_ids | split: '|'
-  assign tier_keys = tier_keys | remove_last: '|' | split: '|'
-  assign tier_qualifies_list = tier_qualifies_list | split: '|'
-  assign tier_present_list = tier_present_list | split: '|'
-  assign tier_labels = tier_labels | split: '|'
-  assign tier_ranges = tier_ranges | split: '|'
-  assign tier_minimums = tier_minimums | split: '|'
-  assign tier_count = tier_minimums.size
+  if gift_tier_count > 0
+    comment
+      Tier N's dot sits at (N - 0.5) / count of the rail's width. Interpolating the fill inside
+      the segment it currently occupies -- rather than against the highest threshold -- is what
+      makes the bar terminate exactly on a dot when that tier is reached.
+    endcomment
+    assign segment_length = 100.0 | divided_by: gift_tier_count
+    assign gift_tier_track_end = 50.0 | divided_by: gift_tier_count
+    assign gift_tier_fill = 0
+    assign previous_amount = 0
+    assign previous_position = 0
+    assign fill_resolved = false
+    assign ordinal = 0
 
-  comment
-    Tier N's dot sits at (N - 0.5) / count of the rail's width. Interpolating the fill inside
-    the segment it currently occupies -- rather than against the highest threshold -- is what
-    makes the bar terminate exactly on a dot when that tier is reached.
-  endcomment
-  assign gift_tier_fill = 0
-  assign previous_amount = 0
-  assign previous_position = 0
-  assign fill_resolved = false
+    for tier_number in (1..3)
+      case tier_number
+        when 1
+          assign tier_on = tier_1_on
+          assign tier_cents = tier_1_cents
+        when 2
+          assign tier_on = tier_2_on
+          assign tier_cents = tier_2_cents
+        when 3
+          assign tier_on = tier_3_on
+          assign tier_cents = tier_3_cents
+      endcase
 
-  for minimum in tier_minimums
-    assign tier_minimum = minimum | plus: 0
-    assign tier_position = forloop.index | times: 100.0 | minus: 50.0 | divided_by: tier_count
+      unless tier_on
+        continue
+      endunless
 
-    unless fill_resolved
-      if gift_subtotal < tier_minimum
-        assign segment_amount = tier_minimum | minus: previous_amount | at_least: 1
-        assign segment_width = tier_position | minus: previous_position
-        assign segment_progress = gift_subtotal | minus: previous_amount | at_least: 0
-        assign gift_tier_fill = segment_progress | times: 1.0 | divided_by: segment_amount | times: segment_width | plus: previous_position
-        assign fill_resolved = true
-      else
-        assign gift_tier_fill = tier_position
-      endif
-    endunless
+      assign ordinal = ordinal | plus: 1
+      assign tier_position = ordinal | times: 100.0 | minus: 50.0 | divided_by: gift_tier_count
 
-    assign previous_amount = tier_minimum
-    assign previous_position = tier_position
-  endfor
+      unless fill_resolved
+        if gift_subtotal < tier_cents
+          assign segment_amount = tier_cents | minus: previous_amount | at_least: 1
+          assign segment_width = tier_position | minus: previous_position
+          assign segment_progress = gift_subtotal | minus: previous_amount | at_least: 0
+          assign gift_tier_fill = segment_progress | times: 1.0 | divided_by: segment_amount | times: segment_width | plus: previous_position
+          assign fill_resolved = true
+        else
+          assign gift_tier_fill = tier_position
+        endif
+      endunless
 
-  assign gift_tier_track_end = 50.0 | divided_by: tier_count
-  assign segment_length = 100.0 | divided_by: tier_count
+      assign previous_amount = tier_cents
+      assign previous_position = tier_position
+    endfor
+  endif
 -%}
 
-<gift-tier-progress
-  class="cart-card gift-tier-progress"
-  data-animate
-  data-animate-delay-{{ animate_delay }}
-  {%- for variant_id in tier_variant_ids %}
-    data-tier-{{ forloop.index }}-variant-id="{{ variant_id }}"
-    data-tier-{{ forloop.index }}-qualifies="{{ tier_qualifies_list[forloop.index0] }}"
-    data-tier-{{ forloop.index }}-present="{{ tier_present_list[forloop.index0] }}"
-    data-tier-{{ forloop.index }}-key="{{ tier_keys[forloop.index0] }}"
-  {%- endfor %}
->
-  {%- if settings.gift_tiers_heading != blank -%}
-    <p class="gift-tier-progress__heading">{{ settings.gift_tiers_heading | escape }}</p>
-  {%- endif -%}
+{%- if gift_tier_count > 0 -%}
+  <gift-tier-progress
+    class="cart-card gift-tier-progress"
+    data-animate
+    data-animate-delay-{{ animate_delay }}
+    data-tier-1-variant-id="{{ tier_1_variant_id }}"
+    data-tier-1-qualifies="{{ tier_1_qualifies }}"
+    data-tier-1-present="{{ tier_1_present }}"
+    data-tier-1-key="{{ tier_1_key }}"
+    data-tier-2-variant-id="{{ tier_2_variant_id }}"
+    data-tier-2-qualifies="{{ tier_2_qualifies }}"
+    data-tier-2-present="{{ tier_2_present }}"
+    data-tier-2-key="{{ tier_2_key }}"
+    data-tier-3-variant-id="{{ tier_3_variant_id }}"
+    data-tier-3-qualifies="{{ tier_3_qualifies }}"
+    data-tier-3-present="{{ tier_3_present }}"
+    data-tier-3-key="{{ tier_3_key }}"
+  >
+    {%- if settings.gift_tiers_heading != blank -%}
+      <p class="gift-tier-progress__heading">{{ settings.gift_tiers_heading | escape }}</p>
+    {%- endif -%}
 
-  <ol class="gift-tier-progress__track list-unstyled" style="--gift-tier-track-end: {{ gift_tier_track_end }}%;">
-    {%- for range_label in tier_ranges -%}
-      {%- liquid
-        assign segment_start = forloop.index0 | times: segment_length
-        assign segment_fill = gift_tier_fill | minus: segment_start | at_least: 0 | divided_by: segment_length | at_most: 1 | times: 100
-        assign is_unlocked = tier_qualifies_list[forloop.index0]
-      -%}
-      <li
-        class="gift-tier-progress__tier{% if is_unlocked == 'true' %} is-unlocked{% endif %}"
-        style="--gift-tier-segment-fill: {{ segment_fill }}%;"
-      >
-        <span class="gift-tier-progress__range">{{ range_label }}</span>
-        <span class="gift-tier-progress__marker">
-          <span class="gift-tier-progress__dot" aria-hidden="true">{% render 'icon', icon: 'gift' %}</span>
-        </span>
-        <span class="gift-tier-progress__label">{{ tier_labels[forloop.index0] }}</span>
-      </li>
-    {%- endfor -%}
-  </ol>
-</gift-tier-progress>
+    <ol class="gift-tier-progress__track list-unstyled" style="--gift-tier-track-end: {{ gift_tier_track_end }}%;">
+      {%- assign ordinal = 0 -%}
+      {%- for tier_number in (1..3) -%}
+        {%- liquid
+          case tier_number
+            when 1
+              assign tier_on = tier_1_on
+              assign tier_qualifies = tier_1_qualifies
+              assign tier_label = tier_1_label
+              assign tier_range = tier_1_range
+            when 2
+              assign tier_on = tier_2_on
+              assign tier_qualifies = tier_2_qualifies
+              assign tier_label = tier_2_label
+              assign tier_range = tier_2_range
+            when 3
+              assign tier_on = tier_3_on
+              assign tier_qualifies = tier_3_qualifies
+              assign tier_label = tier_3_label
+              assign tier_range = tier_3_range
+          endcase
+        -%}
+        {%- if tier_on -%}
+          {%- liquid
+            assign ordinal = ordinal | plus: 1
+            assign segment_start = ordinal | minus: 1 | times: segment_length
+            assign segment_fill = gift_tier_fill | minus: segment_start | at_least: 0 | divided_by: segment_length | at_most: 1 | times: 100
+          -%}
+          <li
+            class="gift-tier-progress__tier{% if tier_qualifies %} is-unlocked{% endif %}"
+            style="--gift-tier-segment-fill: {{ segment_fill }}%;"
+          >
+            <span class="gift-tier-progress__range">{{ tier_range }}</span>
+            <span class="gift-tier-progress__marker">
+              <span class="gift-tier-progress__dot" aria-hidden="true">{% render 'icon', icon: 'gift' %}</span>
+            </span>
+            <span class="gift-tier-progress__label">{{ tier_label | escape }}</span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ol>
+  </gift-tier-progress>
+{%- endif -%}
