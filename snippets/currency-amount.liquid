@@ -12,12 +12,17 @@
 {% endcomment %}
 {%- liquid
   assign amounts = amount_setting | remove: ' ' | split: ','
-  assign resolved_amount = blank
+  assign resolved_amount = ''
 
   if amounts.size > 1
     for amount_entry in amounts
       assign amount_parts = amount_entry | split: ':'
-      if amount_parts.first | upcase == cart.currency.iso_code
+      comment
+        Liquid rejects filters inside an `if` condition, so the comparison operand has to be
+        built first -- inlining `| upcase` here makes the whole snippet fail to parse.
+      endcomment
+      assign entry_currency = amount_parts.first | upcase
+      if entry_currency == cart.currency.iso_code
         assign resolved_amount = amount_parts.last
         break
       endif
