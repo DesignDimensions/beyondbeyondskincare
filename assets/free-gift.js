@@ -19,6 +19,7 @@
   var GIFT_PROPERTY = cfg.property || '_free_gift';
   var ADDED_KEY = 'bb-free-gift:added';
   var DISMISSED_KEY = 'bb-free-gift:dismissed';
+  var CAP_KEY = 'bb-free-gift:cap';
 
   // Never routed through the patched fetch, so our own writes can't re-trigger
   // the interceptor.
@@ -127,12 +128,29 @@
     return !!(item.properties && item.properties[GIFT_PROPERTY] === rule.id);
   }
 
-  function findGiftLine(cart, rule) {
-    var found = null;
+  // Normally the gift is found by our own property. But a third-party drawer
+  // can drop line properties when it rewrites the cart, and stacking a second
+  // gift line on top of that orphan is how you end up with a paid line beside a
+  // free one. So a zero-priced line of the gift variant is adopted instead.
+  // Only fully discounted lines qualify — a lip butter the customer actually
+  // paid for is never touched.
+  function giftLinesFor(cart, rule) {
+    var owned = [];
+    var orphans = [];
+
     (cart.items || []).forEach(function (item) {
-      if (!found && isGiftLine(item, rule)) found = item;
+      if (isGiftLine(item, rule)) {
+        owned.push(item);
+      } else if (item.variant_id === rule.giftVariantId && item.final_line_price === 0 && item.quantity > 0) {
+        orphans.push(item);
+      }
     });
-    return found;
+
+    return owned.length ? owned : orphans;
+  }
+
+  function findGiftLine(cart, rule) {
+    return giftLinesFor(cart, rule)[0] || null;
   }
 
   function triggerQuantityFor(rule, cart) {
@@ -147,17 +165,10 @@
   // null when the cart is already correct.
   function planFor(rule, cart) {
     var token = cart.token;
-    var triggerQuantity = 0;
-    var giftLine = null;
-    var giftQuantity = 0;
-
-    (cart.items || []).forEach(function (item) {
-      if (item.product_id === rule.triggerProductId) triggerQuantity += item.quantity;
-      if (isGiftLine(item, rule)) {
-        if (!giftLine) giftLine = item;
-        giftQuantity += item.quantity;
-      }
-    });
+    var triggerQuantity = triggerQuantityFor(rule, cart);
+    var giftLines = giftLinesFor(cart, rule);
+    var giftLine = giftLines[0] || null;
+    var giftQuantity = giftLines.reduce(function (sum, item) { return sum + item.quantity; }, 0);
 
     if (triggerQuantity === 0) {
       // Trigger is gone — drop the gift and reset the session memory so the
@@ -253,6 +264,69 @@
     }
 
     return chain;
+  }
+
+  /* ── Discount verification ────────────────────────────────────────────── */
+
+  // A gift is only a gift while the automatic discount zero-prices every unit
+  // of it. Only Shopify knows how far that discount stretches — "buy X get Y"
+  // has a per-order use limit we can't read from the storefront — so we add
+  // first, read the line back, and hand back any unit the discount did not
+  // cover rather than leaving it in the cart as a paid line.
+  var MAX_TRIM_PASSES = 3;
+
+  function trimUncoveredGifts(cart) {
+    var current = cart;
+    var passes = 0;
+    var trimmed = false;
+
+    function step() {
+      var actions = [];
+
+      rules.forEach(function (rule) {
+        var line = findGiftLine(current, rule);
+        if (!line) return;
+
+        var charged = line.final_line_price;
+        if (charged <= 0) {
+          // Fully covered — remember how far the discount reached.
+          rememberCap(rule, current, line.quantity);
+          return;
+        }
+
+        if (!line.original_price) return;
+
+        // original_price is the *undiscounted* unit price, so this floors the
+        // overage. Under-estimating is safe: the next pass catches the rest,
+        // and we never trim a unit the discount was covering.
+        var overage = Math.max(1, Math.floor(charged / line.original_price));
+        var quantity = Math.max(0, line.quantity - overage);
+
+        log('gift not fully covered:', rule.id, 'charged', charged, '→ qty', quantity);
+        actions.push({ type: 'change', key: line.key, quantity: quantity, rule: rule, token: current.token });
+      });
+
+      if (!actions.length) return Promise.resolve(current);
+
+      trimmed = true;
+      passes++;
+
+      return applyActions(actions)
+        .then(getCart)
+        .then(function (updated) {
+          current = updated;
+          // Recorded even if we stop iterating here, so the planner does not
+          // immediately re-add what we just took off.
+          actions.forEach(function (action) {
+            rememberCap(action.rule, updated, action.quantity);
+          });
+          return passes >= MAX_TRIM_PASSES ? current : step();
+        });
+    }
+
+    return step().then(function (final) {
+      return { cart: final, trimmed: trimmed };
+    });
   }
 
   /* ── UI refresh ───────────────────────────────────────────────────────── */
@@ -360,16 +434,21 @@
           .map(function (rule) { return planFor(rule, cart); })
           .filter(Boolean);
 
-        if (!actions.length) return null;
+        var settled = actions.length
+          ? applyActions(actions).then(getCart)
+          : Promise.resolve(cart);
 
-        log('applying', actions);
-        return applyActions(actions)
-          .then(getCart)
-          .then(function (updated) {
-            broadcast(updated);
-            lateRefresh(updated);
-            return refreshSections();
-          });
+        if (actions.length) log('applying', actions);
+
+        // Always verify, even when the plan was a no-op: a cart can arrive
+        // already over-gifted (a stale session, or a discount the merchant has
+        // since capped) and needs trimming back.
+        return settled.then(trimUncoveredGifts).then(function (result) {
+          if (!actions.length && !result.trimmed) return null;
+          broadcast(result.cart);
+          lateRefresh(result.cart);
+          return refreshSections();
+        });
       })
       .catch(function (error) {
         log('reconcile failed', error);
