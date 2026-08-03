@@ -36,7 +36,14 @@
         "giftTitle": {{ gift_product.title | json }},
         "giftAvailable": {{ gift_variant.available | json }},
         "giftQuantity": 1,
-        "multiply": false
+        {%- comment -%}
+          Gift count follows the trigger quantity: 2 Essential Edits → 2 lip
+          butters. This only stays free if the automatic discount has no cap on
+          uses per order — if yours is capped, set "maxQuantity" to that cap so
+          the overflow is never added and charged for.
+        {%- endcomment -%}
+        "multiply": true,
+        "maxQuantity": null
       }
     {%- endif -%}
   {%- endfor -%}

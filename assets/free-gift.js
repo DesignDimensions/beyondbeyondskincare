@@ -120,6 +120,9 @@
     var entitled = 0;
     if (triggerQuantity > 0) {
       entitled = rule.multiply ? triggerQuantity * rule.giftQuantity : rule.giftQuantity;
+      // Never hand out more gifts than the discount will zero-price, or the
+      // customer gets charged for the overflow.
+      if (rule.maxQuantity && entitled > rule.maxQuantity) entitled = rule.maxQuantity;
     }
 
     if (entitled === 0) {
