@@ -328,37 +328,6 @@
     return Math.floor(allocated / unit);
   }
 
-  function giftQuantityIn(cart, rule) {
-    return giftLinesFor(cart, rule).reduce(function (sum, item) { return sum + item.quantity; }, 0);
-  }
-
-  // The backstop, and the one rule that holds no matter how the discount is
-  // configured, named, capped or stacked: our own writes must never increase
-  // what the customer pays. Everything else in this file is an optimisation
-  // that decides how many units to try; this is what makes trying safe.
-  //
-  // `before` is read after the customer's own change and before ours, so any
-  // increase is ours alone.
-  function revertIfCharged(before, after) {
-    if (!before || !after || typeof after.total_price !== 'number') return Promise.resolve(after);
-    if (after.total_price <= before.total_price) return Promise.resolve(after);
-
-    var actions = [];
-
-    rules.forEach(function (rule) {
-      var previous = giftQuantityIn(before, rule);
-      var line = findGiftLine(after, rule);
-      if (!line || line.quantity <= previous) return;
-
-      log('cart total rose after adding gift — reverting', rule.id, line.quantity, '→', previous);
-      actions.push({ type: 'change', key: line.key, quantity: previous, rule: rule, token: after.token });
-      rememberCap(rule, after, previous);
-    });
-
-    if (!actions.length) return Promise.resolve(after);
-    return applyActions(actions).then(getCart);
-  }
-
   // Only Shopify knows how far the discount stretches — a "buy X get Y" use
   // limit is not readable from the storefront — so we add first, then hand back
   // any unit it did not cover rather than leaving it in the cart as a charge.
@@ -498,9 +467,7 @@
           .filter(Boolean);
 
         var settled = actions.length
-          ? applyActions(actions)
-              .then(getCart)
-              .then(function (updated) { return revertIfCharged(cart, updated); })
+          ? applyActions(actions).then(getCart)
           : Promise.resolve(cart);
 
         if (actions.length) log('applying', actions);
