@@ -340,7 +340,7 @@
 
     (cart.items || []).forEach(function (item) {
       if (item.variant_id !== rule.giftVariantId) return;
-      if (!unit) unit = item.original_price;
+      if (!unit) unit = finiteOr(item.original_price, 0);
 
       if (named) {
         allocated += namedAllocationOn(item);
@@ -352,9 +352,9 @@
       }
     });
 
-    if (!named) return freeUnits;
+    if (!named) return finiteOr(freeUnits, 0);
     if (!unit) return 0;
-    return Math.floor(allocated / unit);
+    return finiteOr(Math.floor(allocated / unit), 0);
   }
 
   // Only Shopify knows how far the discount stretches — a "buy X get Y" use
