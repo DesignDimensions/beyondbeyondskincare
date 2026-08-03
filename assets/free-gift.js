@@ -145,11 +145,11 @@
         log('gift variant unavailable, skipping:', rule.giftHandle);
         return null;
       }
-      return { type: 'add', rule: rule, quantity: entitled };
+      return { type: 'add', rule: rule, quantity: entitled, token: token };
     }
 
     if (giftQuantity !== entitled && cfg.lockGiftQuantity !== false) {
-      return { type: 'change', key: giftLine.key, quantity: entitled, rule: rule };
+      return { type: 'change', key: giftLine.key, quantity: entitled, rule: rule, token: token };
     }
 
     return null;
@@ -166,7 +166,7 @@
         chain = chain.then(function () {
           return postJSON(cfg.routes.change, { id: action.key, quantity: action.quantity })
             .then(function () {
-              if (action.quantity === 0) setFlag(ADDED_KEY, action.rule.id, false);
+              if (action.quantity === 0) setFlag(ADDED_KEY, action.rule.id, null);
             })
             .catch(function (error) {
               log('failed to update gift line', action.rule.id, error);
