@@ -274,6 +274,21 @@
       });
   }
 
+  // The request that triggered us only resolves *after* we finish, and its
+  // caller then paints section HTML that Shopify rendered before the gift
+  // existed. Repaint once those late writes have landed.
+  var lateTimers = [];
+
+  function lateRefresh(cart) {
+    lateTimers.forEach(clearTimeout);
+    lateTimers = [400, 1200].map(function (delay) {
+      return setTimeout(function () {
+        broadcast(cart);
+        refreshSections();
+      }, delay);
+    });
+  }
+
   /* ── Reconcile loop ───────────────────────────────────────────────────── */
 
   var queue = Promise.resolve();
@@ -296,6 +311,7 @@
           .then(getCart)
           .then(function (updated) {
             broadcast(updated);
+            lateRefresh(updated);
             return refreshSections();
           });
       })
