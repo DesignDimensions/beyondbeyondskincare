@@ -1,0 +1,12 @@
+<div id="gtdebug">
+enabled={{ settings.gift_tiers_enabled }};
+cartempty={% if cart == empty %}yes{% else %}no{% endif %};
+{%- for tier_number in (1..3) -%}
+  {%- assign pk = 'gift_tier_' | append: tier_number | append: '_product' -%}
+  {%- assign mk = 'gift_tier_' | append: tier_number | append: '_minimum_amount' -%}
+  {%- assign rk = 'gift_tier_' | append: tier_number | append: '_range_label' -%}
+  T{{ tier_number }}: pk={{ pk }} product_title="{{ settings[pk].title }}" min="{{ settings[mk] }}" range="{{ settings[rk] }}"
+  {%- capture amt %}{% render 'currency-amount', amount_setting: settings[mk] %}{% endcapture -%}
+  resolved="{{ amt | strip }}";
+{%- endfor -%}
+</div>
