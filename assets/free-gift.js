@@ -303,19 +303,29 @@
 
         changes.forEach(function (action) {
           writes = writes.then(function () {
+            if (halted(action.token)) return null;
+
+            var quantity = toQuantity(action.quantity);
+            if (quantity === null) {
+              log('skipped change — invalid quantity', action.quantity, 'for', action.key);
+              return null;
+            }
+
             var line = byKey[action.key];
             if (!line || !isGiftLine(line, action.rule)) {
               log('skipped change — line is not ours:', action.key);
               return null;
             }
-            if (line.quantity === action.quantity) return null;
+            if (line.quantity === quantity) return null;
 
-            return postJSON(cfg.routes.change, { id: action.key, quantity: action.quantity })
+            return postJSON(cfg.routes.change, { id: action.key, quantity: quantity })
               .then(function () {
-                if (action.quantity === 0) setFlag(ADDED_KEY, action.rule.id, null);
+                consecutiveFailures = 0;
+                if (quantity === 0) setFlag(ADDED_KEY, action.rule.id, null);
               })
               .catch(function (error) {
                 log('failed to update gift line', action.rule.id, error);
+                noteFailure(action.token);
               });
           });
         });
@@ -327,7 +337,20 @@
     var adds = actions.filter(function (action) { return action.type === 'add'; });
     if (adds.length) {
       chain = chain.then(function () {
-        var items = adds.map(function (action) {
+        var usable = adds.filter(function (action) {
+          if (halted(action.token)) return false;
+          var quantity = toQuantity(action.quantity);
+          if (quantity === null || quantity === 0) {
+            log('skipped add — invalid quantity', action.quantity);
+            return false;
+          }
+          action.quantity = quantity;
+          return true;
+        });
+
+        if (!usable.length) return null;
+
+        var items = usable.map(function (action) {
           var properties = {};
           properties[GIFT_PROPERTY] = action.rule.id;
           return { id: action.rule.giftVariantId, quantity: action.quantity, properties: properties };
@@ -335,13 +358,15 @@
 
         return postJSON(cfg.routes.add, { items: items })
           .then(function () {
-            adds.forEach(function (action) { setFlag(ADDED_KEY, action.rule.id, action.token); });
+            consecutiveFailures = 0;
+            usable.forEach(function (action) { setFlag(ADDED_KEY, action.rule.id, action.token); });
             log('added gift(s)', items);
           })
           .catch(function (error) {
             // Out of stock, discount removed, etc. — leave the cart as the
             // customer built it rather than blocking their add-to-cart.
             log('failed to add gift', error);
+            noteFailure(usable[0].token);
           });
       });
     }
