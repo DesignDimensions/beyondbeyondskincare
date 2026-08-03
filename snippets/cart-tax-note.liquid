@@ -1,0 +1,27 @@
+{% comment %}
+  Renders the "taxes/duties calculated at checkout" note, picking the wording that matches
+  what the shop actually includes in its prices and whether a shipping policy exists to link.
+
+  Usage:
+  {% render 'cart-tax-note' %}
+{% endcomment %}
+
+{%- liquid
+  if cart.duties_included and cart.taxes_included
+    assign tax_note_key = 'duties_and_taxes_included_shipping_at_checkout'
+  elsif cart.taxes_included
+    assign tax_note_key = 'taxes_included_shipping_at_checkout'
+  elsif cart.duties_included
+    assign tax_note_key = 'duties_included_taxes_at_checkout_shipping_at_checkout'
+  else
+    assign tax_note_key = 'taxes_at_checkout_shipping_at_checkout'
+  endif
+
+  if shop.shipping_policy.body == blank
+    assign tax_note_key = 'sections.cart.' | append: tax_note_key | append: '_without_policy'
+    echo tax_note_key | t
+  else
+    assign tax_note_key = 'sections.cart.' | append: tax_note_key | append: '_with_policy_html'
+    echo tax_note_key | t: link: shop.shipping_policy.url
+  endif
+-%}

@@ -1,0 +1,62 @@
+{% comment %}
+  Renders a single product card inside the cart drawer's recommendations rail.
+
+  Accepts:
+  - recommendation: {Object} Product
+
+  Usage:
+  {% render 'cart-recommendation-card', recommendation: recommendation %}
+{% endcomment %}
+
+<li class="cart-recommendations__item">
+  <a href="{{ recommendation.url }}" class="cart-recommendations__link">
+    {%- if recommendation.featured_media -%}
+      <span class="cart-recommendations__media">
+        <img
+          srcset="{{ recommendation.featured_media | image_url: width: 120 }} 1x, {{ recommendation.featured_media | image_url: width: 240 }} 2x"
+          src="{{ recommendation.featured_media | image_url: width: 120 }}"
+          alt="{{ recommendation.featured_media.alt | escape | split: '#' | first }}"
+          width="120"
+          height="{{ 120 | divided_by: recommendation.featured_media.aspect_ratio | ceil }}"
+          loading="lazy"
+          is="lazy-image"
+        />
+      </span>
+    {%- endif -%}
+    <span class="cart-recommendations__info">
+      {%- if settings.cart_recommendations_show_vendor -%}
+        <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
+        <span class="cart-recommendations__vendor">{{ recommendation.vendor }}</span>
+      {%- endif -%}
+      <span class="cart-recommendations__title">{{ recommendation.title }}</span>
+      {%- if settings.cart_recommendations_show_price -%}
+        <span class="cart-recommendations__price">
+          {%- if recommendation.price < recommendation.compare_at_price -%}
+            <s>{{ recommendation.compare_at_price | money }}</s>
+          {%- endif -%}
+          {{ recommendation.price | money }}
+        </span>
+      {%- endif -%}
+    </span>
+  </a>
+
+  {%- if recommendation.available and recommendation.variants.size == 1 -%}
+    <add-to-cart
+      class="cart-recommendations__add"
+      data-variant-id="{{ recommendation.selected_or_first_available_variant.id }}"
+      role="button"
+      tabindex="0"
+      aria-label="{{ 'products.product.add_to_cart' | t }}: {{ recommendation.title | escape }}"
+    >
+      {% render 'icon', icon: 'plus' %}
+    </add-to-cart>
+  {%- else -%}
+    <a
+      href="{{ recommendation.url }}"
+      class="cart-recommendations__add"
+      aria-label="{{ 'products.product.choose_options' | t }}: {{ recommendation.title | escape }}"
+    >
+      {% render 'icon', icon: 'plus' %}
+    </a>
+  {%- endif -%}
+</li>
