@@ -1,0 +1,133 @@
+{% comment %}
+  Renders the optional cart-drawer disclosures: gift note, order note and shipping estimator.
+  Each opens as a bottom sheet over the drawer.
+
+  Accepts:
+  - gift_wrapping: {Object} The gift-wrapping link list entry, when one is configured
+
+  Usage:
+  {% render 'cart-drawer-extras', gift_wrapping: gift_wrapping %}
+{% endcomment %}
+
+<div class="cart-card mini-cart__actions">
+  {%- if gift_wrapping != nil and cart.attributes.gift-wrapping -%}
+    <details class="mini-cart__action disclosure-has-popup">
+      <summary>
+        <span>
+          {% render 'icon', icon: 'gift' %}
+          {{ 'general.cart.gift_note.title' | t }}
+        </span>
+      </summary>
+      <div>
+        <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
+          {% render 'icon', icon: 'close' %}
+        </button>
+        <label for="Gift-note">{{ 'general.cart.gift_note.caption' | t }}</label>
+        <gift-note class="mini-cart__note">
+          <div class="field">
+            <textarea class="text-area text-area--resize-vertical field__input" name="attributes[gift-note]" id="Gift-note">{{ cart.attributes.gift-note }}</textarea>
+          </div>
+          <div>
+            <button class="button button--full-width" type="button" onclick="this.closest('details').querySelector('summary').click()">
+              {{- 'general.cart.gift_note.button' | t -}}
+            </button>
+          </div>
+        </gift-note>
+      </div>
+    </details>
+  {%- endif -%}
+
+  {%- if settings.show_cart_note -%}
+    <details class="mini-cart__action disclosure-has-popup">
+      <summary>
+        <span>
+          {% render 'icon', icon: 'pen' %}
+          {{ 'general.cart.note.title' | t }}
+        </span>
+      </summary>
+      <div>
+        <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
+          {% render 'icon', icon: 'close' %}
+        </button>
+        <label for="Cart-note">{{ 'general.cart.note.caption' | t }}</label>
+        <cart-note class="mini-cart__note">
+          <div class="field">
+            <textarea class="text-area text-area--resize-vertical field__input" name="note" id="Cart-note">{{ cart.note }}</textarea>
+          </div>
+          <div>
+            <button class="button button--full-width" type="button" onclick="this.closest('details').querySelector('summary').click()">
+              {{- 'general.cart.note.button' | t -}}
+            </button>
+          </div>
+        </cart-note>
+      </div>
+    </details>
+  {%- endif -%}
+
+  {%- if settings.show_shipping_calculator -%}
+    <details class="mini-cart__action disclosure-has-popup">
+      <summary>
+        <span>
+          {% render 'icon', icon: 'truck' %}
+          {{ 'general.cart.shipping_calculator.title' | t }}
+        </span>
+      </summary>
+      <div>
+        <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
+          {% render 'icon', icon: 'close' %}
+        </button>
+        <label for="ShippingCalculatorCountry">
+          {{ 'general.cart.shipping_calculator.caption' | t }}
+          <span class="mini-cart__question">
+            {% render 'icon', icon: 'question' %}
+            <span class="mini-cart__tooltip">{{ 'general.cart.shipping_calculator.tooltip' | t }}</span>
+          </span>
+        </label>
+        <shipping-calculator class="shipping__calculator">
+          <form-state>
+            <div class="field">
+              <div class="select">
+                <select
+                  id="ShippingCalculatorCountry"
+                  class="select__select required"
+                  data-default="{% if shop.customer_accounts_enabled and customer %}{{ customer.default_address.country }}{% elsif settings.shipping_calculator_default_country != '' %}{{ settings.shipping_calculator_default_country }}{% endif %}"
+                  autocomplete="country"
+                  data-empty="---"
+                >
+                  {{ all_country_option_tags }}
+                </select>
+                {% render 'icon', icon: 'caret' %}
+              </div>
+              <label class="visually-hidden" for="ShippingCalculatorCountry">{{ 'customer.addresses.country' | t }}</label>
+            </div>
+            <div class="field" id="ShippingCalculatorProvinceContainer" style="display: none">
+              <div class="select">
+                <select
+                  id="ShippingCalculatorProvince"
+                  class="select__select"
+                  data-default="{% if shop.customer_accounts_enabled and customer and customer.default_address.province != '' %}{{ customer.default_address.province }}{% endif %}"
+                  autocomplete="address-level1"
+                >
+                </select>
+                {% render 'icon', icon: 'caret' %}
+              </div>
+              <label class="visually-hidden" for="ShippingCalculatorProvince">{{ 'customer.addresses.province' | t }}</label>
+            </div>
+            <div class="field">
+              <input id="ShippingCalculatorZip" class="field__input required" type="text"{% if shop.customer_accounts_enabled and customer %} value="{{ customer.default_address.zip }}"{% endif %} autocapitalize="characters" autocomplete="postal-code" placeholder="{{ 'customer.addresses.zip' | t }}"/>
+              <label class="visually-hidden" for="ShippingCalculatorZip">{{ 'customer.addresses.zip' | t }}</label>
+            </div>
+            <div>
+              <button class="button button--full-width" type="button">{{ 'general.cart.shipping_calculator.button' | t }}</button>
+            </div>
+            <div class="field form__message errors hidden" id="ShippingCalculatorErrors">
+              {% render 'icon', icon: 'error' %}
+              <div class="errors"></div>
+            </div>
+            <div class="field form__message hidden" id="ShippingCalculatorSuccess"></div>
+          </form-state>
+        </shipping-calculator>
+      </div>
+    </details>
+  {%- endif -%}
+</div>
