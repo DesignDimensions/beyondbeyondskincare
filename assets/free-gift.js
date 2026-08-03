@@ -128,25 +128,14 @@
     return !!(item.properties && item.properties[GIFT_PROPERTY] === rule.id);
   }
 
-  // Normally the gift is found by our own property. But a third-party drawer
-  // can drop line properties when it rewrites the cart, and stacking a second
-  // gift line on top of that orphan is how you end up with a paid line beside a
-  // free one. So a zero-priced line of the gift variant is adopted instead.
-  // Only fully discounted lines qualify — a lip butter the customer actually
-  // paid for is never touched.
+  // Strictly our own property — never "any zero-priced line of the gift
+  // variant". The discount matches on variant, so it spills onto a lip butter
+  // the customer paid for, and treating that as ours would let the quantity
+  // lock shrink a line they actually bought.
   function giftLinesFor(cart, rule) {
-    var owned = [];
-    var orphans = [];
-
-    (cart.items || []).forEach(function (item) {
-      if (isGiftLine(item, rule)) {
-        owned.push(item);
-      } else if (item.variant_id === rule.giftVariantId && item.final_line_price === 0 && item.quantity > 0) {
-        orphans.push(item);
-      }
+    return (cart.items || []).filter(function (item) {
+      return isGiftLine(item, rule);
     });
-
-    return owned.length ? owned : orphans;
   }
 
   function findGiftLine(cart, rule) {
