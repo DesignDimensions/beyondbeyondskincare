@@ -1,74 +1,51 @@
 {%- comment -%}
   Free gift auto-add
   ------------------
-  Shopify's automatic "buy X get Y" discounts only *price* a gift at zero — they
-  never put it in the cart. This snippet resolves the offer handles below into
-  variant IDs at render time and installs a tiny cart-request interceptor.
-  `free-gift.js` does the actual add/remove through the native Cart AJAX API, so
-  GoKwik's KwikCart drawer keeps owning the cart UI.
+  Shopify's automatic "Buy X get Y" discounts only *price* the gift at zero — they
+  never put it in the cart. This snippet resolves the configured trigger/gift
+  handles into variant IDs at render time and installs a tiny cart-request
+  interceptor. `free-gift.js` does the actual add/remove through the native
+  Cart AJAX API, so GoKwik's KwikCart drawer keeps owning the cart UI.
 
-  One offer per line:
-
-      trigger-handle: gift-handle | another-gift-handle
-
-  Several offers may grant the same gift (the beauty bag comes with four of
-  them). free-gift.js groups those together so the shared discount is counted
-  once, not once per offer.
+  To add another offer, append `trigger-handle:gift-handle` to `free_gift_rules`.
 {%- endcomment -%}
 
-{%- capture free_gift_offers -%}
-the-travel-edit: beauty-bag
-the-ultimate-night-repair-supercream-nad-20g: beauty-bag | oil-free-matte-sunscreen-spf-50-pa-nad-10g
-the-morning-edit: beauty-bag | moisture-surge-lip-butter
-the-evening-edit: beauty-bag | oil-free-matte-sunscreen-spf-50-pa-nad-10g | hydro-active-all-day-cream-ceramides-nad-20g
-on-the-go: moisture-surge-lip-butter
-the-essential-edit: moisture-surge-lip-butter
-{%- endcapture -%}
-
 {%- liquid
-  assign offer_lines = free_gift_offers | newline_to_br | strip_newlines | split: '<br />'
+  assign free_gift_rules = 'the-essential-edit:moisture-surge-lip-butter' | split: ','
   assign resolved_rules = ''
 -%}
 
 {%- capture free_gift_rules_json -%}
-  {%- for offer_line in offer_lines -%}
-    {%- assign offer = offer_line | strip -%}
-    {%- if offer == blank -%}{% continue %}{%- endif -%}
-
-    {%- assign offer_parts = offer | split: ':' -%}
-    {%- assign trigger_handle = offer_parts[0] | strip -%}
+  {%- for rule in free_gift_rules -%}
+    {%- assign parts = rule | strip | split: ':' -%}
+    {%- assign trigger_handle = parts[0] | strip -%}
+    {%- assign gift_handle = parts[1] | strip -%}
     {%- assign trigger_product = all_products[trigger_handle] -%}
-    {%- if trigger_product.id == blank -%}{% continue %}{%- endif -%}
-
-    {%- assign gift_handles = offer_parts[1] | split: '|' -%}
-    {%- for gift_handle_raw in gift_handles -%}
-      {%- assign gift_handle = gift_handle_raw | strip -%}
-      {%- assign gift_product = all_products[gift_handle] -%}
-      {%- assign gift_variant = gift_product.selected_or_first_available_variant | default: gift_product.variants.first -%}
-      {%- if gift_variant.id -%}
-        {%- unless resolved_rules == '' -%},{%- endunless -%}
-        {%- assign resolved_rules = resolved_rules | append: 'x' -%}
-        {
-          "id": {{ trigger_handle | append: '--' | append: gift_handle | json }},
-          "triggerHandle": {{ trigger_handle | json }},
-          "triggerProductId": {{ trigger_product.id | json }},
-          "giftHandle": {{ gift_handle | json }},
-          "giftProductId": {{ gift_product.id | json }},
-          "giftVariantId": {{ gift_variant.id | json }},
-          "giftTitle": {{ gift_product.title | json }},
-          "giftAvailable": {{ gift_variant.available | json }},
-          "giftQuantity": 1,
-          {%- comment -%}
-            Gift count follows the trigger quantity: 2 Morning Edits earn 2 bags.
-            Overshoot is impossible either way — free-gift.js reads back how far
-            the discount actually reached and hands back anything it did not
-            cover. `maxQuantity` is an optional hard ceiling per offer.
-          {%- endcomment -%}
-          "multiply": true,
-          "maxQuantity": null
-        }
-      {%- endif -%}
-    {%- endfor -%}
+    {%- assign gift_product = all_products[gift_handle] -%}
+    {%- assign gift_variant = gift_product.selected_or_first_available_variant | default: gift_product.variants.first -%}
+    {%- if trigger_product.id and gift_variant.id -%}
+      {%- unless resolved_rules == '' -%},{%- endunless -%}
+      {%- assign resolved_rules = resolved_rules | append: 'x' -%}
+      {
+        "id": {{ trigger_handle | append: '--' | append: gift_handle | json }},
+        "triggerHandle": {{ trigger_handle | json }},
+        "triggerProductId": {{ trigger_product.id | json }},
+        "giftHandle": {{ gift_handle | json }},
+        "giftProductId": {{ gift_product.id | json }},
+        "giftVariantId": {{ gift_variant.id | json }},
+        "giftTitle": {{ gift_product.title | json }},
+        "giftAvailable": {{ gift_variant.available | json }},
+        "giftQuantity": 1,
+        {%- comment -%}
+          Gift count follows the trigger quantity: 2 Essential Edits → 2 lip
+          butters. This only stays free if the automatic discount has no cap on
+          uses per order — if yours is capped, set "maxQuantity" to that cap so
+          the overflow is never added and charged for.
+        {%- endcomment -%}
+        "multiply": true,
+        "maxQuantity": null
+      }
+    {%- endif -%}
   {%- endfor -%}
 {%- endcapture -%}
 
@@ -84,8 +61,8 @@ the-essential-edit: moisture-surge-lip-butter
         root: {{ routes.root_url | json }}
       },
       cartPath: {{ routes.cart_url | json }},
-      // Property stamped on the gift line so it stays distinct from the same
-      // product bought at full price. Leading underscore hides it at checkout.
+      // Property stamped on the gift line so it stays distinct from a lip butter
+      // the customer paid for. Leading underscore keeps it hidden at checkout.
       property: '_free_gift',
       // Re-adding a gift the customer just deleted would fight them, so a manual
       // removal sticks until the trigger product leaves the cart. Set to false
@@ -93,22 +70,12 @@ the-essential-edit: moisture-surge-lip-butter
       respectManualRemoval: true,
       // Pull the gift line back to the entitled quantity if it gets edited.
       lockGiftQuantity: true,
-      // Stand down for units of the gift product already in the cart, whoever
-      // put them there — the customer, KwikCart's own gift module, or another
-      // app. Without this, two mechanisms granting the same gift each add a
-      // line and the shopper sees the product twice, once free and once
-      // charged. Set to false to always add the full entitlement on top.
-      deferToExistingUnits: true,
-      // Names of the automatic discounts in Shopify admin, exactly as they
-      // appear there. Naming them lets the script read precisely how many units
-      // each covered, so an unrelated promotion stacking on the same product is
-      // never mistaken for gift coverage.
-      //
-      // Leave the list empty and it falls back to counting allocations that take
-      // 100% off, plus any line costing nothing — which is correct for a normal
-      // "buy X get Y free" setup. Filling it in is more precise, and only
-      // matters if you ever run another 100%-off promotion at the same time.
-      discountTitles: [],
+      // Name of the automatic discount in Shopify admin. Used to read exactly
+      // how many units it covered, so an unrelated promotion stacking on the
+      // same product cannot be mistaken for gift coverage. If it does not match
+      // a discount, the line's total discount is used instead — so a wrong
+      // value degrades rather than breaks.
+      discountTitle: 'FREE LIP BUTTER',
       debug: false
     };
   </script>
