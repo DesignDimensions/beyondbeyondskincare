@@ -93,6 +93,12 @@ the-essential-edit: moisture-surge-lip-butter
       respectManualRemoval: true,
       // Pull the gift line back to the entitled quantity if it gets edited.
       lockGiftQuantity: true,
+      // Stand down for units of the gift product already in the cart, whoever
+      // put them there — the customer, KwikCart's own gift module, or another
+      // app. Without this, two mechanisms granting the same gift each add a
+      // line and the shopper sees the product twice, once free and once
+      // charged. Set to false to always add the full entitlement on top.
+      deferToExistingUnits: true,
       // Names of the automatic discounts in Shopify admin, exactly as they
       // appear there. Naming them lets the script read precisely how many units
       // each covered, so an unrelated promotion stacking on the same product is
