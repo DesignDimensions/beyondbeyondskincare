@@ -280,25 +280,27 @@
 
   /* ── Discount verification ────────────────────────────────────────────── */
 
-  // How much of the free-gift discount landed on a line. Preferring the named
-  // discount keeps an unrelated promotion stacking on the same line from
-  // inflating the count; total_discount is the fallback when the title does
-  // not match anything.
+  // How much of the *free-gift* discount landed on a line.
+  //
+  // When a discount title is configured this counts only that discount, and
+  // deliberately does NOT fall back to total_discount when nothing matches.
+  // Falling back is what let a stacked sitewide promo masquerade as gift
+  // coverage and leave the customer paying for a "free" unit. Counting zero is
+  // the safe direction: the gift is dropped, which is visible, rather than
+  // charged for, which is not.
   function allocationOn(item) {
     var title = cfg.discountTitle;
     var allocations = item.line_level_discount_allocations;
 
-    if (title && allocations && allocations.length) {
+    if (title) {
       var sum = 0;
-      var matched = false;
-      allocations.forEach(function (allocation) {
+      (allocations || []).forEach(function (allocation) {
         var application = allocation.discount_application || {};
         if (String(application.title || '').toLowerCase() === String(title).toLowerCase()) {
           sum += allocation.amount;
-          matched = true;
         }
       });
-      if (matched) return sum;
+      return sum;
     }
 
     return item.total_discount || 0;
