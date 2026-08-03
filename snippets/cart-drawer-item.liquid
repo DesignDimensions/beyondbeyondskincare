@@ -1,0 +1,254 @@
+{% comment %}
+  Renders one line item card in the cart drawer.
+
+  Accepts:
+  - item: {Object} Cart line item
+  - gift_wrap_id: {Number} Variant id of the gift-wrapping product, if one is configured
+  - gift_wraps_in_cart: {Number} Quantity of gift wraps currently in the cart
+  - items_in_cart: {Number} Cart item count excluding gift wraps
+  - cart_items_size: {Number} cart.items.size
+
+  Usage:
+  {% render 'cart-drawer-item', item: item, gift_wrap_id: gift_wrap_id %}
+{% endcomment %}
+
+{%- liquid
+  assign line = item.index | plus: 1
+
+  assign is_gift_wrap = false
+  if gift_wrap_id != nil and item.id == gift_wrap_id
+    assign is_gift_wrap = true
+  endif
+
+  assign is_gift_tier = false
+  if item.properties._gift_tier != blank
+    assign is_gift_tier = true
+  endif
+
+  assign has_qty_rules = false
+  if item.variant.quantity_rule.increment > 1 or item.variant.quantity_rule.min > 1 or item.variant.quantity_rule.max != null
+    assign has_qty_rules = true
+  endif
+
+  assign has_vol_pricing = false
+  if item.variant.quantity_price_breaks.size > 0
+    assign has_vol_pricing = true
+  endif
+
+  assign show_qty_info = false
+  if has_qty_rules or has_vol_pricing
+    assign show_qty_info = true
+  endif
+
+  comment
+    Line item properties are shown in the same pill as the variant title when a product has
+    no variants of its own, so a personalised item still reads as configurable at a glance.
+  endcomment
+  assign custom_properties = ''
+  for property in item.properties
+    assign property_first_char = property.first | slice: 0
+    if property.last != blank and property_first_char != '_'
+      assign custom_properties = custom_properties | append: property.first | append: ': ' | append: property.last | append: ' · '
+    endif
+  endfor
+  assign custom_properties = custom_properties | remove_last: ' · '
+
+  assign show_variant_picker = false
+  if item.product.has_only_default_variant == false and item.product.variants.size > 1 and is_gift_wrap == false and is_gift_tier == false
+    assign show_variant_picker = true
+  endif
+-%}
+
+<li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}"
+  data-variant-id="{{ item.variant_id }}"
+  data-handle="{{ item.product.handle }}"
+  data-quantity="{{ item.quantity }}"
+  data-price="{{ item.original_price }}"
+>
+  <div class="cart-item__body">
+    {%- if item.image -%}
+      <a href="{{ item.url }}" class="cart-item__media">
+        <img
+          srcset="{{ item.image | image_url: width: 140 }} 1x, {{ item.image | image_url: width: 280 }} 2x"
+          src="{{ item.image | image_url: width: 140 }}"
+          alt="{{ item.image.alt | escape | split: '#' | first }}"
+          width="140"
+          height="{{ 140 | divided_by: item.image.aspect_ratio | ceil }}"
+          loading="lazy"
+          is="lazy-image"
+        />
+      </a>
+    {%- endif -%}
+
+    <div class="cart-item__content">
+      <div class="cart-item__head">
+        <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
+        <span class="cart-item__price">
+          {%- if item.original_price != item.final_price -%}
+            <s class="cart-item__price-compare">
+              <price-money><bdi>{{ item.original_price | money }}</bdi></price-money>
+            </s>
+          {%- endif -%}
+          <span class="cart-item__price-final">
+            <price-money><bdi>{{ item.final_price | money }}</bdi></price-money>
+          </span>
+        </span>
+      </div>
+
+      {%- if item.selling_plan_allocation != null or item.line_level_discount_allocations.size > 0 or item.unit_price_measurement -%}
+        <div class="cart-item__meta">
+          {%- if item.selling_plan_allocation != null -%}
+            <span class="cart-item__meta-line">{{ item.selling_plan_allocation.selling_plan.name }}</span>
+          {%- endif -%}
+
+          {%- if item.variant.available and item.unit_price_measurement -%}
+            <span class="cart-item__meta-line unit-price">
+              <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
+              <price-money><bdi>{% if settings.currency_code_enabled %}{{ item.variant.unit_price | money_with_currency }}{% else %}{{ item.variant.unit_price | money }}{% endif %}</bdi></price-money>
+              <span aria-hidden="true">/</span>
+              <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
+              {%- if item.variant.unit_price_measurement.reference_value != 1 -%}
+                {{- item.variant.unit_price_measurement.reference_value -}}
+              {%- endif -%}
+              {{ item.variant.unit_price_measurement.reference_unit }}
+            </span>
+          {%- endif -%}
+
+          {%- if item.line_level_discount_allocations.size > 0 -%}
+            <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">
+              {%- for discount in item.line_level_discount_allocations -%}
+                <li class="discounts__discount">
+                  {%- render 'icon', icon: 'discount' -%}
+                  {{ discount.discount_application.title }}
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="cart-item__controls">
+        {%- if show_variant_picker -%}
+          <cart-variant-picker
+            class="cart-item__variant"
+            data-line="{{ line }}"
+            data-key="{{ item.key }}"
+            data-variant-id="{{ item.variant_id }}"
+            data-quantity="{{ item.quantity }}"
+            data-selling-plan="{{ item.selling_plan_allocation.selling_plan.id }}"
+            data-properties="{{ item.properties | json | escape }}"
+          >
+            <label class="visually-hidden" for="CartVariant-{{ line }}">
+              {{- 'products.product.choose_options' | t -}}
+            </label>
+            <select class="cart-item__variant-select" id="CartVariant-{{ line }}">
+              {%- for variant in item.product.variants -%}
+                <option
+                  value="{{ variant.id }}"
+                  {% if variant.id == item.variant_id %}selected{% endif %}
+                  {% unless variant.available %}disabled{% endunless %}
+                >
+                  {{- variant.title -}}
+                  {%- unless variant.available %} — {{ 'products.product.sold_out' | t }}{% endunless -%}
+                </option>
+              {%- endfor -%}
+            </select>
+            {% render 'icon', icon: 'caret' %}
+          </cart-variant-picker>
+        {%- elsif item.product.has_only_default_variant == false -%}
+          <span class="cart-item__variant cart-item__variant--static">{{ item.variant.title }}</span>
+        {%- elsif custom_properties != blank -%}
+          <span class="cart-item__variant cart-item__variant--static">{{ custom_properties }}</span>
+        {%- else -%}
+          <span class="cart-item__variant-spacer"></span>
+        {%- endif -%}
+
+        <div class="cart-item__actions">
+          {%- if is_gift_tier -%}
+            <span class="cart-item__gift-badge">
+              {% render 'icon', icon: 'gift' %}
+              {{ 'sections.cart.gift_free' | t }}
+            </span>
+            {%- render 'loading-spinner' -%}
+          {%- elsif is_gift_wrap -%}
+            <gift-quantity class="quantity"
+              cart-items-size="{{ cart_items_size }}"
+              gift-wraps-in-cart="{{ gift_wraps_in_cart }}"
+              items-in-cart="{{ items_in_cart }}"
+            >
+              <label for="Quantity-{{ line }}" class="visually-hidden">{{ 'products.product.quantity.label' | t }}:</label>
+              <button class="quantity__button no-js-hidden visually-hidden" name="minus" type="button" disabled="disabled">
+                <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}</span>
+                {% render 'icon', icon: 'minus' %}
+              </button>
+              <input class="quantity__input"
+                type="number"
+                name="updates[]"
+                value="{{ item.quantity }}"
+                min="0"
+                aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
+                id="Quantity-{{ line }}"
+                data-index="{{ line }}"
+                disabled="disabled"
+              />
+              <button class="quantity__button no-js-hidden visually-hidden" name="plus" type="button" disabled="disabled">
+                <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}</span>
+                {% render 'icon', icon: 'plus' %}
+              </button>
+            </gift-quantity>
+            {%- render 'loading-spinner' -%}
+          {%- else -%}
+            <quantity-popover>
+              <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
+                <div class="quantity-popover-container{% if show_qty_info %} quantity-popover-container--hover{% endif %}">
+                  <label for="Quantity-{{ line }}" class="visually-hidden">{{ 'products.product.quantity.label' | t }}</label>
+                  <quantity-input class="quantity">
+                    <button class="quantity__button no-js-hidden" name="minus" type="button">
+                      <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}</span>
+                      {% render 'icon', icon: 'minus' %}
+                    </button>
+                    <input class="quantity__input"
+                      type="number"
+                      data-quantity-variant-id="{{ item.variant.id }}"
+                      name="updates[]"
+                      value="{{ item.quantity }}"
+                      {% # theme-check-disable %}
+                      data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
+                      min="0"
+                      data-min="{{ item.variant.quantity_rule.min }}"
+                      {% if item.variant.quantity_rule.max != null %}
+                        max="{{ item.variant.quantity_rule.max }}"
+                      {% endif %}
+                      step="{{ item.variant.quantity_rule.increment }}"
+                      {% # theme-check-enable %}
+                      aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
+                      id="Quantity-{{ line }}"
+                      data-index="{{ line }}"
+                    />
+                    <button class="quantity__button no-js-hidden" name="plus" type="button">
+                      <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}</span>
+                      {% render 'icon', icon: 'plus' %}
+                    </button>
+                  </quantity-input>
+                </div>
+              </div>
+              {%- if show_qty_info -%}
+                {% render 'cart-quantity-rules', item: item, has_qty_rules: has_qty_rules, has_vol_pricing: has_vol_pricing %}
+              {%- endif -%}
+            </quantity-popover>
+            {%- render 'loading-spinner' -%}
+            <cart-remove-button class="cart-item__remove" id="Remove-{{ line }}" data-index="{{ line }}">
+              <a href="{{ item.url_to_remove }}" aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}" data-no-instant>
+                {% render 'icon', icon: 'remove' %}
+              </a>
+            </cart-remove-button>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <p class="cart-item__error form__message errors" id="Line-item-error-{{ line }}">
+        <span class="cart-item__error-text"></span>
+      </p>
+    </div>
+  </div>
+</li>
