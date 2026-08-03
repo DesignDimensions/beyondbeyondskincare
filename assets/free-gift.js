@@ -83,6 +83,12 @@
     return !!token && readMap(key)[id] === token;
   }
 
+  function writeMap(key, map) {
+    try {
+      window.sessionStorage.setItem(key, JSON.stringify(map));
+    } catch (e) {}
+  }
+
   function setFlag(key, id, token) {
     var map = readMap(key);
     if (token) {
@@ -90,15 +96,51 @@
     } else {
       delete map[id];
     }
-    try {
-      window.sessionStorage.setItem(key, JSON.stringify(map));
-    } catch (e) {}
+    writeMap(key, map);
+  }
+
+  // How many gift units the discount actually covered last time we looked,
+  // recorded with the trigger quantity it was measured at. Without this the
+  // planner would keep re-adding the units the trim step just removed.
+  function rememberCap(rule, cart, quantity) {
+    var map = readMap(CAP_KEY);
+    map[rule.id] = {
+      token: cart.token,
+      triggerQuantity: triggerQuantityFor(rule, cart),
+      cap: quantity
+    };
+    writeMap(CAP_KEY, map);
+  }
+
+  function capFor(rule, token, triggerQuantity) {
+    var entry = readMap(CAP_KEY)[rule.id];
+    if (!entry || entry.token !== token || typeof entry.cap !== 'number') return null;
+    // More triggers than when we measured — the discount may stretch further,
+    // so let it probe again rather than under-gifting.
+    if (triggerQuantity > entry.triggerQuantity) return null;
+    return entry.cap;
   }
 
   /* ── Planning ─────────────────────────────────────────────────────────── */
 
   function isGiftLine(item, rule) {
     return !!(item.properties && item.properties[GIFT_PROPERTY] === rule.id);
+  }
+
+  function findGiftLine(cart, rule) {
+    var found = null;
+    (cart.items || []).forEach(function (item) {
+      if (!found && isGiftLine(item, rule)) found = item;
+    });
+    return found;
+  }
+
+  function triggerQuantityFor(rule, cart) {
+    var total = 0;
+    (cart.items || []).forEach(function (item) {
+      if (item.product_id === rule.triggerProductId) total += item.quantity;
+    });
+    return total;
   }
 
   // Returns the single action needed to bring `rule` in line with `cart`, or
