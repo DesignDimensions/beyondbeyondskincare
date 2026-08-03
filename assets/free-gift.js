@@ -19,6 +19,7 @@
   var GIFT_PROPERTY = cfg.property || '_free_gift';
   var ADDED_KEY = 'bb-free-gift:added';
   var DISMISSED_KEY = 'bb-free-gift:dismissed';
+  var CAP_KEY = 'bb-free-gift:cap';
 
   // Never routed through the patched fetch, so our own writes can't re-trigger
   // the interceptor.
@@ -253,6 +254,69 @@
     }
 
     return chain;
+  }
+
+  /* ── Discount verification ────────────────────────────────────────────── */
+
+  // A gift is only a gift while the automatic discount zero-prices every unit
+  // of it. Only Shopify knows how far that discount stretches — "buy X get Y"
+  // has a per-order use limit we can't read from the storefront — so we add
+  // first, read the line back, and hand back any unit the discount did not
+  // cover rather than leaving it in the cart as a paid line.
+  var MAX_TRIM_PASSES = 3;
+
+  function trimUncoveredGifts(cart) {
+    var current = cart;
+    var passes = 0;
+    var trimmed = false;
+
+    function step() {
+      var actions = [];
+
+      rules.forEach(function (rule) {
+        var line = findGiftLine(current, rule);
+        if (!line) return;
+
+        var charged = line.final_line_price;
+        if (charged <= 0) {
+          // Fully covered — remember how far the discount reached.
+          rememberCap(rule, current, line.quantity);
+          return;
+        }
+
+        if (!line.original_price) return;
+
+        // original_price is the *undiscounted* unit price, so this floors the
+        // overage. Under-estimating is safe: the next pass catches the rest,
+        // and we never trim a unit the discount was covering.
+        var overage = Math.max(1, Math.floor(charged / line.original_price));
+        var quantity = Math.max(0, line.quantity - overage);
+
+        log('gift not fully covered:', rule.id, 'charged', charged, '→ qty', quantity);
+        actions.push({ type: 'change', key: line.key, quantity: quantity, rule: rule, token: current.token });
+      });
+
+      if (!actions.length) return Promise.resolve(current);
+
+      trimmed = true;
+      passes++;
+
+      return applyActions(actions)
+        .then(getCart)
+        .then(function (updated) {
+          current = updated;
+          // Recorded even if we stop iterating here, so the planner does not
+          // immediately re-add what we just took off.
+          actions.forEach(function (action) {
+            rememberCap(action.rule, updated, action.quantity);
+          });
+          return passes >= MAX_TRIM_PASSES ? current : step();
+        });
+    }
+
+    return step().then(function (final) {
+      return { cart: final, trimmed: trimmed };
+    });
   }
 
   /* ── UI refresh ───────────────────────────────────────────────────────── */
