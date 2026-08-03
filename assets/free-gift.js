@@ -563,6 +563,8 @@
 
     return getCart()
       .then(function (cart) {
+        if (halted(cart.token)) return null;
+
         var actions = [];
         rules.forEach(function (rule) {
           actions = actions.concat(planFor(rule, cart));
@@ -578,7 +580,17 @@
         // already over-gifted (a stale session, or a discount the merchant has
         // since capped) and needs trimming back.
         return settled.then(trimUncoveredGifts).then(function (result) {
-          if (!actions.length && !result.trimmed) return null;
+          var wrote = actions.length || result.trimmed;
+
+          // A round that changed nothing is the definition of settled. A run of
+          // rounds that keep writing is the definition of a loop, and trips the
+          // breaker before the customer ever sees the cart flicker.
+          if (!wrote) {
+            noteSettled();
+            return null;
+          }
+          noteUnsettled(result.cart && result.cart.token);
+
           broadcast(result.cart);
           lateRefresh(result.cart);
           return refreshSections();
