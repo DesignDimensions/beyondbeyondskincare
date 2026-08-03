@@ -257,65 +257,83 @@
 
   /* ── Discount verification ────────────────────────────────────────────── */
 
-  // A gift is only a gift while the automatic discount zero-prices every unit
-  // of it. Only Shopify knows how far that discount stretches — "buy X get Y"
-  // has a per-order use limit we can't read from the storefront — so we add
-  // first, read the line back, and hand back any unit the discount did not
-  // cover rather than leaving it in the cart as a paid line.
-  var MAX_TRIM_PASSES = 3;
+  // How much of the free-gift discount landed on a line. Preferring the named
+  // discount keeps an unrelated promotion stacking on the same line from
+  // inflating the count; total_discount is the fallback when the title does
+  // not match anything.
+  function allocationOn(item) {
+    var title = cfg.discountTitle;
+    var allocations = item.line_level_discount_allocations;
 
-  function trimUncoveredGifts(cart) {
-    var current = cart;
-    var passes = 0;
-    var trimmed = false;
-
-    function step() {
-      var actions = [];
-
-      rules.forEach(function (rule) {
-        var line = findGiftLine(current, rule);
-        if (!line) return;
-
-        var charged = line.final_line_price;
-        if (charged <= 0) {
-          // Fully covered — remember how far the discount reached.
-          rememberCap(rule, current, line.quantity);
-          return;
+    if (title && allocations && allocations.length) {
+      var sum = 0;
+      var matched = false;
+      allocations.forEach(function (allocation) {
+        var application = allocation.discount_application || {};
+        if (String(application.title || '').toLowerCase() === String(title).toLowerCase()) {
+          sum += allocation.amount;
+          matched = true;
         }
-
-        if (!line.original_price) return;
-
-        // original_price is the *undiscounted* unit price, so this floors the
-        // overage. Under-estimating is safe: the next pass catches the rest,
-        // and we never trim a unit the discount was covering.
-        var overage = Math.max(1, Math.floor(charged / line.original_price));
-        var quantity = Math.max(0, line.quantity - overage);
-
-        log('gift not fully covered:', rule.id, 'charged', charged, '→ qty', quantity);
-        actions.push({ type: 'change', key: line.key, quantity: quantity, rule: rule, token: current.token });
       });
-
-      if (!actions.length) return Promise.resolve(current);
-
-      trimmed = true;
-      passes++;
-
-      return applyActions(actions)
-        .then(getCart)
-        .then(function (updated) {
-          current = updated;
-          // Recorded even if we stop iterating here, so the planner does not
-          // immediately re-add what we just took off.
-          actions.forEach(function (action) {
-            rememberCap(action.rule, updated, action.quantity);
-          });
-          return passes >= MAX_TRIM_PASSES ? current : step();
-        });
+      if (matched) return sum;
     }
 
-    return step().then(function (final) {
-      return { cart: final, trimmed: trimmed };
+    return item.total_discount || 0;
+  }
+
+  // Units of the gift variant the discount is covering, counted across *every*
+  // line it sits on — including one the customer added themselves.
+  //
+  // This is deliberately cart-wide. Shopify picks which line to allocate a
+  // "buy X get Y" discount to, and that choice is arbitrary; the cart total is
+  // identical either way. Asking "is my line free?" instead is what made a
+  // customer's own lip butter appear to vanish — the discount landed on their
+  // line, ours looked uncovered, and we deleted the gift.
+  function coveredUnitsFor(cart, rule) {
+    var unit = 0;
+    var allocated = 0;
+
+    (cart.items || []).forEach(function (item) {
+      if (item.variant_id !== rule.giftVariantId) return;
+      if (!unit) unit = item.original_price;
+      allocated += allocationOn(item);
     });
+
+    if (!unit) return 0;
+    return Math.floor(allocated / unit);
+  }
+
+  // Only Shopify knows how far the discount stretches — a "buy X get Y" use
+  // limit is not readable from the storefront — so we add first, then hand back
+  // any unit it did not cover rather than leaving it in the cart as a charge.
+  function trimUncoveredGifts(cart) {
+    var current = cart;
+    var trimmed = false;
+
+    var actions = [];
+
+    rules.forEach(function (rule) {
+      var line = findGiftLine(current, rule);
+      if (!line) return;
+
+      var covered = coveredUnitsFor(current, rule);
+      rememberCap(rule, current, covered);
+
+      if (line.quantity <= covered) return;
+
+      log('gift exceeds discount coverage:', rule.id, line.quantity, '→', covered);
+      actions.push({ type: 'change', key: line.key, quantity: covered, rule: rule, token: current.token });
+    });
+
+    if (!actions.length) return Promise.resolve({ cart: current, trimmed: false });
+
+    trimmed = true;
+
+    return applyActions(actions)
+      .then(getCart)
+      .then(function (updated) {
+        return { cart: updated, trimmed: trimmed };
+      });
   }
 
   /* ── UI refresh ───────────────────────────────────────────────────────── */
