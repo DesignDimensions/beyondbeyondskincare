@@ -14,158 +14,15 @@
     assign items_in_cart = cart.item_count | minus: gift_wraps_in_cart
   endif
 
-  assign animate_count = 1
-
-  comment
-    Gift-with-purchase tiers: resolve which of the (up to 3) configured tiers the
-    customer has unlocked, based on cart subtotal minus any tier gifts already in cart.
-  endcomment
-  assign gift_tiers_any_configured = false
-
-  if settings.gift_tiers_enabled and cart != empty
-    assign tier_1_product = settings.gift_tier_1_product
-    assign tier_2_product = settings.gift_tier_2_product
-    assign tier_3_product = settings.gift_tier_3_product
-
-    assign tier_1_present = false
-    assign tier_1_present_price = 0
-    assign tier_2_present = false
-    assign tier_2_present_price = 0
-    assign tier_3_present = false
-    assign tier_3_present_price = 0
-
-    for item in cart.items
-      case item.properties._gift_tier
-        when '1'
-          assign tier_1_present = true
-          assign tier_1_present_price = item.original_price
-          assign tier_1_key = item.key
-        when '2'
-          assign tier_2_present = true
-          assign tier_2_present_price = item.original_price
-          assign tier_2_key = item.key
-        when '3'
-          assign tier_3_present = true
-          assign tier_3_present_price = item.original_price
-          assign tier_3_key = item.key
-      endcase
-    endfor
-
-    assign gift_tiers_subtotal = cart.total_price | minus: tier_1_present_price | minus: tier_2_present_price | minus: tier_3_present_price
-
-    comment
-      `gift_tier_minimums` collects the configured tier thresholds in order so the progress
-      bar can be interpolated between dots rather than against a single maximum. Without it
-      the fill lands off-centre from the dot that marks the tier it represents.
-    endcomment
-    assign gift_tier_minimums = ''
-
-    if tier_1_product != blank and settings.gift_tier_1_minimum_amount != blank
-      capture tier_1_amount
-        render 'currency-amount', amount_setting: settings.gift_tier_1_minimum_amount
-      endcapture
-      assign tier_1_amount = tier_1_amount | strip
-      if tier_1_amount != blank
-        assign gift_tiers_any_configured = true
-        assign tier_1_variant_id = tier_1_product.selected_or_first_available_variant.id
-        assign tier_1_label = settings.gift_tier_1_label | default: tier_1_product.title
-        assign tier_1_cents = tier_1_amount | times: 100
-        assign tier_1_qualifies = false
-        if gift_tiers_subtotal >= tier_1_cents
-          assign tier_1_qualifies = true
-        endif
-        assign gift_tier_minimums = gift_tier_minimums | append: tier_1_cents | append: ','
-      endif
-    endif
-
-    if tier_2_product != blank and settings.gift_tier_2_minimum_amount != blank
-      capture tier_2_amount
-        render 'currency-amount', amount_setting: settings.gift_tier_2_minimum_amount
-      endcapture
-      assign tier_2_amount = tier_2_amount | strip
-      if tier_2_amount != blank
-        assign gift_tiers_any_configured = true
-        assign tier_2_variant_id = tier_2_product.selected_or_first_available_variant.id
-        assign tier_2_label = settings.gift_tier_2_label | default: tier_2_product.title
-        assign tier_2_cents = tier_2_amount | times: 100
-        assign tier_2_qualifies = false
-        if gift_tiers_subtotal >= tier_2_cents
-          assign tier_2_qualifies = true
-        endif
-        assign gift_tier_minimums = gift_tier_minimums | append: tier_2_cents | append: ','
-      endif
-    endif
-
-    if tier_3_product != blank and settings.gift_tier_3_minimum_amount != blank
-      capture tier_3_amount
-        render 'currency-amount', amount_setting: settings.gift_tier_3_minimum_amount
-      endcapture
-      assign tier_3_amount = tier_3_amount | strip
-      if tier_3_amount != blank
-        assign gift_tiers_any_configured = true
-        assign tier_3_variant_id = tier_3_product.selected_or_first_available_variant.id
-        assign tier_3_label = settings.gift_tier_3_label | default: tier_3_product.title
-        assign tier_3_cents = tier_3_amount | times: 100
-        assign tier_3_qualifies = false
-        if gift_tiers_subtotal >= tier_3_cents
-          assign tier_3_qualifies = true
-        endif
-        assign gift_tier_minimums = gift_tier_minimums | append: tier_3_cents | append: ','
-      endif
-    endif
-
-    if gift_tiers_any_configured
-      assign gift_tier_minimums = gift_tier_minimums | split: ','
-      assign gift_tier_count = gift_tier_minimums.size
-
-      comment
-        Walk the tiers to find the segment the subtotal currently sits in, then interpolate
-        within it. Positions are percentages of the full track width, where tier N's dot sits
-        at (N - 0.5) / count -- so the fill always terminates exactly on a dot's centre.
-      endcomment
-      assign gift_tier_fill = 0
-      assign gift_tier_prev_amount = 0
-      assign gift_tier_prev_position = 0
-      assign gift_tier_fill_resolved = false
-
-      for minimum in gift_tier_minimums
-        assign tier_minimum = minimum | plus: 0
-        assign tier_position = forloop.index | times: 100.0 | minus: 50.0 | divided_by: gift_tier_count
-
-        unless gift_tier_fill_resolved
-          if gift_tiers_subtotal < tier_minimum
-            assign segment_amount = tier_minimum | minus: gift_tier_prev_amount | at_least: 1
-            assign segment_width = tier_position | minus: gift_tier_prev_position
-            assign segment_progress = gift_tiers_subtotal | minus: gift_tier_prev_amount | at_least: 0
-            assign gift_tier_fill = segment_progress | times: 1.0 | divided_by: segment_amount | times: segment_width | plus: gift_tier_prev_position
-            assign gift_tier_fill_resolved = true
-          else
-            assign gift_tier_fill = tier_position
-          endif
-        endunless
-
-        assign gift_tier_prev_amount = tier_minimum
-        assign gift_tier_prev_position = tier_position
-      endfor
-
-      comment
-        The grey track stops at the last dot rather than running to the drawer edge.
-      endcomment
-      assign gift_tier_track_end = 50.0 | divided_by: gift_tier_count
-    endif
-  endif
-
   assign cart_coupons_count = 0
   if settings.cart_coupons_enabled
-    if settings.cart_coupon_1_code != blank
-      assign cart_coupons_count = cart_coupons_count | plus: 1
-    endif
-    if settings.cart_coupon_2_code != blank
-      assign cart_coupons_count = cart_coupons_count | plus: 1
-    endif
-    if settings.cart_coupon_3_code != blank
-      assign cart_coupons_count = cart_coupons_count | plus: 1
-    endif
+    for coupon_number in (1..3)
+      assign code_key = 'cart_coupon_' | append: coupon_number | append: '_code'
+      assign coupon_code = settings[code_key]
+      if coupon_code != blank
+        assign cart_coupons_count = cart_coupons_count | plus: 1
+      endif
+    endfor
   endif
 
   assign show_cart_extras = false
@@ -181,70 +38,48 @@
 
 <form class="mini-cart{% if cart == empty %} is-empty{% endif %}" action="{{ routes.cart_url }}" method="post" id="cart">
   <div class="mini-cart__inner">
-    <div class="mini-cart__header" data-animate data-animate-delay-{{ animate_count }}>
+    <div class="mini-cart__header" data-animate data-animate-delay-1>
       <div class="mini-cart__header-row">
         <p class="mini-cart__title">
           {{ 'sections.cart.title_drawer' | t }}
-          {%- if cart.item_count > 0 %} <span class="mini-cart__count">({{ 'sections.header.cart_count' | t: count: cart.item_count }})</span>{% endif -%}
+          {%- if cart.item_count > 0 %}
+            <span class="mini-cart__count">({{ 'sections.header.cart_count' | t: count: cart.item_count }})</span>
+          {%- endif -%}
         </p>
         <drawer-close-button class="mini-cart__close" aria-label="{{ 'accessibility.close' | t }}">
           {% render 'icon', icon: 'close' %}
         </drawer-close-button>
       </div>
 
-      {%- liquid
-        if settings.show_free_shipping_message and settings.free_shipping_minimum_amount != blank
-          assign free_shipping_minimum_amounts = settings.free_shipping_minimum_amount | remove: ' ' | split: ','
-          assign show_free_shipping_message = false
-
-          if free_shipping_minimum_amounts.size > 1
-            for minimum_amount in free_shipping_minimum_amounts
-              assign minimum_amount_parts = minimum_amount | split: ':'
-              assign currency_code = minimum_amount_parts | first | upcase
-              if currency_code == cart.currency.iso_code
-                assign free_shipping_minimum_amount = minimum_amount_parts | last
-                assign show_free_shipping_message = true
-                break
-              endif
-            endfor
-          else
-            assign free_shipping_minimum_amount = free_shipping_minimum_amounts | last
-            if free_shipping_minimum_amount contains ':'
-              assign free_shipping_minimum_amount = free_shipping_minimum_amounts | split: ':' | last
-            endif
-            assign show_free_shipping_message = true
-          endif
-
-          if show_free_shipping_message
-            render 'free-shipping', minimum_amount: free_shipping_minimum_amount
-          endif
-        endif
-      -%}
+      {% render 'cart-free-shipping-bar' %}
     </div>
 
     {%- if settings.cart_promo_banner_enabled and settings.cart_promo_banner_text != blank -%}
-      {%- assign animate_count = animate_count | plus: 1 -%}
       {%- if settings.cart_promo_banner_link != blank -%}
-        <a href="{{ settings.cart_promo_banner_link }}" class="mini-cart__promo-banner" data-animate data-animate-delay-{{ animate_count }}>
+        <a href="{{ settings.cart_promo_banner_link }}" class="mini-cart__promo-banner" data-animate data-animate-delay-2>
           {{ settings.cart_promo_banner_text }}
         </a>
       {%- else -%}
-        <p class="mini-cart__promo-banner" data-animate data-animate-delay-{{ animate_count }}>
+        <p class="mini-cart__promo-banner" data-animate data-animate-delay-2>
           {{ settings.cart_promo_banner_text }}
         </p>
       {%- endif -%}
     {%- endif -%}
 
-    <div class="mini-cart__empty center" data-animate data-animate-delay-{{ animate_count }}>
+    <div class="mini-cart__empty center" data-animate data-animate-delay-2>
       <p class="mini-cart__empty-text h3">{{ 'sections.cart.empty' | t }}</p>
       <div class="mini-cart__empty-message typeset">{{ settings.empty_cart_message }}</div>
       {%- if settings.empty_cart_collections == blank -%}
-        <a href="{{ routes.all_products_collection_url }}" class="button{% if settings.empty_cart_button_secondary %} button--tertiary{% endif %}">{{ 'general.continue_shopping' | t }}</a>
+        <a href="{{ routes.all_products_collection_url }}" class="button{% if settings.empty_cart_button_secondary %} button--tertiary{% endif %}">
+          {{- 'general.continue_shopping' | t -}}
+        </a>
       {%- else -%}
         <ul class="mini-cart__empty-collections list-unstyled">
           {%- for collection_card in settings.empty_cart_collections -%}
             <li>
-              <a href="{{ collection_card.url }}" class="button{% if settings.empty_cart_button_secondary %} button--tertiary{% endif %} button--full-width">{{ collection_card.title | escape }}</a>
+              <a href="{{ collection_card.url }}" class="button{% if settings.empty_cart_button_secondary %} button--tertiary{% endif %} button--full-width">
+                {{- collection_card.title | escape -}}
+              </a>
             </li>
           {%- endfor -%}
         </ul>
@@ -263,388 +98,24 @@
     </div>
 
     <div class="mini-cart__main" id="main-cart-items">
-      {%- if gift_tiers_any_configured -%}
-        {%- assign animate_count = animate_count | plus: 1 -%}
-        <gift-tier-progress
-          class="cart-card gift-tier-progress"
-          data-animate
-          data-animate-delay-{{ animate_count }}
-          data-tier-1-variant-id="{{ tier_1_variant_id }}"
-          data-tier-1-qualifies="{{ tier_1_qualifies }}"
-          data-tier-1-present="{{ tier_1_present }}"
-          data-tier-1-key="{{ tier_1_key }}"
-          data-tier-2-variant-id="{{ tier_2_variant_id }}"
-          data-tier-2-qualifies="{{ tier_2_qualifies }}"
-          data-tier-2-present="{{ tier_2_present }}"
-          data-tier-2-key="{{ tier_2_key }}"
-          data-tier-3-variant-id="{{ tier_3_variant_id }}"
-          data-tier-3-qualifies="{{ tier_3_qualifies }}"
-          data-tier-3-present="{{ tier_3_present }}"
-          data-tier-3-key="{{ tier_3_key }}"
-        >
-          {%- if settings.gift_tiers_heading != blank -%}
-            <p class="gift-tier-progress__heading">{{ settings.gift_tiers_heading | escape }}</p>
-          {%- endif -%}
-          <ol class="gift-tier-progress__track list-unstyled" style="--gift-tier-fill: {{ gift_tier_fill }}%; --gift-tier-track-end: {{ gift_tier_track_end }}%;">
-            {%- for tier_number in (1..3) -%}
-              {%- liquid
-                case tier_number
-                  when 1
-                    assign tier_variant_id = tier_1_variant_id
-                    assign tier_qualifies = tier_1_qualifies
-                    assign tier_label = tier_1_label
-                    assign tier_cents = tier_1_cents
-                    assign tier_range_label = settings.gift_tier_1_range_label
-                  when 2
-                    assign tier_variant_id = tier_2_variant_id
-                    assign tier_qualifies = tier_2_qualifies
-                    assign tier_label = tier_2_label
-                    assign tier_cents = tier_2_cents
-                    assign tier_range_label = settings.gift_tier_2_range_label
-                  when 3
-                    assign tier_variant_id = tier_3_variant_id
-                    assign tier_qualifies = tier_3_qualifies
-                    assign tier_label = tier_3_label
-                    assign tier_cents = tier_3_cents
-                    assign tier_range_label = settings.gift_tier_3_range_label
-                endcase
-              -%}
-              {%- if tier_variant_id != blank -%}
-                {%- liquid
-                  comment
-                    Each tier owns the slice of track to its left, so the fill has to be
-                    re-expressed as a fraction of that slice for the segment to line up.
-                  endcomment
-                  assign segment_start = forloop.index | minus: 1 | times: 100.0 | divided_by: gift_tier_count
-                  assign segment_length = 100.0 | divided_by: gift_tier_count
-                  assign segment_fill = gift_tier_fill | minus: segment_start | at_least: 0 | divided_by: segment_length | at_most: 1 | times: 100
-                -%}
-                <li class="gift-tier-progress__tier{% if tier_qualifies %} is-unlocked{% endif %}" style="--gift-tier-segment-fill: {{ segment_fill }}%;">
-                  <span class="gift-tier-progress__range">
-                    {%- if tier_range_label != blank -%}
-                      {{ tier_range_label | escape }}
-                    {%- else -%}
-                      {% if settings.currency_code_enabled %}{{ tier_cents | money_with_currency }}{% else %}{{ tier_cents | money }}{% endif %}
-                    {%- endif -%}
-                  </span>
-                  <span class="gift-tier-progress__marker">
-                    <span class="gift-tier-progress__dot" aria-hidden="true">{% render 'icon', icon: 'gift' %}</span>
-                  </span>
-                  <span class="gift-tier-progress__label">{{ tier_label | escape }}</span>
-                </li>
-              {%- endif -%}
-            {%- endfor -%}
-          </ol>
-        </gift-tier-progress>
-      {%- endif -%}
+      {% render 'cart-gift-tiers', animate_delay: 3 %}
 
       <cart-items class="mini-cart__items">
-        {%- assign animate_count = animate_count | plus: 1 -%}
-        <ul class="cart-items__list list-unstyled" data-animate data-animate-delay-{{ animate_count }}>
+        <ul class="cart-items__list list-unstyled" data-animate data-animate-delay-4>
           {%- for item in cart.items -%}
-            {%- liquid
-              assign line = item.index | plus: 1
-              assign is_gift_wrap = false
-              if gift_wrap_id != nil and item.id == gift_wrap_id
-                assign is_gift_wrap = true
-              endif
-              assign is_gift_tier = false
-              if item.properties._gift_tier != blank
-                assign is_gift_tier = true
-              endif
-
-              assign has_qty_rules = false
-              if item.variant.quantity_rule.increment > 1 or item.variant.quantity_rule.min > 1 or item.variant.quantity_rule.max != null
-                assign has_qty_rules = true
-              endif
-
-              assign has_vol_pricing = false
-              if item.variant.quantity_price_breaks.size > 0
-                assign has_vol_pricing = true
-              endif
-            -%}
-            <li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}"
-              data-variant-id="{{ item.variant_id }}"
-              data-handle="{{ item.product.handle }}"
-              data-quantity="{{ item.quantity }}"
-              data-price="{{ item.original_price }}"
-            >
-              <div class="cart-item__body">
-                {%- if item.image -%}
-                  <a href="{{ item.url }}" class="cart-item__media media-wrapper">
-                    <img
-                      srcset="{{ item.image | image_url: width: 140 }} 1x, {{ item.image | image_url: width: 280 }} 2x"
-                      src="{{ item.image | image_url: width: 140 }}"
-                      alt="{{ item.image.alt | escape | split: '#' | first }}"
-                      width="140"
-                      height="{{ 140 | divided_by: item.image.aspect_ratio | ceil }}"
-                      loading="lazy"
-                      is="lazy-image"
-                    />
-                  </a>
-                {%- endif -%}
-
-                <div class="cart-item__content">
-                  <div class="cart-item__head">
-                    <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
-                    <div class="cart-item__price">
-                      {%- if item.original_price != item.final_price -%}
-                        <s class="cart-item__price-compare">
-                          <price-money><bdi>{{ item.original_price | money }}</bdi></price-money>
-                        </s>
-                        <span class="cart-item__price-final">
-                          <price-money><bdi>{{ item.final_price | money }}</bdi></price-money>
-                        </span>
-                      {%- else -%}
-                        <span class="cart-item__price-final">
-                          <price-money><bdi>{{ item.original_price | money }}</bdi></price-money>
-                        </span>
-                      {%- endif -%}
-                    </div>
-                  </div>
-
-                  {%- if item.selling_plan_allocation != null or item.line_level_discount_allocations.size > 0 or item.unit_price_measurement -%}
-                    <div class="cart-item__meta">
-                      {%- if item.selling_plan_allocation != null -%}
-                        <span class="cart-item__meta-line">{{ item.selling_plan_allocation.selling_plan.name }}</span>
-                      {%- endif -%}
-
-                      {%- if item.variant.available and item.unit_price_measurement -%}
-                        <span class="cart-item__meta-line unit-price">
-                          <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
-                          <price-money><bdi>{% if settings.currency_code_enabled %}{{ item.variant.unit_price | money_with_currency }}{% else %}{{ item.variant.unit_price | money }}{% endif %}</bdi></price-money>
-                          <span aria-hidden="true">/</span>
-                          <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
-                          {%- if item.variant.unit_price_measurement.reference_value != 1 -%}
-                            {{- item.variant.unit_price_measurement.reference_value -}}
-                          {%- endif -%}
-                          {{ item.variant.unit_price_measurement.reference_unit }}
-                        </span>
-                      {%- endif -%}
-
-                      {%- if item.line_level_discount_allocations.size > 0 -%}
-                        <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">
-                          {%- for discount in item.line_level_discount_allocations -%}
-                            <li class="discounts__discount">
-                              {%- render 'icon', icon: 'discount' -%}
-                              {{ discount.discount_application.title }}
-                            </li>
-                          {%- endfor -%}
-                        </ul>
-                      {%- endif -%}
-                    </div>
-                  {%- endif -%}
-
-                  <div class="cart-item__controls">
-                    {%- liquid
-                      assign custom_properties = ''
-                      for property in item.properties
-                        assign property_first_char = property.first | slice: 0
-                        if property.last != blank and property_first_char != '_'
-                          assign custom_properties = custom_properties | append: property.first | append: ': ' | append: property.last | append: ' · '
-                        endif
-                      endfor
-                      assign custom_properties = custom_properties | remove_last: ' · '
-                    -%}
-
-                    {%- if item.product.has_only_default_variant == false and is_gift_wrap == false and is_gift_tier == false and item.product.variants.size > 1 -%}
-                      <cart-variant-picker
-                        class="cart-item__variant"
-                        data-line="{{ line }}"
-                        data-key="{{ item.key }}"
-                        data-variant-id="{{ item.variant_id }}"
-                        data-quantity="{{ item.quantity }}"
-                        data-selling-plan="{{ item.selling_plan_allocation.selling_plan.id }}"
-                        data-properties="{{ item.properties | json | escape }}"
-                      >
-                        <label class="visually-hidden" for="CartVariant-{{ line }}">
-                          {{- 'products.product.choose_options' | t -}}
-                        </label>
-                        <select class="cart-item__variant-select" id="CartVariant-{{ line }}">
-                          {%- for variant in item.product.variants -%}
-                            <option
-                              value="{{ variant.id }}"
-                              {% if variant.id == item.variant_id %}selected{% endif %}
-                              {% unless variant.available %}disabled{% endunless %}
-                            >
-                              {{- variant.title -}}
-                              {%- unless variant.available %} — {{ 'products.product.sold_out' | t }}{% endunless -%}
-                            </option>
-                          {%- endfor -%}
-                        </select>
-                        {% render 'icon', icon: 'caret' %}
-                      </cart-variant-picker>
-                    {%- elsif item.product.has_only_default_variant == false -%}
-                      <span class="cart-item__variant cart-item__variant--static">{{ item.variant.title }}</span>
-                    {%- elsif custom_properties != blank -%}
-                      <span class="cart-item__variant cart-item__variant--static">{{ custom_properties }}</span>
-                    {%- else -%}
-                      <span class="cart-item__variant-spacer"></span>
-                    {%- endif -%}
-
-                    <div class="cart-item__actions">
-                      {%- if is_gift_tier -%}
-                        <span class="cart-item__gift-badge">
-                          {% render 'icon', icon: 'gift' %}
-                          {{ 'sections.cart.gift_free' | t }}
-                        </span>
-                        {%- render 'loading-spinner' -%}
-                      {%- elsif is_gift_wrap == false -%}
-                        <quantity-popover>
-                          <div class="cart-item__quantity-wrapper quantity-popover-wrapper">
-                            <div class="quantity-popover-container{% if has_qty_rules or has_vol_pricing %} quantity-popover-container--hover{% endif %}">
-                              <label for="Quantity-{{ line }}" class="visually-hidden">{{ 'products.product.quantity.label' | t }}</label>
-                              <quantity-input class="quantity">
-                                <button class="quantity__button no-js-hidden" name="minus" type="button">
-                                  <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}</span>
-                                  {% render 'icon', icon: 'minus' %}
-                                </button>
-                                <input class="quantity__input"
-                                  type="number"
-                                  data-quantity-variant-id="{{ item.variant.id }}"
-                                  name="updates[]"
-                                  value="{{ item.quantity }}"
-                                  {% # theme-check-disable %}
-                                  data-cart-quantity="{{ cart | item_count_for_variant: item.variant.id }}"
-                                  min="0"
-                                  data-min="{{ item.variant.quantity_rule.min }}"
-                                  {% if item.variant.quantity_rule.max != null %}
-                                    max="{{ item.variant.quantity_rule.max }}"
-                                  {% endif %}
-                                  step="{{ item.variant.quantity_rule.increment }}"
-                                  {% # theme-check-enable %}
-                                  aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
-                                  id="Quantity-{{ line }}"
-                                  data-index="{{ line }}"
-                                />
-                                <button class="quantity__button no-js-hidden" name="plus" type="button">
-                                  <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}</span>
-                                  {% render 'icon', icon: 'plus' %}
-                                </button>
-                              </quantity-input>
-                            </div>
-                          </div>
-                          {%- if has_qty_rules or has_vol_pricing -%}
-                            <button
-                              type="button"
-                              class="quantity-popover__info-button quantity-popover__info-button--icon-with-label button button--tertiary"
-                              aria-expanded="false"
-                            >
-                              {%- render 'icon', icon: 'info' -%}
-                              <span>
-                                {%- if has_vol_pricing -%}
-                                  {{ 'products.product.volume_pricing.note' | t }}
-                                {%- elsif has_qty_rules -%}
-                                  {{ 'products.product.quantity.note' | t }}
-                                {%- endif -%}
-                              </span>
-                            </button>
-                            <div
-                              class="cart-items__info global-settings-popup quantity-popover__info"
-                              tabindex="-1"
-                              hidden
-                            >
-                              {%- if has_qty_rules == false -%}
-                                <span class="volume-pricing-label caption">
-                                  {{- 'products.product.volume_pricing.title' | t -}}
-                                </span>
-                              {%- endif -%}
-                              <div class="quantity__rules caption">
-                                {%- if item.variant.quantity_rule.increment > 1 -%}
-                                  <span class="divider">
-                                    {{- 'products.product.quantity.multiples_of' | t: quantity: item.variant.quantity_rule.increment -}}
-                                  </span>
-                                {%- endif -%}
-                                {%- if item.variant.quantity_rule.min > 1 -%}
-                                  <span class="divider">
-                                    {{- 'products.product.quantity.min_of' | t: quantity: item.variant.quantity_rule.min -}}
-                                  </span>
-                                {%- endif -%}
-                                {%- if item.variant.quantity_rule.max != null -%}
-                                  <span class="divider">
-                                    {{- 'products.product.quantity.max_of' | t: quantity: item.variant.quantity_rule.max -}}
-                                  </span>
-                                {%- endif -%}
-                              </div>
-                              <button
-                                class="button-close button button--tertiary"
-                                type="button"
-                                aria-label="{{ 'accessibility.close' | t }}"
-                              >
-                                {%- render 'icon', icon: 'close' -%}
-                              </button>
-                              {%- if item.variant.quantity_price_breaks.size > 0 -%}
-                                <volume-pricing class="parent-display">
-                                  <ul class="list-unstyled">
-                                    <li>
-                                      <span>{{ item.variant.quantity_rule.min }}+</span>
-                                      <span>{{ item.variant.price | money_with_currency }}/ea</span>
-                                    </li>
-                                    {%- for price_break in item.variant.quantity_price_breaks -%}
-                                      <li>
-                                        <span>
-                                          {{- price_break.minimum_quantity -}}
-                                          <span aria-hidden="true">+</span></span
-                                        >
-                                        <span>{{ price_break.price | money_with_currency }}/ea</span>
-                                      </li>
-                                    {%- endfor -%}
-                                  </ul>
-                                </volume-pricing>
-                              {%- endif -%}
-                            </div>
-                          {%- endif -%}
-                        </quantity-popover>
-                        {%- render 'loading-spinner' -%}
-                        <cart-remove-button class="cart-item__remove" id="Remove-{{ line }}" data-index="{{ line }}">
-                          <a href="{{ item.url_to_remove }}" aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}" data-no-instant>
-                            {% render 'icon', icon: 'remove' %}
-                          </a>
-                        </cart-remove-button>
-                      {%- else -%}
-                        <gift-quantity class="quantity"
-                          cart-items-size="{{ cart.items.size }}"
-                          gift-wraps-in-cart="{{ gift_wraps_in_cart }}"
-                          items-in-cart="{{ items_in_cart }}"
-                        >
-                          <label for="Quantity-{{ line }}" class="visually-hidden">{{ 'products.product.quantity.label' | t }}:</label>
-                          <button class="quantity__button no-js-hidden visually-hidden" name="minus" type="button" disabled="disabled">
-                            <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: item.product.title | escape }}</span>
-                            {% render 'icon', icon: 'minus' %}
-                          </button>
-                          <input class="quantity__input"
-                            type="number"
-                            name="updates[]"
-                            value="{{ item.quantity }}"
-                            min="0"
-                            aria-label="{{ 'products.product.quantity.input_label' | t: product: item.product.title | escape }}"
-                            id="Quantity-{{ line }}"
-                            data-index="{{ line }}"
-                            disabled="disabled"
-                          />
-                          <button class="quantity__button no-js-hidden visually-hidden" name="plus" type="button" disabled="disabled">
-                            <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: item.product.title | escape }}</span>
-                            {% render 'icon', icon: 'plus' %}
-                          </button>
-                        </gift-quantity>
-                        {%- render 'loading-spinner' -%}
-                      {%- endif -%}
-                    </div>
-                  </div>
-
-                  <p class="cart-item__error form__message errors" id="Line-item-error-{{ line }}">
-                    <span class="cart-item__error-text"></span>
-                  </p>
-                </div>
-              </div>
-            </li>
+            {% render 'cart-drawer-item',
+              item: item,
+              gift_wrap_id: gift_wrap_id,
+              gift_wraps_in_cart: gift_wraps_in_cart,
+              items_in_cart: items_in_cart,
+              cart_items_size: cart.items.size
+            %}
           {%- endfor -%}
         </ul>
       </cart-items>
 
       {%- if cart != empty -%}
-        {%- assign animate_count = animate_count | plus: 1 -%}
-        <discount-code class="cart-card cart-discount" data-animate data-animate-delay-{{ animate_count }}>
+        <discount-code class="cart-card cart-discount" data-animate data-animate-delay-5>
           <div class="cart-discount__field">
             {% render 'icon', icon: 'discount', class: 'cart-discount__icon' %}
             <label for="CartDiscountCode" class="visually-hidden">{{ 'general.cart.discount.caption' | t }}</label>
@@ -673,17 +144,10 @@
               <ul class="cart-discount__coupons-list list-unstyled">
                 {%- for coupon_number in (1..3) -%}
                   {%- liquid
-                    case coupon_number
-                      when 1
-                        assign coupon_code = settings.cart_coupon_1_code
-                        assign coupon_description = settings.cart_coupon_1_description
-                      when 2
-                        assign coupon_code = settings.cart_coupon_2_code
-                        assign coupon_description = settings.cart_coupon_2_description
-                      when 3
-                        assign coupon_code = settings.cart_coupon_3_code
-                        assign coupon_description = settings.cart_coupon_3_description
-                    endcase
+                    assign code_key = 'cart_coupon_' | append: coupon_number | append: '_code'
+                    assign description_key = 'cart_coupon_' | append: coupon_number | append: '_description'
+                    assign coupon_code = settings[code_key]
+                    assign coupon_description = settings[description_key]
                   -%}
                   {%- if coupon_code != blank -%}
                     <li>
@@ -711,13 +175,12 @@
           if settings.cart_recommendations_products != blank
             assign cart_recommendations_limit = settings.cart_recommendations_products.count
           endif
-          assign animate_count = animate_count | plus: 1
         -%}
         <cart-recommendations
           class="cart-card cart-recommendations"
           data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ cart.items.first.product_id }}&limit={{ cart_recommendations_limit }}"
           data-animate
-          data-animate-delay-{{ animate_count }}
+          data-animate-delay-6
         >
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
@@ -741,14 +204,14 @@
             type="checkbox"
             name="attributes[gift-wrapping]"
             value="yes"
-            {% if cart.attributes.gift-wrapping %}
-              checked="checked"
-            {% endif %}
+            {% if cart.attributes.gift-wrapping %}checked="checked"{% endif %}
             class="visually-hidden"
           />
           <label for="gift-wrapping" class="gift-wrapping__label">
-            {%- capture gift_price -%}<price-money class="price"><bdi>{{ gift_wrapping.object.price | money }}</bdi></price-money>{%- endcapture -%}
-            <span class="gift-wrapping__text">{{ 'sections.cart.gift_wrapping_html' | t : price: gift_price }}</span>
+            {%- capture gift_price -%}
+              <price-money class="price"><bdi>{{ gift_wrapping.object.price | money }}</bdi></price-money>
+            {%- endcapture -%}
+            <span class="gift-wrapping__text">{{ 'sections.cart.gift_wrapping_html' | t: price: gift_price }}</span>
             <div class="loading-overlay hidden">
               <div class="loading-overlay__spinner">
                 {% render 'icon', icon: 'spinner' %}
@@ -760,129 +223,11 @@
       {%- endif -%}
 
       {%- if show_cart_extras -%}
-        <div class="cart-card mini-cart__actions">
-          {%- if gift_wrapping != nil and cart.attributes.gift-wrapping -%}
-            <details class="mini-cart__action disclosure-has-popup">
-              <summary>
-                <span>
-                  {% render 'icon', icon: 'gift' %}
-                  {{ 'general.cart.gift_note.title' | t }}
-                </span>
-              </summary>
-              <div>
-                <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
-                  {% render 'icon', icon: 'close' %}
-                </button>
-                <label for="Gift-note">{{ 'general.cart.gift_note.caption' | t }}</label>
-                <gift-note class="mini-cart__note">
-                  <div class="field">
-                    <textarea class="text-area text-area--resize-vertical field__input" name="attributes[gift-note]" id="Gift-note">{{ cart.attributes.gift-note }}</textarea>
-                  </div>
-                  <div>
-                    <button class="button button--full-width" type="button" onclick="this.closest('details').querySelector('summary').click()">{{ 'general.cart.gift_note.button' | t }}</button>
-                  </div>
-                </gift-note>
-              </div>
-            </details>
-          {%- endif -%}
-
-          {%- if settings.show_cart_note -%}
-            <details class="mini-cart__action disclosure-has-popup">
-              <summary>
-                <span>
-                  {% render 'icon', icon: 'pen' %}
-                  {{ 'general.cart.note.title' | t }}
-                </span>
-              </summary>
-              <div>
-                <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
-                  {% render 'icon', icon: 'close' %}
-                </button>
-                <label for="Cart-note">{{ 'general.cart.note.caption' | t }}</label>
-                <cart-note class="mini-cart__note">
-                  <div class="field">
-                    <textarea class="text-area text-area--resize-vertical field__input" name="note" id="Cart-note">{{ cart.note }}</textarea>
-                  </div>
-                  <div>
-                    <button class="button button--full-width" type="button" onclick="this.closest('details').querySelector('summary').click()">{{ 'general.cart.note.button' | t }}</button>
-                  </div>
-                </cart-note>
-              </div>
-            </details>
-          {%- endif -%}
-
-          {%- if settings.show_shipping_calculator -%}
-            <details class="mini-cart__action disclosure-has-popup">
-              <summary>
-                <span>
-                  {% render 'icon', icon: 'truck' %}
-                  {{ 'general.cart.shipping_calculator.title' | t }}
-                </span>
-              </summary>
-              <div>
-                <button type="button" class="close" onclick="this.closest('details').querySelector('summary').click()">
-                  {% render 'icon', icon: 'close' %}
-                </button>
-                <label for="ShippingCalculatorCountry">
-                  {{ 'general.cart.shipping_calculator.caption' | t }}
-                  <span class="mini-cart__question">
-                    {% render 'icon', icon: 'question' %}
-                    <span class="mini-cart__tooltip">{{ 'general.cart.shipping_calculator.tooltip' | t }}</span>
-                  </span>
-                </label>
-                <shipping-calculator class="shipping__calculator">
-                  <form-state>
-                    <div class="field">
-                      <div class="select">
-                        <select
-                          id="ShippingCalculatorCountry"
-                          class="select__select required"
-                          data-default="{% if shop.customer_accounts_enabled and customer %}{{ customer.default_address.country }}{% elsif settings.shipping_calculator_default_country != '' %}{{ settings.shipping_calculator_default_country }}{% endif %}"
-                          autocomplete="country"
-                          data-empty="---"
-                        >
-                          {{ all_country_option_tags }}
-                        </select>
-                        {% render 'icon', icon: 'caret' %}
-                      </div>
-                      <label class="visually-hidden" for="ShippingCalculatorCountry">{{ 'customer.addresses.country' | t }}</label>
-                    </div>
-                    <div class="field" id="ShippingCalculatorProvinceContainer" style="display: none">
-                      <div class="select">
-                        <select
-                          id="ShippingCalculatorProvince"
-                          class="select__select"
-                          data-default="{% if shop.customer_accounts_enabled and customer and customer.default_address.province != '' %}{{ customer.default_address.province }}{% endif %}"
-                          autocomplete="address-level1"
-                        >
-                        </select>
-                        {% render 'icon', icon: 'caret' %}
-                      </div>
-                      <label class="visually-hidden" for="ShippingCalculatorProvince">{{ 'customer.addresses.province' | t }}</label>
-                    </div>
-                    <div class="field">
-                      <input id="ShippingCalculatorZip" class="field__input required" type="text"{% if shop.customer_accounts_enabled and customer %} value="{{ customer.default_address.zip }}"{% endif %} autocapitalize="characters" autocomplete="postal-code" placeholder="{{ 'customer.addresses.zip' | t }}"/>
-                      <label class="visually-hidden" for="ShippingCalculatorZip">{{ 'customer.addresses.zip' | t }}</label>
-                    </div>
-                    <div>
-                      <button class="button button--full-width" type="button">{{ 'general.cart.shipping_calculator.button' | t }}</button>
-                    </div>
-                    <div class="field form__message errors hidden" id="ShippingCalculatorErrors">
-                      {% render 'icon', icon: 'error' %}
-                      <div class="errors"></div>
-                    </div>
-                    <div class="field form__message hidden" id="ShippingCalculatorSuccess"></div>
-                  </form-state>
-                </shipping-calculator>
-              </div>
-            </details>
-          {%- endif -%}
-        </div>
+        {% render 'cart-drawer-extras', gift_wrapping: gift_wrapping %}
       {%- endif -%}
     </div>
 
-    {%- assign animate_count = animate_count | plus: 1 -%}
-    <div class="mini-cart__footer" data-animate data-animate-delay-{{ animate_count }}>
+    <div class="mini-cart__footer" data-animate data-animate-delay-7>
       <div class="cart-summary">
         <div class="cart-summary__row">
           <span class="cart-summary__label">
@@ -914,33 +259,7 @@
           </ul>
         {%- endif -%}
 
-        <small class="cart-summary__tax-note rte">
-          {%- if cart.duties_included and cart.taxes_included -%}
-            {%- if shop.shipping_policy.body == blank -%}
-              {{ 'sections.cart.duties_and_taxes_included_shipping_at_checkout_without_policy' | t }}
-            {%- else -%}
-              {{ 'sections.cart.duties_and_taxes_included_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
-            {%- endif -%}
-          {%- elsif cart.duties_included == false and cart.taxes_included -%}
-            {%- if shop.shipping_policy.body == blank -%}
-              {{ 'sections.cart.taxes_included_shipping_at_checkout_without_policy' | t }}
-            {%- else -%}
-              {{ 'sections.cart.taxes_included_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
-            {%- endif -%}
-          {%- elsif cart.duties_included and cart.taxes_included == false -%}
-            {%- if shop.shipping_policy.body == blank -%}
-              {{ 'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
-            {%- else -%}
-              {{ 'sections.cart.duties_included_taxes_at_checkout_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
-            {%- endif -%}
-          {%- elsif cart.duties_included == false and cart.taxes_included == false -%}
-            {%- if shop.shipping_policy.body == blank -%}
-              {{ 'sections.cart.taxes_at_checkout_shipping_at_checkout_without_policy' | t }}
-            {%- else -%}
-              {{ 'sections.cart.taxes_at_checkout_shipping_at_checkout_with_policy_html' | t: link: shop.shipping_policy.url }}
-            {%- endif -%}
-          {%- endif -%}
-        </small>
+        <small class="cart-summary__tax-note rte">{% render 'cart-tax-note' %}</small>
       </div>
 
       <cart-terms class="cart-terms">
@@ -948,16 +267,20 @@
           <input type="checkbox" id="CartTermsAgree" class="cart-terms__checkbox" checked />
           {%- capture terms_link -%}
             {%- if shop.terms_of_service.url != blank -%}
-              <a href="{{ shop.terms_of_service.url }}" target="_blank" rel="noopener">{{ 'general.cart.terms.terms_of_service' | t }}</a>
+              <a href="{{ shop.terms_of_service.url }}" target="_blank" rel="noopener">
+                {{- 'general.cart.terms.terms_of_service' | t -}}
+              </a>
             {%- else -%}
-              {{ 'general.cart.terms.terms_of_service' | t }}
+              {{- 'general.cart.terms.terms_of_service' | t -}}
             {%- endif -%}
           {%- endcapture -%}
           {%- capture privacy_link -%}
             {%- if shop.privacy_policy.url != blank -%}
-              <a href="{{ shop.privacy_policy.url }}" target="_blank" rel="noopener">{{ 'general.cart.terms.privacy_policy' | t }}</a>
+              <a href="{{ shop.privacy_policy.url }}" target="_blank" rel="noopener">
+                {{- 'general.cart.terms.privacy_policy' | t -}}
+              </a>
             {%- else -%}
-              {{ 'general.cart.terms.privacy_policy' | t }}
+              {{- 'general.cart.terms.privacy_policy' | t -}}
             {%- endif -%}
           {%- endcapture -%}
           <span>{{ 'general.cart.terms.label_html' | t: terms_link: terms_link, privacy_link: privacy_link }}</span>
@@ -965,9 +288,7 @@
       </cart-terms>
 
       <div class="button-container">
-        <button class="button" name="checkout" type="submit">
-          {{ 'sections.cart.checkout' | t }}
-        </button>
+        <button class="button" name="checkout" type="submit">{{ 'sections.cart.checkout' | t }}</button>
         {%- unless settings.disable_view_cart -%}
           <a class="button button--secondary" href="{{ routes.cart_url }}">{{ 'general.cart.view' | t }}</a>
         {%- endunless -%}
