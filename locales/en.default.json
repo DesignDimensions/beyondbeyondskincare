@@ -174,15 +174,20 @@
       "coupons": {
         "apply": "Apply",
         "empty": "No coupons available right now",
-        "title": "Available coupons"
+        "title": "Available coupons",
+        "available": {
+          "one": "{{ count }} coupon available",
+          "other": "{{ count }} coupons available"
+        }
       },
       "discount": {
         "button": "Apply",
         "caption": "Add a discount code",
-        "percent_off": "({{ percent }}% off)",
+        "percent_off": "({{ percent }}% OFF)",
         "title": "Coupon",
         "tooltip": "Discount will be applied at checkout",
-        "view_coupons": "View coupons"
+        "view_coupons": "View coupons",
+        "placeholder": "Enter Coupon Code"
       },
       "free_shipping": {
         "congratulations_html": "You are eligible for free shipping.",
@@ -206,9 +211,9 @@
         "tooltip": "Shipping & taxes will be calculated at checkout"
       },
       "terms": {
-        "label_html": "I agree to the {{ terms_link }} and {{ privacy_link }}",
-        "privacy_policy": "Privacy Policy",
-        "terms_of_service": "Terms of Service"
+        "label_html": "I agree to the {{ terms_link }} & {{ privacy_link }}",
+        "privacy_policy": "Privacy Notice",
+        "terms_of_service": "T&C"
       },
       "view": "View cart"
     },
@@ -458,12 +463,14 @@
       "caption": "Cart items",
       "cart_error": "There was an error while updating your cart. Please try again.",
       "cart_quantity_error_html": "You can only add {{ quantity }} of this item to your cart.",
-      "checkout": "Check out",
+      "checkout": "Checkout",
       "duties_and_taxes_included_shipping_at_checkout_with_policy_html": "Duties and taxes included. Discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
       "duties_and_taxes_included_shipping_at_checkout_without_policy": "Duties and taxes included. Discounts and shipping calculated at checkout.",
       "duties_included_taxes_at_checkout_shipping_at_checkout_with_policy_html": "Duties included. Taxes, discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
       "duties_included_taxes_at_checkout_shipping_at_checkout_without_policy": "Duties included. Taxes, discounts and shipping calculated at checkout.",
       "empty": "Your cart is currently empty",
+      "estimated_total": "Estimated Total",
+      "gift_free": "Free gift",
       "gift_note_placeholder": "Gift message (free and optional)",
       "gift_wrapping_html": "For {{ price }} please wrap the products in this order.",
       "headings": {
@@ -482,6 +489,7 @@
       "taxes_included_shipping_at_checkout_with_policy_html": "Taxes included. Discounts and <a href=\"{{ link }}\">shipping</a> calculated at checkout.",
       "taxes_included_shipping_at_checkout_without_policy": "Taxes included. Discounts and shipping calculated at checkout.",
       "title": "Cart",
+      "title_drawer": "Your Cart",
       "update": "Update"
     },
     "collection_list": {
