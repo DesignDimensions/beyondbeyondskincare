@@ -1,0 +1,177 @@
+{% comment %}
+  Renders the gift-with-purchase progress rail: up to three tiers, each unlocking a free
+  product once the cart subtotal clears its threshold. Resolving which tiers are unlocked
+  happens here; gift-tiers.js reads the data attributes and reconciles the cart to match.
+
+  Accepts:
+  - animate_delay: {Number} data-animate-delay-N bucket for the drawer's entrance animation
+
+  Usage:
+  {% render 'cart-gift-tiers', animate_delay: animate_count %}
+{% endcomment %}
+
+{%- liquid
+  unless settings.gift_tiers_enabled and cart != empty
+    break
+  endunless
+
+  comment
+    Gifts already in the cart must not count towards unlocking further gifts, or each tier
+    would bootstrap the next one.
+  endcomment
+  assign gift_subtotal = cart.total_price
+
+  for item in cart.items
+    if item.properties._gift_tier != blank
+      assign gift_subtotal = gift_subtotal | minus: item.original_price
+    endif
+  endfor
+
+  assign tier_variant_ids = ''
+  assign tier_keys = ''
+  assign tier_qualifies_list = ''
+  assign tier_present_list = ''
+  assign tier_labels = ''
+  assign tier_ranges = ''
+  assign tier_minimums = ''
+
+  for tier_number in (1..3)
+    assign product_key = 'gift_tier_' | append: tier_number | append: '_product'
+    assign minimum_key = 'gift_tier_' | append: tier_number | append: '_minimum_amount'
+    assign label_key = 'gift_tier_' | append: tier_number | append: '_label'
+    assign range_key = 'gift_tier_' | append: tier_number | append: '_range_label'
+
+    assign tier_product = settings[product_key]
+    assign tier_minimum_setting = settings[minimum_key]
+
+    if tier_product == blank or tier_minimum_setting == blank
+      continue
+    endif
+
+    capture tier_amount
+      render 'currency-amount', amount_setting: tier_minimum_setting
+    endcapture
+    assign tier_amount = tier_amount | strip
+
+    if tier_amount == blank
+      continue
+    endif
+
+    assign tier_cents = tier_amount | times: 100
+
+    assign tier_present = false
+    assign tier_key = ''
+    for item in cart.items
+      if item.properties._gift_tier == tier_number
+        assign tier_present = true
+        assign tier_key = item.key
+        break
+      endif
+    endfor
+
+    assign tier_qualifies = false
+    if gift_subtotal >= tier_cents
+      assign tier_qualifies = true
+    endif
+
+    assign tier_variant_ids = tier_variant_ids | append: tier_product.selected_or_first_available_variant.id | append: '|'
+    assign tier_keys = tier_keys | append: tier_key | append: '|'
+    assign tier_qualifies_list = tier_qualifies_list | append: tier_qualifies | append: '|'
+    assign tier_present_list = tier_present_list | append: tier_present | append: '|'
+    assign tier_labels = tier_labels | append: settings[label_key] | default: tier_product.title | append: '|'
+    assign tier_minimums = tier_minimums | append: tier_cents | append: '|'
+
+    capture tier_range
+      if settings[range_key] != blank
+        echo settings[range_key]
+      elsif settings.currency_code_enabled
+        echo tier_cents | money_with_currency
+      else
+        echo tier_cents | money
+      endif
+    endcapture
+    assign tier_ranges = tier_ranges | append: tier_range | strip | append: '|'
+  endfor
+
+  if tier_minimums == blank
+    break
+  endif
+
+  assign tier_variant_ids = tier_variant_ids | split: '|'
+  assign tier_keys = tier_keys | remove_last: '|' | split: '|'
+  assign tier_qualifies_list = tier_qualifies_list | split: '|'
+  assign tier_present_list = tier_present_list | split: '|'
+  assign tier_labels = tier_labels | split: '|'
+  assign tier_ranges = tier_ranges | split: '|'
+  assign tier_minimums = tier_minimums | split: '|'
+  assign tier_count = tier_minimums.size
+
+  comment
+    Tier N's dot sits at (N - 0.5) / count of the rail's width. Interpolating the fill inside
+    the segment it currently occupies -- rather than against the highest threshold -- is what
+    makes the bar terminate exactly on a dot when that tier is reached.
+  endcomment
+  assign gift_tier_fill = 0
+  assign previous_amount = 0
+  assign previous_position = 0
+  assign fill_resolved = false
+
+  for minimum in tier_minimums
+    assign tier_minimum = minimum | plus: 0
+    assign tier_position = forloop.index | times: 100.0 | minus: 50.0 | divided_by: tier_count
+
+    unless fill_resolved
+      if gift_subtotal < tier_minimum
+        assign segment_amount = tier_minimum | minus: previous_amount | at_least: 1
+        assign segment_width = tier_position | minus: previous_position
+        assign segment_progress = gift_subtotal | minus: previous_amount | at_least: 0
+        assign gift_tier_fill = segment_progress | times: 1.0 | divided_by: segment_amount | times: segment_width | plus: previous_position
+        assign fill_resolved = true
+      else
+        assign gift_tier_fill = tier_position
+      endif
+    endunless
+
+    assign previous_amount = tier_minimum
+    assign previous_position = tier_position
+  endfor
+
+  assign gift_tier_track_end = 50.0 | divided_by: tier_count
+  assign segment_length = 100.0 | divided_by: tier_count
+-%}
+
+<gift-tier-progress
+  class="cart-card gift-tier-progress"
+  data-animate
+  data-animate-delay-{{ animate_delay }}
+  {%- for variant_id in tier_variant_ids %}
+    data-tier-{{ forloop.index }}-variant-id="{{ variant_id }}"
+    data-tier-{{ forloop.index }}-qualifies="{{ tier_qualifies_list[forloop.index0] }}"
+    data-tier-{{ forloop.index }}-present="{{ tier_present_list[forloop.index0] }}"
+    data-tier-{{ forloop.index }}-key="{{ tier_keys[forloop.index0] }}"
+  {%- endfor %}
+>
+  {%- if settings.gift_tiers_heading != blank -%}
+    <p class="gift-tier-progress__heading">{{ settings.gift_tiers_heading | escape }}</p>
+  {%- endif -%}
+
+  <ol class="gift-tier-progress__track list-unstyled" style="--gift-tier-track-end: {{ gift_tier_track_end }}%;">
+    {%- for range_label in tier_ranges -%}
+      {%- liquid
+        assign segment_start = forloop.index0 | times: segment_length
+        assign segment_fill = gift_tier_fill | minus: segment_start | at_least: 0 | divided_by: segment_length | at_most: 1 | times: 100
+        assign is_unlocked = tier_qualifies_list[forloop.index0]
+      -%}
+      <li
+        class="gift-tier-progress__tier{% if is_unlocked == 'true' %} is-unlocked{% endif %}"
+        style="--gift-tier-segment-fill: {{ segment_fill }}%;"
+      >
+        <span class="gift-tier-progress__range">{{ range_label }}</span>
+        <span class="gift-tier-progress__marker">
+          <span class="gift-tier-progress__dot" aria-hidden="true">{% render 'icon', icon: 'gift' %}</span>
+        </span>
+        <span class="gift-tier-progress__label">{{ tier_labels[forloop.index0] }}</span>
+      </li>
+    {%- endfor -%}
+  </ol>
+</gift-tier-progress>
