@@ -185,7 +185,7 @@
 
         return postJSON(cfg.routes.add, { items: items })
           .then(function () {
-            adds.forEach(function (action) { setFlag(ADDED_KEY, action.rule.id, true); });
+            adds.forEach(function (action) { setFlag(ADDED_KEY, action.rule.id, action.token); });
             log('added gift(s)', items);
           })
           .catch(function (error) {
