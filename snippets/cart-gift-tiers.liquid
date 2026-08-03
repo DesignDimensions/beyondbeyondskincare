@@ -26,8 +26,14 @@
     endfor
 
     for tier_number in (1..3)
-      assign tier_product = settings['gift_tier_' | append: tier_number | append: '_product']
-      assign tier_minimum_setting = settings['gift_tier_' | append: tier_number | append: '_minimum_amount']
+      assign setting_prefix = 'gift_tier_' | append: tier_number
+      assign product_key = setting_prefix | append: '_product'
+      assign minimum_key = setting_prefix | append: '_minimum_amount'
+      assign label_key = setting_prefix | append: '_label'
+      assign range_key = setting_prefix | append: '_range_label'
+
+      assign tier_product = settings[product_key]
+      assign tier_minimum_setting = settings[minimum_key]
 
       assign tier_cents = 0
       if tier_product != blank and tier_minimum_setting != blank
@@ -62,12 +68,12 @@
         assign tier_qualifies = true
       endif
 
-      assign tier_label = settings['gift_tier_' | append: tier_number | append: '_label']
+      assign tier_label = settings[label_key]
       if tier_label == blank
         assign tier_label = tier_product.title
       endif
 
-      assign tier_range = settings['gift_tier_' | append: tier_number | append: '_range_label']
+      assign tier_range = settings[range_key]
       if tier_range == blank
         if settings.currency_code_enabled
           assign tier_range = tier_cents | money_with_currency
