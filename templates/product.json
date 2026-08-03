@@ -132,8 +132,8 @@
           "type": "discount_coupon",
           "settings": {
             "kicker": "",
-            "title": "Get 10+5% Off",
-            "coupon_discount_text": "Additional 5% off on your 1st order!",
+            "title": "Get 20% Off storewide",
+            "coupon_discount_text": "",
             "text": "<p>Use coupon code BBFIRST & get 5% Off on your first order. </p>",
             "image": "shopify://shop_images/discount-coupon-01.png",
             "coupon_code": "BBFirst",
@@ -246,7 +246,7 @@
       "type": "apps",
       "blocks": {
         "reelup_shoppable_videos_reels_reelup_product_slider_E3GhKV": {
-          "type": "shopify://apps/reelup-shoppable-videos/blocks/reelup_product_slider/a8ec9e4d-d192-44f7-9c23-595f9ee7dd5b",
+          "type": "shopify://apps/reelup-shoppable-videos-reels/blocks/reelup_product_slider/a8ec9e4d-d192-44f7-9c23-595f9ee7dd5b",
           "settings": {}
         }
       },
