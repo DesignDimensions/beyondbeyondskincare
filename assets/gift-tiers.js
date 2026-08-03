@@ -110,11 +110,11 @@ class CartTerms extends HTMLElement {
     if (!this.checkbox || !this.checkoutButton) return;
 
     // The drawer's markup is fully replaced on every cart change (including a background
-    // gift-tier sync), which would otherwise silently re-lock checkout after a customer
-    // already agreed. Persist like DiscountCode does for the discount code input.
-    if (isStorageSupported('session') && window.sessionStorage.getItem('cart-terms-agreed') === 'true') {
-      this.checkbox.checked = true;
-      this.checkoutButton.disabled = false;
+    // gift-tier sync), which would otherwise silently drop a customer's choice. The box
+    // renders pre-agreed, so only an explicit opt-out needs restoring.
+    if (isStorageSupported('session') && window.sessionStorage.getItem('cart-terms-agreed') === 'false') {
+      this.checkbox.checked = false;
+      this.checkoutButton.disabled = true;
     }
 
     this.checkbox.addEventListener('change', () => {
