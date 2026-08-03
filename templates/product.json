@@ -130,6 +130,7 @@
         },
         "discount_coupon_1": {
           "type": "discount_coupon",
+          "disabled": true,
           "settings": {
             "kicker": "",
             "title": "Get 10+5% Off",
