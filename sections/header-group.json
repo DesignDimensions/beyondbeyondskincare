@@ -20,7 +20,7 @@
             "text": "Flat <strong>20% OFF</strong> sitewide",
             "text_on_mobile": "Flat <strong>20% OFF</strong> sitewide",
             "text_size": 15,
-            "link": ""
+            "link": "shopify://collections/all"
           }
         },
         "announcement_figma_2": {
@@ -29,23 +29,13 @@
             "text": "Free shipping on prepaid orders",
             "text_on_mobile": "Free shipping on prepaid orders",
             "text_size": 15,
-            "link": ""
-          }
-        },
-        "announcement_figma_3": {
-          "type": "announcement",
-          "settings": {
-            "text": "New launches every month",
-            "text_on_mobile": "New launches every month",
-            "text_size": 15,
-            "link": ""
+            "link": "shopify://collections/all"
           }
         }
       },
       "block_order": [
         "announcement_figma_primary",
-        "announcement_figma_2",
-        "announcement_figma_3"
+        "announcement_figma_2"
       ],
       "custom_css": [],
       "settings": {
