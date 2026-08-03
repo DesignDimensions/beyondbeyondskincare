@@ -89,6 +89,8 @@
     --gradient-free-ship-progress: {% if settings.colors_free_ship_progress != blank %}{{ settings.colors_free_ship_progress }}{% else %}linear-gradient(325deg,#F9423A 0,#F1E04D 100%){% endif %};
     --gradient-free-ship-complete: {% if settings.colors_free_ship_complete != blank %}{{ settings.colors_free_ship_complete }}{% else %}linear-gradient(325deg, #049cff 0, #35ee7a 100%){% endif %};
 
+    --cart-accent: {{ settings.cart_accent_color | default: '#0107ef' }};
+
     --plabel-price-tag-color: #000000;
     --plabel-price-tag-background: #d1d5db;
     --plabel-price-tag-height: 2.5rem;
