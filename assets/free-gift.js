@@ -655,6 +655,13 @@
         refreshSections();
       }, delay);
     });
+
+    // Another gift mechanism — KwikCart's own offers module, or any app — may
+    // add the same product a moment after we do, which would leave the shopper
+    // looking at it twice. Re-check once the dust settles so the deferral can
+    // stand our line down. On an unchanged cart this is a single /cart.js read
+    // and writes nothing, so it cannot itself keep the loop alive.
+    lateTimers.push(setTimeout(schedule, 1800));
   }
 
   /* ── Reconcile loop ───────────────────────────────────────────────────── */
