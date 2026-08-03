@@ -57,6 +57,20 @@
     return request(cfg.routes.cart);
   }
 
+  // Shopify answers a non-integer quantity with 400 Bad Request, and a NaN that
+  // slips through JSON.stringify becomes `null` — which is exactly how one bad
+  // reading turns into an endless retry loop. Nothing reaches the network
+  // without passing through here.
+  function toQuantity(value) {
+    var n = Math.floor(Number(value));
+    return isFinite(n) && n >= 0 ? n : null;
+  }
+
+  function finiteOr(value, fallback) {
+    var n = Number(value);
+    return isFinite(n) ? n : fallback;
+  }
+
   function postJSON(url, payload) {
     return request(url, {
       method: 'POST',
@@ -299,7 +313,12 @@
 
     (item.line_level_discount_allocations || []).forEach(function (allocation) {
       var application = allocation.discount_application || {};
-      if (String(application.title || '').toLowerCase() === title) sum += allocation.amount;
+      // A missing or non-numeric amount must contribute nothing. Letting one
+      // through makes the whole sum NaN, and NaN fails every comparison below,
+      // so the trim would fire on every pass forever.
+      if (String(application.title || '').toLowerCase() === title) {
+        sum += finiteOr(allocation.amount, 0);
+      }
     });
 
     return sum;
