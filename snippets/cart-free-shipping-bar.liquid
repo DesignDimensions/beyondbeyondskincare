@@ -1,0 +1,39 @@
+{% comment %}
+  Picks the free-shipping threshold that matches the cart's active currency and renders the
+  progress bar for it. The setting holds either a bare amount or a comma-separated list of
+  `CURRENCY:amount` pairs, so markets with their own threshold get the right one.
+
+  Usage:
+  {% render 'cart-free-shipping-bar' %}
+{% endcomment %}
+
+{%- liquid
+  unless settings.show_free_shipping_message and settings.free_shipping_minimum_amount != blank
+    assign skip_free_shipping = true
+  endunless
+
+  unless skip_free_shipping
+    assign minimum_amounts = settings.free_shipping_minimum_amount | remove: ' ' | split: ','
+    assign threshold = ''
+
+    if minimum_amounts.size > 1
+      for minimum_amount in minimum_amounts
+        assign parts = minimum_amount | split: ':'
+        assign currency_code = parts | first | upcase
+        if currency_code == cart.currency.iso_code
+          assign threshold = parts | last
+          break
+        endif
+      endfor
+    else
+      assign threshold = minimum_amounts | last
+      if threshold contains ':'
+        assign threshold = threshold | split: ':' | last
+      endif
+    endif
+
+    if threshold != blank
+      render 'free-shipping', minimum_amount: threshold
+    endif
+  endunless
+-%}
