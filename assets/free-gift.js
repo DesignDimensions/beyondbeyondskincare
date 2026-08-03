@@ -280,54 +280,50 @@
 
   /* ── Discount verification ────────────────────────────────────────────── */
 
-  // How much of the *free-gift* discount landed on a line.
-  //
-  // When a discount title is configured this counts only that discount, and
-  // deliberately does NOT fall back to total_discount when nothing matches.
-  // Falling back is what let a stacked sitewide promo masquerade as gift
-  // coverage and leave the customer paying for a "free" unit. Counting zero is
-  // the safe direction: the gift is dropped, which is visible, rather than
-  // charged for, which is not.
-  function allocationOn(item) {
-    var title = cfg.discountTitle;
-    var allocations = item.line_level_discount_allocations;
+  // How much of the *free-gift* discount landed on a line, by name. Counting
+  // only the named discount is what keeps an unrelated sitewide promo on the
+  // same product from masquerading as gift coverage.
+  function namedAllocationOn(item) {
+    var title = String(cfg.discountTitle).toLowerCase();
+    var sum = 0;
 
-    if (title) {
-      var sum = 0;
-      (allocations || []).forEach(function (allocation) {
-        var application = allocation.discount_application || {};
-        if (String(application.title || '').toLowerCase() === String(title).toLowerCase()) {
-          sum += allocation.amount;
-        }
-      });
-      return sum;
-    }
+    (item.line_level_discount_allocations || []).forEach(function (allocation) {
+      var application = allocation.discount_application || {};
+      if (String(application.title || '').toLowerCase() === title) sum += allocation.amount;
+    });
 
-    // No title configured: the line's total discount is only trustworthy when a
-    // single discount touches it. With several stacked there is no way to tell
-    // which one is the gift, and guessing is what charges customers.
-    if (allocations && allocations.length > 1) return 0;
-    return item.total_discount || 0;
+    return sum;
   }
 
   // Units of the gift variant the discount is covering, counted across *every*
   // line it sits on — including one the customer added themselves.
   //
-  // This is deliberately cart-wide. Shopify picks which line to allocate a
-  // "buy X get Y" discount to, and that choice is arbitrary; the cart total is
-  // identical either way. Asking "is my line free?" instead is what made a
-  // customer's own lip butter appear to vanish — the discount landed on their
-  // line, ours looked uncovered, and we deleted the gift.
+  // Cart-wide on purpose. Shopify decides which line to allocate a "buy X get
+  // Y" discount to and that choice is arbitrary; the cart total is identical
+  // either way. Asking "is *my* line free?" instead is what made a customer's
+  // own lip butter appear to vanish — the discount landed on their line, ours
+  // looked uncovered, and we deleted the gift.
   function coveredUnitsFor(cart, rule) {
+    var named = !!cfg.discountTitle;
     var unit = 0;
     var allocated = 0;
+    var freeUnits = 0;
 
     (cart.items || []).forEach(function (item) {
       if (item.variant_id !== rule.giftVariantId) return;
       if (!unit) unit = item.original_price;
-      allocated += allocationOn(item);
+
+      if (named) {
+        allocated += namedAllocationOn(item);
+      } else if (item.final_line_price === 0) {
+        // Without a title we cannot attribute a partial discount to the gift,
+        // so only whole lines that cost nothing count. This under-counts when
+        // coverage splits a line — which under-gifts rather than charges.
+        freeUnits += item.quantity;
+      }
     });
 
+    if (!named) return freeUnits;
     if (!unit) return 0;
     return Math.floor(allocated / unit);
   }
