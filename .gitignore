@@ -1,0 +1,5 @@
+# Atomic-save artifacts from the Shopify CLI file watcher (`shopify theme dev`).
+# These land in assets/ as zero-byte files named like
+# `free-gift.js.tmp.54733.1ae9fea4c8dc` and get committed by accident if left
+# untracked.
+*.tmp.*
