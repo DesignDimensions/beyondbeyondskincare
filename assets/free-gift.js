@@ -340,11 +340,15 @@
 
   // KwikCart and other apps can change the cart without a /cart/* request the
   // interceptor can see, but they all announce it. Our own broadcasts carry a
-  // source tag so they don't feed back into the loop.
+  // source tag so they don't feed back into the loop, and the debounce keeps a
+  // chatty app from turning every render into a /cart.js round trip.
+  var eventTimer = null;
+
   CART_EVENTS.forEach(function (name) {
     document.addEventListener(name, function (event) {
       if (event && event.detail && event.detail.source === 'bb-free-gift') return;
-      schedule();
+      clearTimeout(eventTimer);
+      eventTimer = setTimeout(schedule, 150);
     });
   });
 
