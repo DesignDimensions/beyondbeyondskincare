@@ -127,9 +127,56 @@
     writeMap(CAP_KEY, map);
   }
 
+  /* ── Loop protection ──────────────────────────────────────────────────── */
+
+  // Every write exists only to reach a cart that needs no more writes. If a cart
+  // never settles — Shopify reshuffling a discount as quantities change, the
+  // drawer undoing us, a request that keeps failing — we stop instead of
+  // fighting it. A gift that quietly fails to appear is a support ticket; a cart
+  // that mutates in a loop is a broken checkout.
+  var HALTED_KEY = 'bb-free-gift:halted';
+  var MAX_UNSETTLED_ROUNDS = 6;
+  var MAX_CONSECUTIVE_FAILURES = 3;
+
+  var unsettledRounds = 0;
+  var consecutiveFailures = 0;
+
+  function halted(token) {
+    return !!token && readMap(HALTED_KEY)[token] === true;
+  }
+
+  function halt(token, reason) {
+    log('HALTED —', reason + '. No further cart writes for this cart.');
+    unsettledRounds = 0;
+    consecutiveFailures = 0;
+    if (!token) return;
+    var map = {};
+    map[token] = true;
+    writeMap(HALTED_KEY, map);
+  }
+
+  function noteFailure(token) {
+    consecutiveFailures++;
+    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+      halt(token, consecutiveFailures + ' consecutive cart API failures');
+    }
+  }
+
+  function noteSettled() {
+    unsettledRounds = 0;
+    consecutiveFailures = 0;
+  }
+
+  function noteUnsettled(token) {
+    unsettledRounds++;
+    if (unsettledRounds >= MAX_UNSETTLED_ROUNDS) {
+      halt(token, 'cart did not settle after ' + unsettledRounds + ' write rounds');
+    }
+  }
+
   function capFor(rule, token, triggerQuantity) {
     var entry = readMap(CAP_KEY)[rule.id];
-    if (!entry || entry.token !== token || typeof entry.cap !== 'number') return null;
+    if (!entry || entry.token !== token || !isFinite(entry.cap)) return null;
     // More triggers than when we measured — the discount may stretch further,
     // so let it probe again rather than under-gifting.
     if (triggerQuantity > entry.triggerQuantity) return null;
