@@ -206,6 +206,9 @@
       try {
         document.dispatchEvent(new CustomEvent(name, { detail: detail, bubbles: true }));
         window.dispatchEvent(new CustomEvent(name, { detail: detail }));
+        if (document.body) {
+          document.body.dispatchEvent(new CustomEvent(name, { detail: detail, bubbles: true }));
+        }
       } catch (e) {}
     });
 
@@ -315,6 +318,16 @@
     NS.pending = false;
     schedule();
   }
+
+  // KwikCart and other apps can change the cart without a /cart/* request the
+  // interceptor can see, but they all announce it. Our own broadcasts carry a
+  // source tag so they don't feed back into the loop.
+  CART_EVENTS.forEach(function (name) {
+    document.addEventListener(name, function (event) {
+      if (event && event.detail && event.detail.source === 'bb-free-gift') return;
+      schedule();
+    });
+  });
 
   // Catches carts that already contain the trigger — restored sessions, a
   // /cart page load, or a checkout bounce-back.
