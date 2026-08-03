@@ -1,0 +1,157 @@
+{%- comment -%}
+  Free gift auto-add
+  ------------------
+  Shopify's automatic "Buy X get Y" discounts only *price* the gift at zero — they
+  never put it in the cart. This snippet resolves the configured trigger/gift
+  handles into variant IDs at render time and installs a tiny cart-request
+  interceptor. `free-gift.js` does the actual add/remove through the native
+  Cart AJAX API, so GoKwik's KwikCart drawer keeps owning the cart UI.
+
+  To add another offer, append `trigger-handle:gift-handle` to `free_gift_rules`.
+{%- endcomment -%}
+
+{%- liquid
+  assign free_gift_rules = 'the-essential-edit:moisture-surge-lip-butter' | split: ','
+  assign resolved_rules = ''
+-%}
+
+{%- capture free_gift_rules_json -%}
+  {%- for rule in free_gift_rules -%}
+    {%- assign parts = rule | strip | split: ':' -%}
+    {%- assign trigger_handle = parts[0] | strip -%}
+    {%- assign gift_handle = parts[1] | strip -%}
+    {%- assign trigger_product = all_products[trigger_handle] -%}
+    {%- assign gift_product = all_products[gift_handle] -%}
+    {%- assign gift_variant = gift_product.selected_or_first_available_variant | default: gift_product.variants.first -%}
+    {%- if trigger_product.id and gift_variant.id -%}
+      {%- unless resolved_rules == '' -%},{%- endunless -%}
+      {%- assign resolved_rules = resolved_rules | append: 'x' -%}
+      {
+        "id": {{ trigger_handle | append: '--' | append: gift_handle | json }},
+        "triggerHandle": {{ trigger_handle | json }},
+        "triggerProductId": {{ trigger_product.id | json }},
+        "giftHandle": {{ gift_handle | json }},
+        "giftProductId": {{ gift_product.id | json }},
+        "giftVariantId": {{ gift_variant.id | json }},
+        "giftTitle": {{ gift_product.title | json }},
+        "giftAvailable": {{ gift_variant.available | json }},
+        "giftQuantity": 1,
+        "multiply": false
+      }
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if resolved_rules != '' -%}
+  <script>
+    window.BBFreeGift = window.BBFreeGift || {};
+    window.BBFreeGift.config = {
+      rules: [{{ free_gift_rules_json }}],
+      routes: {
+        cart: {{ routes.cart_url | append: '.js' | json }},
+        add: {{ routes.cart_add_url | append: '.js' | json }},
+        change: {{ routes.cart_change_url | append: '.js' | json }},
+        root: {{ routes.root_url | json }}
+      },
+      cartPath: {{ routes.cart_url | json }},
+      // Property stamped on the gift line so it stays distinct from a lip butter
+      // the customer paid for. Leading underscore keeps it hidden at checkout.
+      property: '_free_gift',
+      // Re-adding a gift the customer just deleted would fight them, so a manual
+      // removal sticks until the trigger product leaves the cart. Set to false
+      // if the gift must always be present.
+      respectManualRemoval: true,
+      // Pull the gift line back to the entitled quantity if it gets edited.
+      lockGiftQuantity: true,
+      debug: false
+    };
+  </script>
+
+  {%- comment -%}
+    Inline on purpose: the interceptor has to wrap fetch/XHR before KwikCart or
+    any theme script fires a cart request. The engine itself is deferred.
+  {%- endcomment -%}
+  <script>
+    (function () {
+      var NS = window.BBFreeGift;
+      if (NS.intercepted) return;
+      NS.intercepted = true;
+
+      var CART_MUTATION = /\/cart\/(add|change|update|clear)(\.js|\.json)?(\?|$)/i;
+
+      NS.rawFetch = window.fetch ? window.fetch.bind(window) : null;
+      NS.pending = false;
+      NS.handler = null;
+
+      NS.isCartMutation = function (url) {
+        if (!url) return false;
+        try {
+          return CART_MUTATION.test(String(url).split('#')[0]);
+        } catch (e) {
+          return false;
+        }
+      };
+
+      // Hands off to free-gift.js once it has loaded; otherwise remembers that a
+      // mutation happened so the engine can reconcile as soon as it boots.
+      NS.notify = function (url) {
+        if (typeof NS.handler === 'function') {
+          try {
+            return Promise.resolve(NS.handler(url));
+          } catch (e) {
+            return Promise.resolve();
+          }
+        }
+        NS.pending = true;
+        return Promise.resolve();
+      };
+
+      if (NS.rawFetch) {
+        window.fetch = function (input, init) {
+          var url = '';
+          try {
+            url = typeof input === 'string' ? input : (input && input.url) || '';
+          } catch (e) {}
+
+          var result = NS.rawFetch(input, init);
+          if (!NS.isCartMutation(url)) return result;
+
+          // Settle the gift line *before* the caller sees its response, so the
+          // drawer that opens on add-to-cart already renders the complete cart.
+          // The response body is never read here, so callers get it intact.
+          return result.then(function (response) {
+            if (!response || !response.ok) return response;
+            return NS.notify(url).then(
+              function () { return response; },
+              function () { return response; }
+            );
+          });
+        };
+      }
+
+      var XHR = window.XMLHttpRequest;
+      if (XHR && XHR.prototype) {
+        var open = XHR.prototype.open;
+        XHR.prototype.open = function (method, url) {
+          try {
+            this.__bbGiftUrl = NS.isCartMutation(url) ? url : null;
+          } catch (e) {}
+          return open.apply(this, arguments);
+        };
+
+        var send = XHR.prototype.send;
+        XHR.prototype.send = function () {
+          var xhr = this;
+          if (xhr.__bbGiftUrl) {
+            xhr.addEventListener('load', function () {
+              if (xhr.status >= 200 && xhr.status < 300) NS.notify(xhr.__bbGiftUrl);
+            });
+          }
+          return send.apply(this, arguments);
+        };
+      }
+    })();
+  </script>
+
+  <script src="{{ 'free-gift.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
