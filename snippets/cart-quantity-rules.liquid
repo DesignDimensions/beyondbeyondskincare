@@ -1,0 +1,72 @@
+{% comment %}
+  Renders the info button and popover that explain a line item's quantity rules and
+  volume-pricing breaks. Only rendered when the variant actually has either.
+
+  Accepts:
+  - item: {Object} Cart line item
+  - has_qty_rules: {Boolean} Variant has an increment/min/max rule
+  - has_vol_pricing: {Boolean} Variant has quantity price breaks
+
+  Usage:
+  {% render 'cart-quantity-rules', item: item, has_qty_rules: has_qty_rules, has_vol_pricing: has_vol_pricing %}
+{% endcomment %}
+
+<button
+  type="button"
+  class="quantity-popover__info-button quantity-popover__info-button--icon-with-label button button--tertiary"
+  aria-expanded="false"
+>
+  {%- render 'icon', icon: 'info' -%}
+  <span>
+    {%- if has_vol_pricing -%}
+      {{ 'products.product.volume_pricing.note' | t }}
+    {%- else -%}
+      {{ 'products.product.quantity.note' | t }}
+    {%- endif -%}
+  </span>
+</button>
+
+<div class="cart-items__info global-settings-popup quantity-popover__info" tabindex="-1" hidden>
+  {%- unless has_qty_rules -%}
+    <span class="volume-pricing-label caption">{{ 'products.product.volume_pricing.title' | t }}</span>
+  {%- endunless -%}
+
+  <div class="quantity__rules caption">
+    {%- if item.variant.quantity_rule.increment > 1 -%}
+      <span class="divider">
+        {{- 'products.product.quantity.multiples_of' | t: quantity: item.variant.quantity_rule.increment -}}
+      </span>
+    {%- endif -%}
+    {%- if item.variant.quantity_rule.min > 1 -%}
+      <span class="divider">
+        {{- 'products.product.quantity.min_of' | t: quantity: item.variant.quantity_rule.min -}}
+      </span>
+    {%- endif -%}
+    {%- if item.variant.quantity_rule.max != null -%}
+      <span class="divider">
+        {{- 'products.product.quantity.max_of' | t: quantity: item.variant.quantity_rule.max -}}
+      </span>
+    {%- endif -%}
+  </div>
+
+  <button class="button-close button button--tertiary" type="button" aria-label="{{ 'accessibility.close' | t }}">
+    {%- render 'icon', icon: 'close' -%}
+  </button>
+
+  {%- if has_vol_pricing -%}
+    <volume-pricing class="parent-display">
+      <ul class="list-unstyled">
+        <li>
+          <span>{{ item.variant.quantity_rule.min }}+</span>
+          <span>{{ item.variant.price | money_with_currency }}/ea</span>
+        </li>
+        {%- for price_break in item.variant.quantity_price_breaks -%}
+          <li>
+            <span>{{ price_break.minimum_quantity }}<span aria-hidden="true">+</span></span>
+            <span>{{ price_break.price | money_with_currency }}/ea</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </volume-pricing>
+  {%- endif -%}
+</div>
