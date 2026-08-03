@@ -132,8 +132,8 @@
           "type": "discount_coupon",
           "settings": {
             "kicker": "",
-            "title": "Get 20% Off storewide",
-            "coupon_discount_text": "",
+            "title": "Get 10+5% Off",
+            "coupon_discount_text": "Additional 5% off on your 1st order!",
             "text": "<p>Use coupon code BBFIRST & get 5% Off on your first order. </p>",
             "image": "shopify://shop_images/discount-coupon-01.png",
             "coupon_code": "BBFirst",
