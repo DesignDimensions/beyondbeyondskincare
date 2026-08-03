@@ -209,11 +209,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <script src="{{ 'gift-wrapping.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
     {%- liquid
+      comment
+        gift-tiers.js defines both <gift-tier-progress> and <cart-terms>, and both live only
+        in the cart drawer. The terms checkbox renders there unconditionally now, so gating on
+        the policy URLs would leave it inert on shops that have no terms-of-service page.
+      endcomment
       assign load_gift_tiers_js = false
-      if settings.gift_tiers_enabled
-        assign load_gift_tiers_js = true
-      endif
-      if shop.terms_of_service.url != blank and shop.privacy_policy.url != blank
+      if settings.cart_drawer_enabled or settings.gift_tiers_enabled
         assign load_gift_tiers_js = true
       endif
     -%}
