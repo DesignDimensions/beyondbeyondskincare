@@ -56,10 +56,10 @@
     "disable_view_cart": false,
     "show_free_shipping_message": false,
     "free_shipping_minimum_amount": "USD:500,EUR:475,JPY:65000",
-    "cart_recommendations_enabled": false,
-    "cart_recommendations_heading": "You may also like",
+    "cart_recommendations_enabled": true,
+    "cart_recommendations_heading": "You Might Also Like",
     "cart_recommendations_show_vendor": false,
-    "cart_recommendations_show_price": false,
+    "cart_recommendations_show_price": true,
     "empty_cart_message": "<p>Not sure where to start?<br/>Try these brands:</p>",
     "empty_cart_button_secondary": true,
     "search_recommendation": "search-menu",
@@ -151,7 +151,11 @@
         "disabled": true,
         "settings": {}
       }
-    }
+    },
+    "cart_promo_banner_enabled": true,
+    "cart_promo_banner_text": "Get <strong>10% OFF</strong> sitewide",
+    "cart_coupons_enabled": true,
+    "cart_coupon_1_code": "BBSERUM"
   },
   "presets": {
     "Be Yours": {
