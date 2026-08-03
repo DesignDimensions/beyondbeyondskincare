@@ -150,14 +150,23 @@
     return total;
   }
 
-  // Returns the single action needed to bring `rule` in line with `cart`, or
-  // null when the cart is already correct.
+  // Returns the actions needed to bring `rule` in line with `cart` — usually
+  // none or one, but always an array so duplicate lines can be collapsed too.
   function planFor(rule, cart) {
     var token = cart.token;
     var triggerQuantity = triggerQuantityFor(rule, cart);
     var giftLines = giftLinesFor(cart, rule);
     var giftLine = giftLines[0] || null;
     var giftQuantity = giftLines.reduce(function (sum, item) { return sum + item.quantity; }, 0);
+    var actions = [];
+
+    // Shopify merges lines with the same variant and properties, so a second
+    // gift line should be impossible — but if one ever appears, fold it away
+    // rather than leaving units nothing is accounting for.
+    giftLines.slice(1).forEach(function (extra) {
+      log('collapsing duplicate gift line', extra.key);
+      actions.push({ type: 'change', key: extra.key, quantity: 0, rule: rule, token: token });
+    });
 
     if (triggerQuantity === 0) {
       // Trigger is gone — drop the gift and reset the session memory so the
@@ -165,8 +174,8 @@
       setFlag(ADDED_KEY, rule.id, null);
       setFlag(DISMISSED_KEY, rule.id, null);
       setFlag(CAP_KEY, rule.id, null);
-      if (giftLine) return { type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token };
-      return null;
+      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token });
+      return actions;
     }
 
     var entitled = rule.multiply ? triggerQuantity * rule.giftQuantity : rule.giftQuantity;
@@ -183,8 +192,8 @@
       // Capped to nothing — the discount covers no units at all, so a gift line
       // here would be a surprise charge. Note the flags are *not* reset: that
       // only happens when the trigger leaves, otherwise we'd re-add in a loop.
-      if (giftLine) return { type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token };
-      return null;
+      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token });
+      return actions;
     }
 
     if (!giftLine) {
@@ -194,21 +203,22 @@
         setFlag(ADDED_KEY, rule.id, null);
         setFlag(DISMISSED_KEY, rule.id, token);
         log('gift removed by customer, not re-adding:', rule.id);
-        return null;
+        return actions;
       }
-      if (cfg.respectManualRemoval !== false && flagged(DISMISSED_KEY, rule.id, token)) return null;
+      if (cfg.respectManualRemoval !== false && flagged(DISMISSED_KEY, rule.id, token)) return actions;
       if (!rule.giftAvailable) {
         log('gift variant unavailable, skipping:', rule.giftHandle);
-        return null;
+        return actions;
       }
-      return { type: 'add', rule: rule, quantity: entitled, token: token };
+      actions.push({ type: 'add', rule: rule, quantity: entitled, token: token });
+      return actions;
     }
 
     if (giftQuantity !== entitled && cfg.lockGiftQuantity !== false) {
-      return { type: 'change', key: giftLine.key, quantity: entitled, rule: rule, token: token };
+      actions.push({ type: 'change', key: giftLine.key, quantity: entitled, rule: rule, token: token });
     }
 
-    return null;
+    return actions;
   }
 
   /* ── Applying ─────────────────────────────────────────────────────────── */
@@ -462,9 +472,10 @@
 
     return getCart()
       .then(function (cart) {
-        var actions = rules
-          .map(function (rule) { return planFor(rule, cart); })
-          .filter(Boolean);
+        var actions = [];
+        rules.forEach(function (rule) {
+          actions = actions.concat(planFor(rule, cart));
+        });
 
         var settled = actions.length
           ? applyActions(actions).then(getCart)
