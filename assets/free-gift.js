@@ -125,22 +125,22 @@
     if (entitled === 0) {
       // Trigger is gone — drop the gift and reset the session memory so the
       // offer works again if the customer re-adds the trigger.
-      setFlag(ADDED_KEY, rule.id, false);
-      setFlag(DISMISSED_KEY, rule.id, false);
-      if (giftLine) return { type: 'change', key: giftLine.key, quantity: 0, rule: rule };
+      setFlag(ADDED_KEY, rule.id, null);
+      setFlag(DISMISSED_KEY, rule.id, null);
+      if (giftLine) return { type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token };
       return null;
     }
 
     if (!giftLine) {
       // Gift missing but we already placed it in this cart → the customer took
       // it out. Re-adding would fight them, so remember the choice instead.
-      if (cfg.respectManualRemoval !== false && flagged(ADDED_KEY, rule.id)) {
-        setFlag(ADDED_KEY, rule.id, false);
-        setFlag(DISMISSED_KEY, rule.id, true);
+      if (cfg.respectManualRemoval !== false && flagged(ADDED_KEY, rule.id, token)) {
+        setFlag(ADDED_KEY, rule.id, null);
+        setFlag(DISMISSED_KEY, rule.id, token);
         log('gift removed by customer, not re-adding:', rule.id);
         return null;
       }
-      if (cfg.respectManualRemoval !== false && flagged(DISMISSED_KEY, rule.id)) return null;
+      if (cfg.respectManualRemoval !== false && flagged(DISMISSED_KEY, rule.id, token)) return null;
       if (!rule.giftAvailable) {
         log('gift variant unavailable, skipping:', rule.giftHandle);
         return null;
