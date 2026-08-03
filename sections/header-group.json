@@ -26,8 +26,8 @@
         "announcement_figma_2": {
           "type": "announcement",
           "settings": {
-            "text": "Free shipping above <strong>Rs 999</strong>",
-            "text_on_mobile": "Free shipping above <strong>Rs 999</strong>",
+            "text": "Free shipping on prepaid orders",
+            "text_on_mobile": "Free shipping on prepaid orders",
             "text_size": 15,
             "link": ""
           }
