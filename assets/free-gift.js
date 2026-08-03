@@ -159,19 +159,30 @@
       }
     });
 
-    var entitled = 0;
-    if (triggerQuantity > 0) {
-      entitled = rule.multiply ? triggerQuantity * rule.giftQuantity : rule.giftQuantity;
-      // Never hand out more gifts than the discount will zero-price, or the
-      // customer gets charged for the overflow.
-      if (rule.maxQuantity && entitled > rule.maxQuantity) entitled = rule.maxQuantity;
-    }
-
-    if (entitled === 0) {
+    if (triggerQuantity === 0) {
       // Trigger is gone — drop the gift and reset the session memory so the
       // offer works again if the customer re-adds the trigger.
       setFlag(ADDED_KEY, rule.id, null);
       setFlag(DISMISSED_KEY, rule.id, null);
+      setFlag(CAP_KEY, rule.id, null);
+      if (giftLine) return { type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token };
+      return null;
+    }
+
+    var entitled = rule.multiply ? triggerQuantity * rule.giftQuantity : rule.giftQuantity;
+
+    // Never hand out more gifts than the discount will zero-price, or the
+    // overflow lands in the cart as a paid line. `maxQuantity` is the merchant's
+    // own ceiling; the cap is what Shopify's discount was measured to cover.
+    if (rule.maxQuantity && entitled > rule.maxQuantity) entitled = rule.maxQuantity;
+
+    var cap = capFor(rule, token, triggerQuantity);
+    if (cap !== null && entitled > cap) entitled = cap;
+
+    if (entitled === 0) {
+      // Capped to nothing — the discount covers no units at all, so a gift line
+      // here would be a surprise charge. Note the flags are *not* reset: that
+      // only happens when the trigger leaves, otherwise we'd re-add in a loop.
       if (giftLine) return { type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token };
       return null;
     }
