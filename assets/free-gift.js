@@ -249,6 +249,17 @@
     return giftLinesFor(cart, target)[0] || null;
   }
 
+  // Units of the gift product in the cart that this script did not add.
+  function unitsNotOurs(cart, target) {
+    var total = 0;
+    (cart.items || []).forEach(function (item) {
+      if (item.variant_id !== target.variantId) return;
+      if (isGiftLine(item, target)) return;
+      total += item.quantity;
+    });
+    return total;
+  }
+
   function quantityOfProduct(productId, cart) {
     var total = 0;
     (cart.items || []).forEach(function (item) {
@@ -385,6 +396,22 @@
 
     var cap = capFor(target, token, triggerQuantity);
     if (cap !== null && wanted > cap) wanted = cap;
+
+    // Units of this product already in the cart that we did not put there —
+    // added by the customer, by KwikCart's own gift module, or by any other app.
+    //
+    // We stand down for each of them. Without this, two mechanisms granting the
+    // same gift each add their own line and the shopper sees the product twice,
+    // once free and once charged, which is what a shared discount covering only
+    // one unit looks like. Deferring keeps it to a single line whoever got there
+    // first, and can never leave a duplicate behind.
+    if (cfg.deferToExistingUnits !== false) {
+      var foreign = unitsNotOurs(cart, target);
+      if (foreign > 0) {
+        wanted = Math.max(0, wanted - foreign);
+        log('standing down for', foreign, 'existing unit(s) of', target.id, '→ want', wanted);
+      }
+    }
 
     if (wanted === 0) {
       // Capped to nothing — the discount covers no units, so a gift line here
