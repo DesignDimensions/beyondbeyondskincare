@@ -303,6 +303,10 @@
       return sum;
     }
 
+    // No title configured: the line's total discount is only trustworthy when a
+    // single discount touches it. With several stacked there is no way to tell
+    // which one is the gift, and guessing is what charges customers.
+    if (allocations && allocations.length > 1) return 0;
     return item.total_discount || 0;
   }
 
