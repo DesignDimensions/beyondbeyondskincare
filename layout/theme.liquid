@@ -53,7 +53,14 @@
 
     {{ content_for_header }}
 
-    
+    {%- comment -%}
+      Auto-adds the gift product that the automatic discount prices at zero.
+      Must stay ahead of the deferred scripts so its cart interceptor is in
+      place before KwikCart or the theme fires a cart request.
+    {%- endcomment -%}
+    {% render 'free-gift' %}
+
+
     {%- liquid
       render 'css-variables'
       echo 'base.css' | asset_url | stylesheet_tag: preload: true
