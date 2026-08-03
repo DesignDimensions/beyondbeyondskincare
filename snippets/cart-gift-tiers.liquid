@@ -121,7 +121,6 @@
       makes the bar terminate exactly on a dot when that tier is reached.
     endcomment
     assign segment_length = 100.0 | divided_by: gift_tier_count
-    assign gift_tier_track_end = 50.0 | divided_by: gift_tier_count
     assign gift_tier_fill = 0
     assign previous_amount = 0
     assign previous_position = 0
@@ -188,7 +187,7 @@
       <p class="gift-tier-progress__heading">{{ settings.gift_tiers_heading | escape }}</p>
     {%- endif -%}
 
-    <ol class="gift-tier-progress__track list-unstyled" style="--gift-tier-track-end: {{ gift_tier_track_end }}%;">
+    <ol class="gift-tier-progress__track list-unstyled">
       {%- assign ordinal = 0 -%}
       {%- for tier_number in (1..3) -%}
         {%- liquid

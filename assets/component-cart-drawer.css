@@ -973,7 +973,10 @@ a.mini-cart__promo-banner:hover {
   padding: 1.2rem 0 1.2rem 1.2rem;
 }
 
-.cart-recommendations:empty {
+/* The rail is populated asynchronously, and Shopify returns nothing when a product
+   has no recommendations -- so stay hidden until there is something to show rather
+   than leaving a card that is only a heading. */
+.cart-recommendations:not(:has(.cart-recommendations__item)) {
   display: none;
 }
 
