@@ -4805,16 +4805,13 @@
         "cart_promo_banner_text": {
           "label": "Banner text"
         },
-        "cart_recommendations_enabled": {
-          "label": "Enable cart recommendations"
+        "cart_recommendations_collection": {
+          "info": "Its products are shown in the cart drawer. Leave empty to hide the block.",
+          "label": "Recommendations collection"
         },
         "cart_recommendations_heading": {
-          "info": "Visible when cart recommendations enabled.",
+          "info": "Visible when a recommendations collection is set.",
           "label": "Heading"
-        },
-        "cart_recommendations_products": {
-          "info": "Visible when cart is empty.",
-          "label": "Product list"
         },
         "cart_recommendations_show_price": {
           "info": "Visible when cart recommendations enabled.",
