@@ -16,6 +16,34 @@
 
   var cfg = NS.config;
   var rules = cfg.rules;
+
+  // Config arrives as flat (trigger -> gift) pairs, but several offers grant the
+  // same gift — the beauty bag comes with four of them — and one offer grants
+  // several. A discount's reach is a property of the *gift product*, not of any
+  // one offer, so everything downstream works on targets: one per gift variant,
+  // holding every rule that feeds it. Accounting per rule instead counts the
+  // same coverage once per offer and charges the customer the difference.
+  var targets = (function () {
+    var byVariant = {};
+    var order = [];
+    rules.forEach(function (rule) {
+      if (!rule.giftVariantId || !rule.triggerProductId) return;
+      var key = String(rule.giftVariantId);
+      if (!byVariant[key]) {
+        byVariant[key] = {
+          id: rule.giftHandle || key,
+          variantId: rule.giftVariantId,
+          handle: rule.giftHandle,
+          title: rule.giftTitle,
+          sources: []
+        };
+        order.push(key);
+      }
+      byVariant[key].sources.push(rule);
+    });
+    return order.map(function (k) { return byVariant[k]; });
+  })();
+  if (!targets.length) return;
   var GIFT_PROPERTY = cfg.property || '_free_gift';
   var ADDED_KEY = 'bb-free-gift:added';
   var DISMISSED_KEY = 'bb-free-gift:dismissed';
@@ -117,11 +145,11 @@
   // How many gift units the discount actually covered last time we looked,
   // recorded with the trigger quantity it was measured at. Without this the
   // planner would keep re-adding the units the trim step just removed.
-  function rememberCap(rule, cart, quantity) {
+  function rememberCap(target, cart, quantity) {
     var map = readMap(CAP_KEY);
-    map[rule.id] = {
+    map[target.id] = {
       token: cart.token,
-      triggerQuantity: triggerQuantityFor(rule, cart),
+      triggerQuantity: triggerQuantityFor(target, cart),
       cap: quantity
     };
     writeMap(CAP_KEY, map);
@@ -174,8 +202,8 @@
     }
   }
 
-  function capFor(rule, token, triggerQuantity) {
-    var entry = readMap(CAP_KEY)[rule.id];
+  function capFor(target, token, triggerQuantity) {
+    var entry = readMap(CAP_KEY)[target.id];
     if (!entry || entry.token !== token || !isFinite(entry.cap)) return null;
     // More triggers than when we measured — the discount may stretch further,
     // so let it probe again rather than under-gifting.
@@ -185,38 +213,63 @@
 
   /* ── Planning ─────────────────────────────────────────────────────────── */
 
-  function isGiftLine(item, rule) {
-    return !!(item.properties && item.properties[GIFT_PROPERTY] === rule.id);
+  // Ours iff it is the gift variant AND carries our property. Deliberately not
+  // "any zero-priced line of the gift variant": the discount matches on variant,
+  // so it spills onto a unit the customer paid for, and treating that as ours
+  // would let the quantity lock shrink a line they actually bought.
+  function isGiftLine(item, target) {
+    return !!(
+      item.variant_id === target.variantId &&
+      item.properties &&
+      item.properties[GIFT_PROPERTY]
+    );
   }
 
-  // Strictly our own property — never "any zero-priced line of the gift
-  // variant". The discount matches on variant, so it spills onto a lip butter
-  // the customer paid for, and treating that as ours would let the quantity
-  // lock shrink a line they actually bought.
-  function giftLinesFor(cart, rule) {
-    return (cart.items || []).filter(function (item) {
-      return isGiftLine(item, rule);
-    });
+  function giftLinesFor(cart, target) {
+    return (cart.items || []).filter(function (item) { return isGiftLine(item, target); });
   }
 
-  function findGiftLine(cart, rule) {
-    return giftLinesFor(cart, rule)[0] || null;
+  function findGiftLine(cart, target) {
+    return giftLinesFor(cart, target)[0] || null;
   }
 
-  function triggerQuantityFor(rule, cart) {
+  function quantityOfProduct(productId, cart) {
     var total = 0;
     (cart.items || []).forEach(function (item) {
-      if (item.product_id === rule.triggerProductId) total += item.quantity;
+      if (item.product_id === productId) total += item.quantity;
     });
     return total;
   }
 
-  // Returns the actions needed to bring `rule` in line with `cart` — usually
-  // none or one, but always an array so duplicate lines can be collapsed too.
-  function planFor(rule, cart) {
+  function triggerQuantityFor(target, cart) {
+    var total = 0;
+    target.sources.forEach(function (source) {
+      total += quantityOfProduct(source.triggerProductId, cart);
+    });
+    return total;
+  }
+
+  // Units of the gift product this script did not add — the customer's own, or
+  // another gift mechanism's (KwikCart's offers module, another app).
+  function unitsNotOurs(cart, target) {
+    var total = 0;
+    (cart.items || []).forEach(function (item) {
+      if (item.variant_id !== target.variantId) return;
+      if (isGiftLine(item, target)) return;
+      total += item.quantity;
+    });
+    return total;
+  }
+
+  function isAvailable(target) {
+    return target.sources.some(function (s) { return !!s.giftAvailable; });
+  }
+
+  // Actions needed to bring `target` in line with `cart` — usually none or one,
+  // but always an array so duplicate lines can be collapsed too.
+  function planFor(target, cart) {
     var token = cart.token;
-    var triggerQuantity = triggerQuantityFor(rule, cart);
-    var giftLines = giftLinesFor(cart, rule);
+    var giftLines = giftLinesFor(cart, target);
     var giftLine = giftLines[0] || null;
     var giftQuantity = giftLines.reduce(function (sum, item) { return sum + item.quantity; }, 0);
     var actions = [];
@@ -226,57 +279,79 @@
     // rather than leaving units nothing is accounting for.
     giftLines.slice(1).forEach(function (extra) {
       log('collapsing duplicate gift line', extra.key);
-      actions.push({ type: 'change', key: extra.key, quantity: 0, rule: rule, token: token });
+      actions.push({ type: 'change', key: extra.key, quantity: 0, target: target, token: token });
+    });
+
+    // Every offer granting this product contributes. A cart holding both The
+    // Morning Edit and The Evening Edit earns a beauty bag from each.
+    var triggerQuantity = 0;
+    var wanted = 0;
+
+    target.sources.forEach(function (source) {
+      var present = quantityOfProduct(source.triggerProductId, cart);
+      if (present <= 0) return;
+      triggerQuantity += present;
+      var earned = source.multiply ? present * source.giftQuantity : source.giftQuantity;
+      if (source.maxQuantity && earned > source.maxQuantity) earned = source.maxQuantity;
+      wanted += earned;
     });
 
     if (triggerQuantity === 0) {
-      // Trigger is gone — drop the gift and reset the session memory so the
-      // offer works again if the customer re-adds the trigger.
-      setFlag(ADDED_KEY, rule.id, null);
-      setFlag(DISMISSED_KEY, rule.id, null);
-      setFlag(CAP_KEY, rule.id, null);
-      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token });
+      // No offer active — drop the gift and reset the memory so it all works
+      // again if the customer re-adds a trigger.
+      setFlag(ADDED_KEY, target.id, null);
+      setFlag(DISMISSED_KEY, target.id, null);
+      setFlag(CAP_KEY, target.id, null);
+      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, target: target, token: token });
       return actions;
     }
 
-    var entitled = rule.multiply ? triggerQuantity * rule.giftQuantity : rule.giftQuantity;
+    // Never hand out more than the discount will zero-price, or the overflow
+    // lands in the cart as a paid line. `maxQuantity` is the merchant's own
+    // ceiling; the cap is what Shopify's discount was measured to cover.
+    var cap = capFor(target, token, triggerQuantity);
+    if (cap !== null && wanted > cap) wanted = cap;
 
-    // Never hand out more gifts than the discount will zero-price, or the
-    // overflow lands in the cart as a paid line. `maxQuantity` is the merchant's
-    // own ceiling; the cap is what Shopify's discount was measured to cover.
-    if (rule.maxQuantity && entitled > rule.maxQuantity) entitled = rule.maxQuantity;
+    // Units of this product already in the cart that we did not put there —
+    // the customer's, KwikCart's own gift module, any other app. We stand down
+    // for each of them. Without this, two mechanisms granting the same gift each
+    // add a line and the shopper sees the product twice, once free and once
+    // charged, which is exactly what a discount covering one unit looks like.
+    if (cfg.deferToExistingUnits !== false) {
+      var foreign = unitsNotOurs(cart, target);
+      if (foreign > 0) {
+        wanted = Math.max(0, wanted - foreign);
+        log('standing down for', foreign, 'existing unit(s) of', target.id, '→ want', wanted);
+      }
+    }
 
-    var cap = capFor(rule, token, triggerQuantity);
-    if (cap !== null && entitled > cap) entitled = cap;
-
-    if (entitled === 0) {
-      // Capped to nothing — the discount covers no units at all, so a gift line
-      // here would be a surprise charge. Note the flags are *not* reset: that
-      // only happens when the trigger leaves, otherwise we'd re-add in a loop.
-      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, rule: rule, token: token });
+    if (wanted === 0) {
+      // Nothing to grant. The flags are deliberately not reset here: that only
+      // happens when the triggers leave, otherwise we'd re-add in a loop.
+      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, target: target, token: token });
       return actions;
     }
 
     if (!giftLine) {
       // Gift missing but we already placed it in this cart → the customer took
       // it out. Re-adding would fight them, so remember the choice instead.
-      if (cfg.respectManualRemoval !== false && flagged(ADDED_KEY, rule.id, token)) {
-        setFlag(ADDED_KEY, rule.id, null);
-        setFlag(DISMISSED_KEY, rule.id, token);
-        log('gift removed by customer, not re-adding:', rule.id);
+      if (cfg.respectManualRemoval !== false && flagged(ADDED_KEY, target.id, token)) {
+        setFlag(ADDED_KEY, target.id, null);
+        setFlag(DISMISSED_KEY, target.id, token);
+        log('gift removed by customer, not re-adding:', target.id);
         return actions;
       }
-      if (cfg.respectManualRemoval !== false && flagged(DISMISSED_KEY, rule.id, token)) return actions;
-      if (!rule.giftAvailable) {
-        log('gift variant unavailable, skipping:', rule.giftHandle);
+      if (cfg.respectManualRemoval !== false && flagged(DISMISSED_KEY, target.id, token)) return actions;
+      if (!isAvailable(target)) {
+        log('gift variant unavailable, skipping:', target.handle);
         return actions;
       }
-      actions.push({ type: 'add', rule: rule, quantity: entitled, token: token });
+      actions.push({ type: 'add', target: target, quantity: wanted, token: token });
       return actions;
     }
 
-    if (giftQuantity !== entitled && cfg.lockGiftQuantity !== false) {
-      actions.push({ type: 'change', key: giftLine.key, quantity: entitled, rule: rule, token: token });
+    if (giftQuantity !== wanted && cfg.lockGiftQuantity !== false) {
+      actions.push({ type: 'change', key: giftLine.key, quantity: wanted, target: target, token: token });
     }
 
     return actions;
@@ -312,7 +387,7 @@
             }
 
             var line = byKey[action.key];
-            if (!line || !isGiftLine(line, action.rule)) {
+            if (!line || !isGiftLine(line, action.target)) {
               log('skipped change — line is not ours:', action.key);
               return null;
             }
@@ -321,10 +396,10 @@
             return postJSON(cfg.routes.change, { id: action.key, quantity: quantity })
               .then(function () {
                 consecutiveFailures = 0;
-                if (quantity === 0) setFlag(ADDED_KEY, action.rule.id, null);
+                if (quantity === 0) setFlag(ADDED_KEY, action.target.id, null);
               })
               .catch(function (error) {
-                log('failed to update gift line', action.rule.id, error);
+                log('failed to update gift line', action.target.id, error);
                 noteFailure(action.token);
               });
           });
@@ -352,14 +427,14 @@
 
         var items = usable.map(function (action) {
           var properties = {};
-          properties[GIFT_PROPERTY] = action.rule.id;
-          return { id: action.rule.giftVariantId, quantity: action.quantity, properties: properties };
+          properties[GIFT_PROPERTY] = action.target.id;
+          return { id: action.target.variantId, quantity: action.quantity, properties: properties };
         });
 
         return postJSON(cfg.routes.add, { items: items })
           .then(function () {
             consecutiveFailures = 0;
-            usable.forEach(function (action) { setFlag(ADDED_KEY, action.rule.id, action.token); });
+            usable.forEach(function (action) { setFlag(ADDED_KEY, action.target.id, action.token); });
             log('added gift(s)', items);
           })
           .catch(function (error) {
@@ -378,55 +453,71 @@
 
   // How much of the *free-gift* discount landed on a line, by name. Counting
   // only the named discount is what keeps an unrelated sitewide promo on the
-  // same product from masquerading as gift coverage.
-  function namedAllocationOn(item) {
-    var title = String(cfg.discountTitle).toLowerCase();
+  // Titles of the freebie discounts, if configured. Accepts a list (preferred)
+  // or a single string for backwards compatibility.
+  var DISCOUNT_TITLES = (function () {
+    var t = cfg.discountTitles || cfg.discountTitle;
+    if (!t) return [];
+    if (typeof t === 'string') t = [t];
+    return t.filter(Boolean).map(function (x) { return String(x).toLowerCase(); });
+  })();
+
+  // How much of a *gift* discount landed on this line. Counting only the named
+  // discounts — or, with none configured, only allocations that take 100% off —
+  // is what keeps an unrelated sitewide promo on the same product from being
+  // mistaken for gift coverage and leaving the shopper paying for a "free" unit.
+  function giftAllocationOn(item) {
     var sum = 0;
 
     (item.line_level_discount_allocations || []).forEach(function (allocation) {
       var application = allocation.discount_application || {};
       // A missing or non-numeric amount must contribute nothing. Letting one
-      // through makes the whole sum NaN, and NaN fails every comparison below,
-      // so the trim would fire on every pass forever.
-      if (String(application.title || '').toLowerCase() === title) {
-        sum += finiteOr(allocation.amount, 0);
+      // through makes the sum NaN, and NaN fails every comparison below, so the
+      // trim would fire on every pass forever.
+      var amount = finiteOr(allocation.amount, 0);
+      if (!amount) return;
+
+      if (DISCOUNT_TITLES.length) {
+        if (DISCOUNT_TITLES.indexOf(String(application.title || '').toLowerCase()) > -1) sum += amount;
+        return;
+      }
+
+      if (String(application.value_type) === 'percentage' && finiteOr(application.value, 0) >= 100) {
+        sum += amount;
       }
     });
 
     return sum;
   }
 
-  // Units of the gift variant the discount is covering, counted across *every*
-  // line it sits on — including one the customer added themselves.
+  // Units of the gift variant the discount is covering, across *every* line it
+  // sits on — including one the customer added themselves.
   //
-  // Cart-wide on purpose. Shopify decides which line to allocate a "buy X get
-  // Y" discount to and that choice is arbitrary; the cart total is identical
-  // either way. Asking "is *my* line free?" instead is what made a customer's
-  // own lip butter appear to vanish — the discount landed on their line, ours
-  // looked uncovered, and we deleted the gift.
-  function coveredUnitsFor(cart, rule) {
-    var named = !!cfg.discountTitle;
+  // Cart-wide on purpose. Shopify decides which line to allocate a "buy X get Y"
+  // discount to and that choice is arbitrary; the cart total is identical either
+  // way. Asking "is *my* line free?" instead is what made a customer's own unit
+  // appear to vanish — the discount landed on their line, ours looked uncovered,
+  // and we deleted the gift.
+  function coveredUnitsFor(cart, target) {
     var unit = 0;
     var allocated = 0;
-    var freeUnits = 0;
+    var wholeFreeUnits = 0;
 
     (cart.items || []).forEach(function (item) {
-      if (item.variant_id !== rule.giftVariantId) return;
+      if (item.variant_id !== target.variantId) return;
       if (!unit) unit = finiteOr(item.original_price, 0);
-
-      if (named) {
-        allocated += namedAllocationOn(item);
-      } else if (item.final_line_price === 0) {
-        // Without a title we cannot attribute a partial discount to the gift,
-        // so only whole lines that cost nothing count. This under-counts when
-        // coverage splits a line — which under-gifts rather than charges.
-        freeUnits += item.quantity;
-      }
+      allocated += giftAllocationOn(item);
+      if (item.final_line_price === 0) wholeFreeUnits += item.quantity;
     });
 
-    if (!named) return finiteOr(freeUnits, 0);
     if (!unit) return 0;
-    return finiteOr(Math.floor(allocated / unit), 0);
+
+    // Both are lower bounds on true coverage — a line costing nothing is
+    // certainly free, and so is anything a gift discount paid for. Taking the
+    // larger keeps the estimate tight while staying a lower bound, so the worst
+    // case is under-gifting, never an unexpected charge.
+    var byAllocation = finiteOr(Math.floor(allocated / unit), 0);
+    return Math.max(byAllocation, finiteOr(wholeFreeUnits, 0));
   }
 
   // Only Shopify knows how far the discount stretches — a "buy X get Y" use
@@ -438,17 +529,17 @@
 
     var actions = [];
 
-    rules.forEach(function (rule) {
-      var line = findGiftLine(current, rule);
+    targets.forEach(function (target) {
+      var line = findGiftLine(current, target);
       if (!line) return;
 
-      var covered = coveredUnitsFor(current, rule);
-      rememberCap(rule, current, covered);
+      var covered = coveredUnitsFor(current, target);
+      rememberCap(target, current, covered);
 
       if (line.quantity <= covered) return;
 
-      log('gift exceeds discount coverage:', rule.id, line.quantity, '→', covered);
-      actions.push({ type: 'change', key: line.key, quantity: covered, rule: rule, token: current.token });
+      log('gift exceeds discount coverage:', target.id, line.quantity, '→', covered);
+      actions.push({ type: 'change', key: line.key, quantity: covered, target: target, token: current.token });
     });
 
     if (!actions.length) return Promise.resolve({ cart: current, trimmed: false });
@@ -550,6 +641,13 @@
         refreshSections();
       }, delay);
     });
+
+    // Another gift mechanism — KwikCart's own offers module, or any app — may
+    // add the same product a moment after we do, which would leave the shopper
+    // looking at it twice. Re-check once the dust settles so the deferral above
+    // can stand our line down. On an unchanged cart this is a single /cart.js
+    // read that writes nothing, so it cannot keep the loop alive itself.
+    lateTimers.push(setTimeout(schedule, 1800));
   }
 
   /* ── Reconcile loop ───────────────────────────────────────────────────── */
@@ -566,8 +664,8 @@
         if (halted(cart.token)) return null;
 
         var actions = [];
-        rules.forEach(function (rule) {
-          actions = actions.concat(planFor(rule, cart));
+        targets.forEach(function (target) {
+          actions = actions.concat(planFor(target, cart));
         });
 
         var settled = actions.length
