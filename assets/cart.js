@@ -245,9 +245,9 @@ class DiscountCode extends HTMLElement {
         return;
       }
 
-      const couponButton = event.target.closest('[data-coupon-code]');
-      if (couponButton) {
-        this.applyDiscount(couponButton.dataset.couponCode);
+      const removeButton = event.target.closest('[data-remove-code]');
+      if (removeButton) {
+        this.removeDiscount(removeButton.dataset.removeCode);
       }
     });
 
@@ -329,11 +329,6 @@ class DiscountCode extends HTMLElement {
       this.setLoading(false);
       this.showMessage(theme.discountStrings.error, 'error');
     }
-  }
-
-  discountUrl(code, redirectTo) {
-    const root = theme.routes.root_url.endsWith('/') ? theme.routes.root_url : `${theme.routes.root_url}/`;
-    return `${root}discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent(redirectTo)}`;
   }
 
   // Shopify reports an accepted code as a discount application on the cart or on the lines it
