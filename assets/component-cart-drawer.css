@@ -627,6 +627,7 @@ a.mini-cart__promo-banner:hover {
   white-space: nowrap;
   color: #ffffff;
   background-color: var(--cart-accent);
+  transform: rotate(180deg);
 }
 
 /* Square blocks with a quarter-disc masked out of the corner facing the body, so the ribbon
