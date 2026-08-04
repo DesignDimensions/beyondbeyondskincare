@@ -1395,11 +1395,64 @@ a.mini-cart__promo-banner:hover {
    -------------------------------------------------------------------------- */
 
 .mini-cart__footer {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
   padding: 1.4rem 1.6rem 1.6rem;
   background-color: var(--cart-surface);
   border-top: 0.1rem solid var(--cart-line);
   box-shadow: 0 -0.4rem 1.6rem rgba(16, 17, 20, 0.05);
+}
+
+/* The cart-wide saving rides the top edge of the footer as a ribbon, mirroring the geometry of
+   the per-item .cart-item__discount-tab but in green. The footer's own z-index lifts it clear of
+   the scrolling canvas so the ribbon is not painted over as items scroll beneath. */
+.mini-cart__savings {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, calc(-100% + 0.1rem));
+  max-width: calc(100% - 3.2rem);
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.mini-cart__savings-body {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 1.1rem;
+  border-radius: 10px 10px 0 0;
+  font-family: var(--font-heading-family);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: var(--cart-success);
+}
+
+.mini-cart__savings-edge {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 10px;
+  background-color: var(--cart-success);
+}
+
+.mini-cart__savings-edge:first-child {
+  -webkit-mask-image: radial-gradient(circle 10px at 0 0, transparent 99%, #000 100%);
+  mask-image: radial-gradient(circle 10px at 0 0, transparent 99%, #000 100%);
+  margin-right: -2px;
+}
+
+.mini-cart__savings-edge:last-child {
+  -webkit-mask-image: radial-gradient(circle 10px at 100% 0, transparent 99%, #000 100%);
+  mask-image: radial-gradient(circle 10px at 100% 0, transparent 99%, #000 100%);
+  margin-left: -2px;
 }
 
 .cart-summary {
@@ -1449,15 +1502,6 @@ a.mini-cart__promo-banner:hover {
   font-size: 1.7rem;
   font-weight: 700;
   color: var(--cart-strong);
-}
-
-.cart-summary__savings {
-  margin: 0;
-  text-align: end;
-  font-size: 1.2rem;
-  font-weight: 500;
-  letter-spacing: 0;
-  color: var(--cart-success);
 }
 
 .cart-summary .discounts {
