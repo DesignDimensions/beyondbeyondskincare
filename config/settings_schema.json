@@ -776,42 +776,6 @@
         "content": "t:settings_schema.cart-drawer.settings.header__6.content"
       },
       {
-        "type": "checkbox",
-        "id": "cart_coupons_enabled",
-        "default": false,
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupons_enabled.label"
-      },
-      {
-        "type": "text",
-        "id": "cart_coupon_1_code",
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_1_code.label"
-      },
-      {
-        "type": "text",
-        "id": "cart_coupon_1_description",
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_1_description.label"
-      },
-      {
-        "type": "text",
-        "id": "cart_coupon_2_code",
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_2_code.label"
-      },
-      {
-        "type": "text",
-        "id": "cart_coupon_2_description",
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_2_description.label"
-      },
-      {
-        "type": "text",
-        "id": "cart_coupon_3_code",
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_3_code.label"
-      },
-      {
-        "type": "text",
-        "id": "cart_coupon_3_description",
-        "label": "t:settings_schema.cart-drawer.settings.cart_coupon_3_description.label"
-      },
-      {
         "type": "header",
         "content": "t:settings_schema.cart-drawer.settings.header__7.content"
       },

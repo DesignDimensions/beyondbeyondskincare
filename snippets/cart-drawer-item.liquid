@@ -57,15 +57,63 @@
   if item.product.has_only_default_variant == false and item.product.variants.size > 1 and is_gift_wrap == false and is_gift_tier == false
     assign show_variant_picker = true
   endif
+
+  comment
+    Strike through the highest "was" price we know about: the variant's compare at price when the
+    product is on sale, otherwise the pre-discount line price when a cart discount applies.
+  endcomment
+  assign compare_price = 0
+  if item.variant.compare_at_price > item.original_price
+    assign compare_price = item.variant.compare_at_price
+  elsif item.original_price > item.final_price
+    assign compare_price = item.original_price
+  endif
+
+  comment
+    Line discounts are surfaced as a ribbon on the card, but only on the line the offer gives
+    away. A "buy this, get that free" discount allocates against both lines, and naming the
+    offer on the one being paid for reads as if it were the freebie. Several titles are
+    collapsed onto the one line.
+  endcomment
+  assign has_discounts = false
+  assign discount_titles = ''
+  if item.line_level_discount_allocations.size > 0 and item.final_price == 0
+    assign has_discounts = true
+    for discount in item.line_level_discount_allocations
+      assign discount_titles = discount_titles | append: discount.discount_application.title | append: ' · '
+    endfor
+    assign discount_titles = discount_titles | remove_last: ' · '
+  endif
+
+  assign show_meta = false
+  if item.selling_plan_allocation != null or item.unit_price_measurement
+    assign show_meta = true
+  endif
 -%}
 
-<li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}"
+{%- comment -%}
+  The card surface lives on .cart-item__body rather than the <li> so the discount tab can be a
+  sibling that the surface paints over, tucking its bottom edge out of sight.
+{%- endcomment -%}
+<li class="cart-item{% if is_gift_tier %} cart-item--gift{% endif %}{% if has_discounts %} cart-item--discounted{% endif %}"
   data-variant-id="{{ item.variant_id }}"
   data-handle="{{ item.product.handle }}"
   data-quantity="{{ item.quantity }}"
   data-price="{{ item.original_price }}"
 >
-  <div class="cart-item__body">
+  {%- if has_discounts -%}
+    <span class="cart-item__discount-tab">
+      <span class="cart-item__discount-tab-edge" aria-hidden="true"></span>
+      <span class="cart-item__discount-tab-body">
+        <span class="visually-hidden">{{ 'customer.order.discount' | t }}:</span>
+        {%- render 'icon', icon: 'discount' -%}
+        <span class="cart-item__discount-tab-text">{{ discount_titles }}</span>
+      </span>
+      <span class="cart-item__discount-tab-edge" aria-hidden="true"></span>
+    </span>
+  {%- endif -%}
+
+  <div class="cart-card cart-item__body">
     {%- if item.image -%}
       <a href="{{ item.url }}" class="cart-item__media">
         <img
@@ -84,9 +132,10 @@
       <div class="cart-item__head">
         <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
         <span class="cart-item__price">
-          {%- if item.original_price != item.final_price -%}
+          {%- if compare_price > 0 -%}
             <s class="cart-item__price-compare">
-              <price-money><bdi>{{ item.original_price | money }}</bdi></price-money>
+              <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+              <price-money><bdi>{{ compare_price | money }}</bdi></price-money>
             </s>
           {%- endif -%}
           <span class="cart-item__price-final">
@@ -95,7 +144,7 @@
         </span>
       </div>
 
-      {%- if item.selling_plan_allocation != null or item.line_level_discount_allocations.size > 0 or item.unit_price_measurement -%}
+      {%- if show_meta -%}
         <div class="cart-item__meta">
           {%- if item.selling_plan_allocation != null -%}
             <span class="cart-item__meta-line">{{ item.selling_plan_allocation.selling_plan.name }}</span>
@@ -112,17 +161,6 @@
               {%- endif -%}
               {{ item.variant.unit_price_measurement.reference_unit }}
             </span>
-          {%- endif -%}
-
-          {%- if item.line_level_discount_allocations.size > 0 -%}
-            <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">
-              {%- for discount in item.line_level_discount_allocations -%}
-                <li class="discounts__discount">
-                  {%- render 'icon', icon: 'discount' -%}
-                  {{ discount.discount_application.title }}
-                </li>
-              {%- endfor -%}
-            </ul>
           {%- endif -%}
         </div>
       {%- endif -%}
