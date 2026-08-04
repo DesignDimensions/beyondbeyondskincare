@@ -134,7 +134,7 @@
         </span>
       </div>
 
-      {%- if item.selling_plan_allocation != null or item.line_level_discount_allocations.size > 0 or item.unit_price_measurement -%}
+      {%- if show_meta -%}
         <div class="cart-item__meta">
           {%- if item.selling_plan_allocation != null -%}
             <span class="cart-item__meta-line">{{ item.selling_plan_allocation.selling_plan.name }}</span>
@@ -151,17 +151,6 @@
               {%- endif -%}
               {{ item.variant.unit_price_measurement.reference_unit }}
             </span>
-          {%- endif -%}
-
-          {%- if item.line_level_discount_allocations.size > 0 -%}
-            <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">
-              {%- for discount in item.line_level_discount_allocations -%}
-                <li class="discounts__discount">
-                  {%- render 'icon', icon: 'discount' -%}
-                  {{ discount.discount_application.title }}
-                </li>
-              {%- endfor -%}
-            </ul>
           {%- endif -%}
         </div>
       {%- endif -%}
