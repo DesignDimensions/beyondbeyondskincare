@@ -788,6 +788,11 @@
         "type": "image_picker",
         "id": "cart_powered_by_image",
         "label": "t:settings_schema.cart-drawer.settings.cart_powered_by_image.label"
+      },
+      {
+        "type": "image_picker",
+        "id": "cart_checkout_image",
+        "label": "t:settings_schema.cart-drawer.settings.cart_checkout_image.label"
       }
     ]
   },

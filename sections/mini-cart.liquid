@@ -303,10 +303,19 @@
       </cart-terms>
 
       <div class="button-container">
-        <button class="button" name="checkout" type="submit">{{ 'sections.cart.checkout' | t }}</button>
-        {%- unless settings.disable_view_cart -%}
-          <a class="button button--secondary" href="{{ routes.cart_url }}">{{ 'general.cart.view' | t }}</a>
-        {%- endunless -%}
+        <button class="button" name="checkout" type="submit">
+          <span class="button__label">{{ 'sections.cart.checkout' | t }}</span>
+          {%- if settings.cart_checkout_image != blank -%}
+            <img
+              class="button__image"
+              src="{{ settings.cart_checkout_image | image_url: height: 48 }}"
+              alt="{{ settings.cart_checkout_image.alt | escape }}"
+              width="{{ 24 | times: settings.cart_checkout_image.aspect_ratio | ceil }}"
+              height="24"
+              loading="lazy"
+            />
+          {%- endif -%}
+        </button>
       </div>
 
       {%- if settings.cart_powered_by_text != blank or settings.cart_powered_by_image != blank -%}
