@@ -586,8 +586,46 @@ a.mini-cart__promo-banner:hover {
   color: var(--cart-muted);
 }
 
-.cart-item__meta .discounts {
-  margin: 0;
+/* Line discounts read as a tab emerging from behind the top edge of the card. The negative
+   z-index keeps the tucked portion under the card surface — .cart-item deliberately has no
+   z-index of its own so it never becomes the stacking context the tab is measured against. */
+.cart-item--discounted {
+  margin-top: 1rem;
+}
+
+.cart-item__discount-tab {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: -1.9rem;
+  max-width: calc(100% - 2.4rem);
+  display: flex;
+  align-items: center;
+  column-gap: 0.4rem;
+  padding: 0.4rem 1rem 0.9rem;
+  border-radius: 0.6rem 0.6rem 0 0;
+  font-family: var(--font-heading-family);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: var(--cart-accent);
+}
+
+.cart-item__discount-tab .icon {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: currentColor;
+}
+
+.cart-item__discount-tab-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cart-item__controls {
