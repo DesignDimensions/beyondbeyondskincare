@@ -976,12 +976,56 @@ a.mini-cart__promo-banner:hover {
    line-level allocations -- Shopify gives the storefront no way to list codes that have not
    been applied, so there is nothing here to configure. */
 .cart-discount__applied {
+  margin-top: 1.2rem;
+}
+
+.cart-discount__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 1rem;
+  padding-top: 1.2rem;
+  border-top: 0.1rem dashed var(--cart-line-strong);
+  cursor: pointer;
+  list-style: none;
+}
+
+.cart-discount__summary::-webkit-details-marker {
+  display: none;
+}
+
+.cart-discount__available {
+  font-size: 1.25rem;
+  letter-spacing: 0;
+  color: var(--cart-muted);
+}
+
+.cart-discount__view {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--cart-strong);
+}
+
+.cart-discount__view .icon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform var(--duration-default) ease;
+}
+
+.cart-discount__applied[open] .cart-discount__view .icon {
+  transform: rotate(90deg);
+}
+
+.cart-discount__applied-list {
   display: flex;
   flex-direction: column;
   row-gap: 0.6rem;
   margin: 1.2rem 0 0;
-  padding: 1.2rem 0 0;
-  border-top: 0.1rem dashed var(--cart-line-strong);
+  padding: 0;
   list-style: none;
 }
 
