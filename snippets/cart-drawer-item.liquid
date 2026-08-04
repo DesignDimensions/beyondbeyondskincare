@@ -89,7 +89,11 @@
   endif
 -%}
 
-<li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}{% if has_discounts %} cart-item--discounted{% endif %}"
+{%- comment -%}
+  The card surface lives on .cart-item__body rather than the <li> so the discount tab can be a
+  sibling that the surface paints over, tucking its bottom edge out of sight.
+{%- endcomment -%}
+<li class="cart-item{% if is_gift_tier %} cart-item--gift{% endif %}{% if has_discounts %} cart-item--discounted{% endif %}"
   data-variant-id="{{ item.variant_id }}"
   data-handle="{{ item.product.handle }}"
   data-quantity="{{ item.quantity }}"
@@ -103,7 +107,7 @@
     </span>
   {%- endif -%}
 
-  <div class="cart-item__body">
+  <div class="cart-card cart-item__body">
     {%- if item.image -%}
       <a href="{{ item.url }}" class="cart-item__media">
         <img
