@@ -1425,7 +1425,7 @@ a.mini-cart__promo-banner:hover {
   align-items: center;
   height: 20px;
   padding: 0 1.1rem;
-  border-radius: 10px 10px 0 0;
+  border-radius: 0 0 10px 10px;
   font-family: var(--font-heading-family);
   font-size: 1.1rem;
   font-weight: 600;
@@ -1434,6 +1434,7 @@ a.mini-cart__promo-banner:hover {
   white-space: nowrap;
   color: #ffffff;
   background-color: var(--cart-success);
+  margin-bottom: -10px;
 }
 
 .mini-cart__savings-edge {
