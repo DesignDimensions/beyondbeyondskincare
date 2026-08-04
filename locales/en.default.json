@@ -171,27 +171,19 @@
       "home_link_title": "Back to the frontpage"
     },
     "cart": {
-      "coupons": {
-        "apply": "Apply",
-        "empty": "No coupons available right now",
-        "title": "Available coupons",
-        "available": {
-          "one": "{{ count }} coupon available",
-          "other": "{{ count }} coupons available"
-        }
-      },
       "discount": {
         "button": "Apply",
         "caption": "Add a discount code",
         "percent_off": "({{ percent }}% OFF)",
         "title": "Coupon",
         "tooltip": "Discount will be applied at checkout",
-        "view_coupons": "View coupons",
         "placeholder": "Enter Coupon Code",
         "applying": "Applying…",
         "applied": "{{ code }} applied",
         "invalid": "{{ code }} isn’t valid for this cart",
-        "error": "Couldn’t apply that code. Please try again."
+        "error": "Couldn’t apply that code. Please try again.",
+        "remove": "Remove discount {{ code }}",
+        "removing": "Removing…"
       },
       "free_shipping": {
         "congratulations_html": "You are eligible for free shipping.",
