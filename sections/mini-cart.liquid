@@ -129,7 +129,7 @@
       {%- if cart != empty -%}
         <discount-code class="cart-card cart-discount" data-animate data-animate-delay-5>
           <div class="cart-discount__field">
-            {% render 'icon', icon: 'discount', class: 'cart-discount__icon' %}
+            {% render 'icon', icon: 'discount-percent', class: 'cart-discount__icon' %}
             <label for="CartDiscountCode" class="visually-hidden">{{ 'general.cart.discount.caption' | t }}</label>
             <input
               type="text"
@@ -145,24 +145,35 @@
           <p class="cart-discount__message" role="status" aria-live="polite" hidden></p>
 
           {%- if applied_discount_codes.size > 0 -%}
-            <ul class="cart-discount__applied list-unstyled" role="list">
-              {%- for applied_code in applied_discount_codes -%}
-                <li class="cart-discount__applied-item">
-                  {% render 'icon', icon: 'discount' %}
-                  <span class="cart-discount__applied-code">{{ applied_code }}</span>
-                  <button
-                    type="button"
-                    class="cart-discount__remove"
-                    data-remove-code="{{ applied_code | escape }}"
-                  >
-                    <span class="visually-hidden">
-                      {{- 'general.cart.discount.remove' | t: code: applied_code -}}
-                    </span>
-                    {% render 'icon', icon: 'close' %}
-                  </button>
-                </li>
-              {%- endfor -%}
-            </ul>
+            <details class="cart-discount__applied">
+              <summary class="cart-discount__summary">
+                <span class="cart-discount__available">
+                  {{- 'general.cart.discount.applied_count' | t: count: applied_discount_codes.size -}}
+                </span>
+                <span class="cart-discount__view">
+                  {{ 'general.cart.discount.view_applied' | t }}
+                  {% render 'icon', icon: 'chevron' %}
+                </span>
+              </summary>
+              <ul class="cart-discount__applied-list list-unstyled" role="list">
+                {%- for applied_code in applied_discount_codes -%}
+                  <li class="cart-discount__applied-item">
+                    {% render 'icon', icon: 'discount' %}
+                    <span class="cart-discount__applied-code">{{ applied_code }}</span>
+                    <button
+                      type="button"
+                      class="cart-discount__remove"
+                      data-remove-code="{{ applied_code | escape }}"
+                    >
+                      <span class="visually-hidden">
+                        {{- 'general.cart.discount.remove' | t: code: applied_code -}}
+                      </span>
+                      {% render 'icon', icon: 'close' %}
+                    </button>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </details>
           {%- endif -%}
         </discount-code>
       {%- endif -%}

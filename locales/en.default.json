@@ -183,7 +183,12 @@
         "invalid": "{{ code }} isn’t valid for this cart",
         "error": "Couldn’t apply that code. Please try again.",
         "remove": "Remove discount {{ code }}",
-        "removing": "Removing…"
+        "removing": "Removing…",
+        "view_applied": "View discounts",
+        "applied_count": {
+          "one": "{{ count }} discount applied",
+          "other": "{{ count }} discounts applied"
+        }
       },
       "free_shipping": {
         "congratulations_html": "You are eligible for free shipping.",
