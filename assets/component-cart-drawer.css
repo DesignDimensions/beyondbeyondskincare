@@ -588,26 +588,36 @@ a.mini-cart__promo-banner:hover {
   color: var(--cart-muted);
 }
 
-/* Line discounts read as a tab emerging from behind the top edge of the card. The card surface
-   (.cart-item__body) sits at z-index 1 and paints over the tab's lower edge — a negative z-index
-   here would drop the tab behind .mini-cart's opaque canvas background instead. */
+/* Line discounts read as a ribbon draped over the top edge of the card: a stadium-topped body
+   straddling the edge, with a concave fillet on each side flaring down onto the card surface.
+   It paints above .cart-item__body (z-index 1) so the lower half sits over the card. */
 .cart-item--discounted {
-  margin-top: 1rem;
+  margin-top: 0.9rem;
+
+  --discount-tab-height: 2.12rem;
+  --discount-tab-flare: 0.8rem;
 }
 
 .cart-item__discount-tab {
   position: absolute;
-  z-index: 0;
+  z-index: 2;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
-  margin-top: -1.9rem;
+  transform: translate(-50%, -55%);
   max-width: calc(100% - 2.4rem);
+  display: flex;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.cart-item__discount-tab-body {
+  min-width: 0;
   display: flex;
   align-items: center;
   column-gap: 0.4rem;
-  padding: 0.4rem 1rem 0.9rem;
-  border-radius: 0.6rem 0.6rem 0 0;
+  height: var(--discount-tab-height);
+  padding: 0 1.1rem;
+  border-radius: calc(var(--discount-tab-height) / 2) calc(var(--discount-tab-height) / 2) 0 0;
   font-family: var(--font-heading-family);
   font-size: 1.1rem;
   font-weight: 600;
@@ -616,6 +626,25 @@ a.mini-cart__promo-banner:hover {
   white-space: nowrap;
   color: #ffffff;
   background-color: var(--cart-accent);
+}
+
+/* Square blocks with a quarter-disc masked out of the corner facing the body, so the ribbon
+   curves outward into the card instead of stopping at a hard vertical edge. */
+.cart-item__discount-tab-edge {
+  flex: 0 0 auto;
+  width: var(--discount-tab-flare);
+  height: var(--discount-tab-flare);
+  background-color: var(--cart-accent);
+}
+
+.cart-item__discount-tab-edge:first-child {
+  -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 0 0, transparent 99%, #000 100%);
+  mask-image: radial-gradient(circle var(--discount-tab-flare) at 0 0, transparent 99%, #000 100%);
+}
+
+.cart-item__discount-tab-edge:last-child {
+  -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 100% 0, transparent 99%, #000 100%);
+  mask-image: radial-gradient(circle var(--discount-tab-flare) at 100% 0, transparent 99%, #000 100%);
 }
 
 .cart-item__discount-tab .icon {
