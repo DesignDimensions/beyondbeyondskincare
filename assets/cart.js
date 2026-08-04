@@ -274,33 +274,28 @@ class DiscountCode extends HTMLElement {
     this.showMessage(theme.discountStrings.applying);
 
     try {
-      // Shopify exposes no JSON endpoint for discount codes -- /discount/<code> is the native
-      // route that attaches one to the session. Fetching it applies the code in the background
-      // instead of navigating; redirecting to cart.js keeps the throwaway response small.
-      const response = await fetch(
-        this.discountUrl(code, `${theme.routes.cart_url}.js`),
-        { method: 'GET', credentials: 'same-origin' }
-      );
+      // /cart/update.js takes a `discount` parameter (Cart AJAX API, May 2025), so the code is
+      // applied without leaving the page. Asking for sections in the same call returns the cart
+      // and the re-rendered drawer together. Note the parameter replaces the cart's discounts
+      // rather than adding to them -- one code at a time, which is what this single input offers.
+      const sections = this.getSectionsToRender();
+      const body = JSON.stringify({
+        discount: code,
+        sections: sections.map((section) => section.section).filter(Boolean),
+        sections_url: window.location.pathname
+      });
 
-      // `shopify theme dev` does not proxy /discount/*, and a password-protected storefront
-      // refuses it outright. Neither can be fixed from here, so hand the code to the route the
-      // way it was designed to be used rather than losing it.
+      const response = await fetch(`${theme.routes.cart_update_url}`, {...fetchConfig(), ...{ body }});
+      const state = await response.json();
+
       if (!response.ok) {
-        window.location.href = this.discountUrl(code, theme.routes.cart_url);
+        this.setLoading(false);
+        this.showMessage(state.description || state.message || theme.discountStrings.error, 'error');
         return;
       }
 
-      // Read the resulting cart back and re-render the drawer from it, so the outcome comes
-      // from the server rather than from guessing whether the code was accepted.
-      const sections = this.getSectionsToRender();
-      const sectionNames = sections.map((section) => section.section).filter(Boolean).join(',');
-      const [state, rendered] = await Promise.all([
-        fetch(`${theme.routes.cart_url}.js`, { credentials: 'same-origin' }).then((cart) => cart.json()),
-        fetch(`${window.location.pathname}?sections=${encodeURIComponent(sectionNames)}`, {
-          credentials: 'same-origin'
-        }).then((markup) => markup.json())
-      ]);
-
+      // A code Shopify accepts but cannot apply to this cart comes back with the cart unchanged,
+      // so the discount applications are the source of truth for success rather than the status.
       const applied = this.isCodeApplied(state, code);
 
       if (isStorageSupported('session')) {
@@ -311,7 +306,7 @@ class DiscountCode extends HTMLElement {
         }
       }
 
-      this.renderSections(sections, rendered);
+      this.renderSections(sections, state.sections);
 
       // The section render replaces this element, so the outcome has to land on its successor.
       const current = document.querySelector('discount-code') || this;
