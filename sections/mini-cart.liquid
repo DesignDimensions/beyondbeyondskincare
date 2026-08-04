@@ -97,11 +97,11 @@
         </ul>
       {%- endif -%}
 
-      {%- if settings.cart_recommendations_enabled and settings.cart_recommendations_products != blank -%}
+      {%- if recommended_products.size > 0 -%}
         <div class="cart-card cart-recommendations">
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in settings.cart_recommendations_products -%}
+            {%- for recommendation in recommended_products -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
@@ -178,26 +178,15 @@
         </discount-code>
       {%- endif -%}
 
-      {%- if cart != empty and settings.cart_recommendations_enabled -%}
-        {%- liquid
-          assign cart_recommendations_limit = 4
-          if settings.cart_recommendations_products != blank
-            assign cart_recommendations_limit = settings.cart_recommendations_products.count
-          endif
-        -%}
-        <cart-recommendations
-          class="cart-card cart-recommendations"
-          data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ cart.items.first.product_id }}&limit={{ cart_recommendations_limit }}"
-          data-animate
-          data-animate-delay-6
-        >
+      {%- if cart != empty and recommended_products.size > 0 -%}
+        <div class="cart-card cart-recommendations" data-animate data-animate-delay-6>
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommendations.products -%}
+            {%- for recommendation in recommended_products -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
-        </cart-recommendations>
+        </div>
       {%- endif -%}
 
       {%- if gift_wrapping != nil -%}
