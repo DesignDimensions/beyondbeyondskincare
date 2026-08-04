@@ -170,8 +170,11 @@
 <noscript>{{ 'disclosure.css' | asset_url | stylesheet_tag }}</noscript>
 
 <script src="{{ 'search-modal.js' | asset_url }}" defer="defer"></script>
-{%- if settings.cart_recommendations_enabled -%}
-  <script src="{{ 'cart-recommendations.js' | asset_url }}" defer="defer"></script>
+{%- comment -%}
+  The drawer renders its recommendations straight from the assigned collection, so there is no
+  async fetch to boot -- only the stylesheet is still needed.
+{%- endcomment -%}
+{%- if settings.cart_recommendations_collection != blank -%}
   <link
     rel="stylesheet"
     href="{{ 'component-cart-recommendations.css' | asset_url }}"
