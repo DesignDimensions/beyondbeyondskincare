@@ -564,11 +564,17 @@ a.mini-cart__promo-banner:hover {
 }
 
 .cart-item__price-compare {
+  /* The strike is drawn from this element's own font metrics, so it has to carry the
+     same font-size as the text inside it or the line lands below the digits. */
+  font-size: 1.2rem;
   color: var(--cart-muted);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 0.1rem;
+  text-decoration-skip-ink: none;
 }
 
 .cart-item__price-compare bdi {
-  font-size: 1.2rem;
+  font-size: inherit;
 }
 
 .cart-item__meta {
