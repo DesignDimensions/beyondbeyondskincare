@@ -354,10 +354,10 @@ class DiscountCode extends HTMLElement {
     return [{ id: 'mini-cart', section: 'mini-cart', selector: '.shopify-section' }];
   }
 
-  renderSections(sections, state) {
+  renderSections(sections, rendered) {
     sections.forEach((section) => {
       const element = document.getElementById(section.id);
-      const html = state.sections?.[section.section];
+      const html = rendered?.[section.section];
       if (!element || !html) return;
 
       const parsed = new DOMParser().parseFromString(html, 'text/html').querySelector(section.selector);
