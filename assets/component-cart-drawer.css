@@ -592,18 +592,20 @@ a.mini-cart__promo-banner:hover {
    straddling the edge, with a concave fillet on each side flaring down onto the card surface.
    It paints above .cart-item__body (z-index 1) so the lower half sits over the card. */
 .cart-item--discounted {
-  margin-top: 0.9rem;
+  margin-top: 1.2rem;
 
-  --discount-tab-height: 2.12rem;
-  --discount-tab-flare: 0.8rem;
+  --discount-tab-height: 2.2rem;
+  --discount-tab-flare: 1.1rem;
 }
 
+/* Sits flush on the card's top edge, overlapping only the 0.1rem border so the ribbon's base
+   merges into the surface instead of leaving a hard horizontal edge across the card. */
 .cart-item__discount-tab {
   position: absolute;
   z-index: 2;
   top: 0;
   left: 50%;
-  transform: translate(-50%, -55%);
+  transform: translate(-50%, calc(-100% + 0.1rem));
   max-width: calc(100% - 2.4rem);
   display: flex;
   align-items: flex-end;
