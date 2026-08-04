@@ -277,24 +277,25 @@ class DiscountCode extends HTMLElement {
       // Shopify exposes no JSON endpoint for discount codes -- /discount/<code> is the native
       // route that attaches one to the session. Fetching it applies the code in the background
       // instead of navigating; redirecting to cart.js keeps the throwaway response small.
+      const root = theme.routes.root_url.endsWith('/') ? theme.routes.root_url : `${theme.routes.root_url}/`;
       const redirect = encodeURIComponent(`${theme.routes.cart_url}.js`);
       const response = await fetch(
-        `${theme.routes.root_url}discount/${encodeURIComponent(code)}?redirect=${redirect}`,
+        `${root}discount/${encodeURIComponent(code)}?redirect=${redirect}`,
         { method: 'GET', credentials: 'same-origin' }
       );
       if (!response.ok) throw new Error(`Discount route responded with ${response.status}`);
 
-      // A no-op cart update returns the fresh cart plus re-rendered sections in one round trip,
-      // so the drawer reflects the discount without a page load.
+      // Read the resulting cart back and re-render the drawer from it, so the outcome comes
+      // from the server rather than from guessing whether the code was accepted.
       const sections = this.getSectionsToRender();
-      const body = JSON.stringify({
-        sections: sections.map((section) => section.section),
-        sections_url: window.location.pathname
-      });
-      const updated = await fetch(`${theme.routes.cart_update_url}`, {...fetchConfig(), ...{ body }});
-      if (!updated.ok) throw new Error(`Cart update responded with ${updated.status}`);
+      const sectionNames = sections.map((section) => section.section).filter(Boolean).join(',');
+      const [state, rendered] = await Promise.all([
+        fetch(`${theme.routes.cart_url}.js`, { credentials: 'same-origin' }).then((cart) => cart.json()),
+        fetch(`${window.location.pathname}?sections=${encodeURIComponent(sectionNames)}`, {
+          credentials: 'same-origin'
+        }).then((markup) => markup.json())
+      ]);
 
-      const state = await updated.json();
       const applied = this.isCodeApplied(state, code);
 
       if (isStorageSupported('session')) {
@@ -305,7 +306,7 @@ class DiscountCode extends HTMLElement {
         }
       }
 
-      this.renderSections(sections, state);
+      this.renderSections(sections, rendered);
 
       // The section render replaces this element, so the outcome has to land on its successor.
       const current = document.querySelector('discount-code') || this;
