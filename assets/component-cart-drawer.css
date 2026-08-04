@@ -624,12 +624,12 @@ a.mini-cart__promo-banner:hover {
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.02em;
-  height: 20px;
+  height: 26px;
   white-space: nowrap;
   color: #ffffff;
   background-color: var(--cart-accent);
   transform: rotate(180deg);
-  margin-bottom: -2.2rem;
+  margin-bottom: -13px;
 }
 
 /* Square blocks with a quarter-disc masked out of the corner facing the body, so the ribbon
