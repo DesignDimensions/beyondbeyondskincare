@@ -130,6 +130,8 @@
             <button type="button" class="cart-discount__apply">{{ 'general.cart.discount.button' | t }}</button>
           </div>
 
+          <p class="cart-discount__message" role="status" aria-live="polite" hidden></p>
+
           {%- if cart_coupons_count > 0 -%}
             <details class="cart-discount__coupons">
               <summary class="cart-discount__summary">
