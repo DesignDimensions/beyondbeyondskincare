@@ -101,9 +101,13 @@
 >
   {%- if has_discounts -%}
     <span class="cart-item__discount-tab">
-      <span class="visually-hidden">{{ 'customer.order.discount' | t }}:</span>
-      {%- render 'icon', icon: 'discount' -%}
-      <span class="cart-item__discount-tab-text">{{ discount_titles }}</span>
+      <span class="cart-item__discount-tab-edge" aria-hidden="true"></span>
+      <span class="cart-item__discount-tab-body">
+        <span class="visually-hidden">{{ 'customer.order.discount' | t }}:</span>
+        {%- render 'icon', icon: 'discount' -%}
+        <span class="cart-item__discount-tab-text">{{ discount_titles }}</span>
+      </span>
+      <span class="cart-item__discount-tab-edge" aria-hidden="true"></span>
     </span>
   {%- endif -%}
 
