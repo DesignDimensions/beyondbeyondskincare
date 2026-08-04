@@ -205,11 +205,11 @@ details[open].menu-opening > .cart-drawer {
 }
 
 .mini-cart__count {
-  font-family: var(--font-body-family);
+  /* font-family: var(--font-body-family);
   font-size: 1.3rem;
   font-weight: 400;
   letter-spacing: 0;
-  color: var(--cart-muted);
+  color: var(--cart-muted); */
 }
 
 .mini-cart__close {
