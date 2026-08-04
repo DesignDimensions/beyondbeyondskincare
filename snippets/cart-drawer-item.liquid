@@ -70,12 +70,14 @@
   endif
 
   comment
-    Line discounts are surfaced as a tab tucked behind the top edge of the card, so several
-    titles are collapsed onto the one line.
+    Line discounts are surfaced as a ribbon on the card, but only on the line the offer gives
+    away. A "buy this, get that free" discount allocates against both lines, and naming the
+    offer on the one being paid for reads as if it were the freebie. Several titles are
+    collapsed onto the one line.
   endcomment
   assign has_discounts = false
   assign discount_titles = ''
-  if item.line_level_discount_allocations.size > 0
+  if item.line_level_discount_allocations.size > 0 and item.final_price == 0
     assign has_discounts = true
     for discount in item.line_level_discount_allocations
       assign discount_titles = discount_titles | append: discount.discount_application.title | append: ' · '
