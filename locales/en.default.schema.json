@@ -4782,7 +4782,28 @@
       "settings": {
         "cart_accent_color": {
           "label": "Drawer accent colour",
-          "info": "Used by the promo banner, unlocked gift tiers, discount actions and links inside the cart drawer."
+          "info": "Used by the promo banner, unlocked gift tiers, coupon actions and links inside the cart drawer."
+        },
+        "cart_coupon_1_code": {
+          "label": "Coupon 1 code"
+        },
+        "cart_coupon_1_description": {
+          "label": "Coupon 1 description"
+        },
+        "cart_coupon_2_code": {
+          "label": "Coupon 2 code"
+        },
+        "cart_coupon_2_description": {
+          "label": "Coupon 2 description"
+        },
+        "cart_coupon_3_code": {
+          "label": "Coupon 3 code"
+        },
+        "cart_coupon_3_description": {
+          "label": "Coupon 3 description"
+        },
+        "cart_coupons_enabled": {
+          "label": "Show available coupons list"
         },
         "cart_drawer_enabled": {
           "label": "Enable cart drawer"

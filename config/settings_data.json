@@ -78,8 +78,6 @@
     "gift_tier_3_minimum_amount": "6100",
     "gift_tier_3_label": "Beauty Bag + Mini Cleanser Jelly",
     "gift_tier_3_range_label": "6100-7500",
-    "cart_coupons_enabled": true,
-    "cart_coupon_1_code": "BBSERUM",
     "search_recommendation": "search-menu",
     "predictive_search_show_vendor": true,
     "currency_code_enabled": false,
@@ -106,6 +104,8 @@
     "buyNowEnableBanner": false,
     "enableIntlFlow": false,
     "empty_cart_products": "",
+    "cart_coupons_enabled": true,
+    "cart_coupon_1_code": "BBSERUM",
     "sections": {
       "main-password-header": {
         "type": "main-password-header",
