@@ -4787,6 +4787,9 @@
         "cart_drawer_enabled": {
           "label": "Enable cart drawer"
         },
+        "cart_checkout_image": {
+          "label": "Checkout button image"
+        },
         "cart_powered_by_image": {
           "label": "Logo"
         },
