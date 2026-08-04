@@ -624,6 +624,7 @@ a.mini-cart__promo-banner:hover {
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.02em;
+  height: var(--discount-tab-height);
   white-space: nowrap;
   color: #ffffff;
   background-color: var(--cart-accent);
