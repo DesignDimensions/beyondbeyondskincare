@@ -624,11 +624,11 @@ a.mini-cart__promo-banner:hover {
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: 0.02em;
-  height: 26px;
+  height: 20px;
   white-space: nowrap;
   color: #ffffff;
   background-color: var(--cart-accent);
-  margin-bottom: -13px;
+  margin-bottom: -10px;
 }
 
 /* Square blocks with a quarter-disc masked out of the corner facing the body, so the ribbon
@@ -642,13 +642,13 @@ a.mini-cart__promo-banner:hover {
 
 .cart-item__discount-tab-edge:first-child {
   -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 0 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 9px at 0 0, transparent 99%, #000 100%);
+  mask-image: radial-gradient(circle 10px at 0 0, transparent 99%, #000 100%);
   margin-right: -2px;
 }
 
 .cart-item__discount-tab-edge:last-child {
   -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 100% 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 9px at 100% 0, transparent 99%, #000 100%);
+  mask-image: radial-gradient(circle 10px at 100% 0, transparent 99%, #000 100%);
   margin-left: -2px;
 }
 
