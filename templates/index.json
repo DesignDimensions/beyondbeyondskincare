@@ -211,6 +211,17 @@
             "link_text": "",
             "link": ""
           }
+        },
+        "banner_pLyFtP": {
+          "type": "banner",
+          "settings": {
+            "desktop_banner": "shopify://shop_images/Combo_banner_WEB.png",
+            "mobile_banner": "shopify://shop_images/Combo_Banner_mob.png",
+            "title": "",
+            "description": "",
+            "link_text": "",
+            "link": ""
+          }
         }
       },
       "block_order": [
@@ -227,7 +238,8 @@
         "banner_aAD9cG",
         "banner_EP68Le",
         "banner_XGdVyw",
-        "banner_n9hUUn"
+        "banner_n9hUUn",
+        "banner_pLyFtP"
       ],
       "name": "Home Main Slideshow",
       "settings": {
