@@ -1412,7 +1412,9 @@ a.mini-cart__promo-banner:hover {
   z-index: 2;
   top: 0;
   left: 50%;
-  transform: translate(-50%, calc(-100% + 0.1rem));
+  /* No border compensation, unlike the item ribbon: the footer carries its own border-top, so
+     top:0 already resolves inside it and lands the ribbon's base on the same line. */
+  transform: translate(-50%, -100%);
   max-width: calc(100% - 3.2rem);
   display: flex;
   align-items: flex-end;
