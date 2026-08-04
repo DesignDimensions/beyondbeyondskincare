@@ -609,10 +609,10 @@
         "info": "t:settings_schema.cart-drawer.settings.header__2.info"
       },
       {
-        "type": "checkbox",
-        "id": "cart_recommendations_enabled",
-        "default": false,
-        "label": "t:settings_schema.cart-drawer.settings.cart_recommendations_enabled.label"
+        "type": "collection",
+        "id": "cart_recommendations_collection",
+        "label": "t:settings_schema.cart-drawer.settings.cart_recommendations_collection.label",
+        "info": "t:settings_schema.cart-drawer.settings.cart_recommendations_collection.info"
       },
       {
         "type": "text",
@@ -634,12 +634,6 @@
         "default": true,
         "label": "t:settings_schema.cart-drawer.settings.cart_recommendations_show_price.label",
         "info": "t:settings_schema.cart-drawer.settings.cart_recommendations_show_price.info"
-      },
-      {
-        "type": "product_list",
-        "id": "cart_recommendations_products",
-        "label": "t:settings_schema.cart-drawer.settings.cart_recommendations_products.label",
-        "info": "t:settings_schema.cart-drawer.settings.cart_recommendations_products.info"
       },
       {
         "type": "header",
