@@ -19,6 +19,10 @@
     collection has products -- no per-product curation and no on/off switch to keep in sync.
   endcomment
   assign recommended_products = settings.cart_recommendations_collection.products
+  assign show_recommendations = false
+  if settings.cart_recommendations_collection != blank and recommended_products.size > 0
+    assign show_recommendations = true
+  endif
 
   comment
     The discounts actually on the cart, straight from Shopify. A code can land cart-wide or on
@@ -103,11 +107,11 @@
         </ul>
       {%- endif -%}
 
-      {%- if recommended_products.size > 0 -%}
+      {%- if show_recommendations -%}
         <div class="cart-card cart-recommendations">
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommended_products -%}
+            {%- for recommendation in recommended_products limit: 8 -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
@@ -184,11 +188,11 @@
         </discount-code>
       {%- endif -%}
 
-      {%- if cart != empty and recommended_products.size > 0 -%}
+      {%- if cart != empty and show_recommendations -%}
         <div class="cart-card cart-recommendations" data-animate data-animate-delay-6>
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommended_products -%}
+            {%- for recommendation in recommended_products limit: 8 -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
