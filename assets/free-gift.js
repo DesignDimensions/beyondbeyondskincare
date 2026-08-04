@@ -265,6 +265,24 @@
     return target.sources.some(function (s) { return !!s.giftAvailable; });
   }
 
+  // Our gift for a product can legitimately occupy more than one line: when two
+  // offers both grant it, Shopify splits the line and allocates a different
+  // discount to each half — that split is exactly what makes both discounts
+  // apply. So these lines are treated as one pool and only their *total* is
+  // steered. Deleting the "extra" line would throw away the second discount.
+  function resizeTo(giftLines, target, token, desired) {
+    var actions = [];
+    var remaining = desired;
+    giftLines.forEach(function (line) {
+      var keep = Math.max(0, Math.min(line.quantity, remaining));
+      remaining -= keep;
+      if (keep !== line.quantity) {
+        actions.push({ type: 'change', key: line.key, quantity: keep, target: target, token: token });
+      }
+    });
+    return actions;
+  }
+
   // Actions needed to bring `target` in line with `cart` — usually none or one,
   // but always an array so duplicate lines can be collapsed too.
   function planFor(target, cart) {
@@ -274,13 +292,6 @@
     var giftQuantity = giftLines.reduce(function (sum, item) { return sum + item.quantity; }, 0);
     var actions = [];
 
-    // Shopify merges lines with the same variant and properties, so a second
-    // gift line should be impossible — but if one ever appears, fold it away
-    // rather than leaving units nothing is accounting for.
-    giftLines.slice(1).forEach(function (extra) {
-      log('collapsing duplicate gift line', extra.key);
-      actions.push({ type: 'change', key: extra.key, quantity: 0, target: target, token: token });
-    });
 
     // Every offer granting this product contributes. A cart holding both The
     // Morning Edit and The Evening Edit earns a beauty bag from each.
@@ -302,7 +313,7 @@
       setFlag(ADDED_KEY, target.id, null);
       setFlag(DISMISSED_KEY, target.id, null);
       setFlag(CAP_KEY, target.id, null);
-      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, target: target, token: token });
+      if (giftLine) actions = actions.concat(resizeTo(giftLines, target, token, 0));
       return actions;
     }
 
@@ -328,7 +339,7 @@
     if (wanted === 0) {
       // Nothing to grant. The flags are deliberately not reset here: that only
       // happens when the triggers leave, otherwise we'd re-add in a loop.
-      if (giftLine) actions.push({ type: 'change', key: giftLine.key, quantity: 0, target: target, token: token });
+      if (giftLine) actions = actions.concat(resizeTo(giftLines, target, token, 0));
       return actions;
     }
 
@@ -351,7 +362,13 @@
     }
 
     if (giftQuantity !== wanted && cfg.lockGiftQuantity !== false) {
-      actions.push({ type: 'change', key: giftLine.key, quantity: wanted, target: target, token: token });
+      if (wanted > giftQuantity) {
+        // Top up. Shopify merges the addition into an existing line, or splits
+        // it again if a second discount can cover the extra units.
+        actions.push({ type: 'add', target: target, quantity: wanted - giftQuantity, token: token });
+      } else {
+        actions = actions.concat(resizeTo(giftLines, target, token, wanted));
+      }
     }
 
     return actions;
@@ -530,16 +547,19 @@
     var actions = [];
 
     targets.forEach(function (target) {
-      var line = findGiftLine(current, target);
-      if (!line) return;
+      var lines = giftLinesFor(current, target);
+      if (!lines.length) return;
 
+      // Total across every line of ours for this product — Shopify may have
+      // split them so two discounts can each cover a share.
+      var held = lines.reduce(function (sum, l) { return sum + l.quantity; }, 0);
       var covered = coveredUnitsFor(current, target);
       rememberCap(target, current, covered);
 
-      if (line.quantity <= covered) return;
+      if (held <= covered) return;
 
-      log('gift exceeds discount coverage:', target.id, line.quantity, '→', covered);
-      actions.push({ type: 'change', key: line.key, quantity: covered, target: target, token: current.token });
+      log('gift exceeds discount coverage:', target.id, held, '→', covered);
+      actions = actions.concat(resizeTo(lines, target, current.token, covered));
     });
 
     if (!actions.length) return Promise.resolve({ cart: current, trimmed: false });
