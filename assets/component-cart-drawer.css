@@ -972,101 +972,71 @@ a.mini-cart__promo-banner:hover {
   color: var(--color-critical);
 }
 
-.cart-discount__coupons {
-  margin-top: 1.2rem;
-}
-
-.cart-discount__summary {
+/* The applied discounts come straight from cart.cart_level_discount_applications and the
+   line-level allocations -- Shopify gives the storefront no way to list codes that have not
+   been applied, so there is nothing here to configure. */
+.cart-discount__applied {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: 1rem;
-  padding-top: 1.2rem;
+  flex-direction: column;
+  row-gap: 0.6rem;
+  margin: 1.2rem 0 0;
+  padding: 1.2rem 0 0;
   border-top: 0.1rem dashed var(--cart-line-strong);
-  cursor: pointer;
   list-style: none;
 }
 
-.cart-discount__summary::-webkit-details-marker {
-  display: none;
-}
-
-.cart-discount__available {
-  font-size: 1.25rem;
-  letter-spacing: 0;
-  color: var(--cart-muted);
-}
-
-.cart-discount__view {
-  display: inline-flex;
+.cart-discount__applied-item {
+  display: flex;
   align-items: center;
-  column-gap: 0.4rem;
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: 0;
-  color: var(--cart-strong);
+  column-gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--cart-radius-sm);
+  background-color: color-mix(in srgb, var(--cart-accent) 8%, transparent);
+  color: var(--cart-accent);
 }
 
-.cart-discount__view .icon {
+.cart-discount__applied-item .icon {
+  flex: 0 0 auto;
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.cart-discount__applied-code {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+}
+
+.cart-discount__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cart-discount__remove .icon {
   width: 1rem;
   height: 1rem;
-  transition: transform var(--duration-default) ease;
 }
 
-.cart-discount__coupons[open] .cart-discount__view .icon {
-  transform: rotate(90deg);
-}
-
-.cart-discount__coupons-list {
-  display: flex;
-  flex-direction: column;
-  row-gap: 0.8rem;
-  margin: 1.2rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.cart-discount__coupon {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: 1rem;
-  width: 100%;
-  padding: 1rem 1.2rem;
-  text-align: start;
-  background-color: transparent;
-  border: 0.1rem dashed var(--cart-line-strong);
-  border-radius: var(--cart-radius-sm);
-  cursor: pointer;
-}
-
-.cart-discount__coupon-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.cart-discount__coupon-code {
-  font-size: 1.3rem;
-  font-weight: 600;
-  letter-spacing: 0.05rem;
-  text-transform: uppercase;
-  color: var(--cart-strong);
-}
-
-.cart-discount__coupon-description {
-  margin-top: 0.2rem;
-  font-size: 1.2rem;
-  color: var(--cart-muted);
-}
-
-.cart-discount__coupon-apply {
-  flex: 0 0 auto;
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.05rem;
-  text-transform: uppercase;
-  color: var(--cart-accent);
+@media screen and (hover: hover) {
+  .cart-discount__remove:hover {
+    background-color: color-mix(in srgb, var(--cart-accent) 14%, transparent);
+  }
 }
 
 /* --------------------------------------------------------------------------
