@@ -588,9 +588,8 @@ a.mini-cart__promo-banner:hover {
   color: var(--cart-muted);
 }
 
-/* Line discounts read as a ribbon draped over the top edge of the card: a stadium-topped body
-   straddling the edge, with a concave fillet on each side flaring down onto the card surface.
-   It paints above .cart-item__body (z-index 1) so the lower half sits over the card. */
+/* Line discounts read as a ribbon growing out of the top edge of the card: a stadium-topped
+   body with a concave fillet on each side flaring outward into the card surface. */
 .cart-item--discounted {
   margin-top: 1.2rem;
 
