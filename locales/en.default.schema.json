@@ -4814,11 +4814,11 @@
           "label": "Heading"
         },
         "cart_recommendations_show_price": {
-          "info": "Visible when cart recommendations enabled.",
+          "info": "Visible when a recommendations collection is set.",
           "label": "Show price"
         },
         "cart_recommendations_show_vendor": {
-          "info": "Visible when cart recommendations enabled.",
+          "info": "Visible when a recommendations collection is set.",
           "label": "Show vendor"
         },
         "disable_view_cart": {
