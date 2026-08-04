@@ -62,6 +62,24 @@
     "cart_recommendations_show_price": true,
     "empty_cart_message": "<p>Not sure where to start?<br/>Try these brands:</p>",
     "empty_cart_button_secondary": true,
+    "cart_promo_banner_enabled": true,
+    "cart_promo_banner_text": "Get <strong>10% OFF</strong> sitewide",
+    "gift_tiers_enabled": false,
+    "gift_tiers_heading": "Unlock complimentary gifts as your cart value grows.",
+    "gift_tier_1_product": "beauty-bag",
+    "gift_tier_1_minimum_amount": "3500",
+    "gift_tier_1_label": "Beauty Bag",
+    "gift_tier_1_range_label": "3500-4500",
+    "gift_tier_2_product": "oil-free-matte-sunscreen-spf-50-pa-nad-10g",
+    "gift_tier_2_minimum_amount": "4600",
+    "gift_tier_2_label": "Beauty Bag + Mini Sunscreen",
+    "gift_tier_2_range_label": "4600-6000",
+    "gift_tier_3_product": "dirt-make-up-cleanser-jelly-nad-10g",
+    "gift_tier_3_minimum_amount": "6100",
+    "gift_tier_3_label": "Beauty Bag + Mini Cleanser Jelly",
+    "gift_tier_3_range_label": "6100-7500",
+    "cart_coupons_enabled": true,
+    "cart_coupon_1_code": "BBSERUM",
     "search_recommendation": "search-menu",
     "predictive_search_show_vendor": true,
     "currency_code_enabled": false,
@@ -121,13 +139,6 @@
         "disabled": true,
         "settings": {}
       },
-      "10605408327587305396": {
-        "type": "shopify://apps/eg-auto-add-to-cart/blocks/app-embed/0f7d4f74-1e89-4820-aec4-6564d7e535d2",
-        "disabled": false,
-        "settings": {
-          "version": "v3"
-        }
-      },
       "9356323809658795675": {
         "type": "shopify://apps/reelup-shoppable-videos-reels/blocks/reelup/a8ec9e4d-d192-44f7-9c23-595f9ee7dd5b",
         "disabled": false,
@@ -151,25 +162,7 @@
         "disabled": true,
         "settings": {}
       }
-    },
-    "cart_promo_banner_enabled": true,
-    "cart_promo_banner_text": "Get <strong>10% OFF</strong> sitewide",
-    "cart_coupons_enabled": true,
-    "cart_coupon_1_code": "BBSERUM",
-    "gift_tiers_enabled": false,
-    "gift_tiers_heading": "Unlock complimentary gifts as your cart value grows.",
-    "gift_tier_1_product": "beauty-bag",
-    "gift_tier_1_minimum_amount": "3500",
-    "gift_tier_1_label": "Beauty Bag",
-    "gift_tier_1_range_label": "3500-4500",
-    "gift_tier_2_product": "oil-free-matte-sunscreen-spf-50-pa-nad-10g",
-    "gift_tier_2_minimum_amount": "4600",
-    "gift_tier_2_label": "Beauty Bag + Mini Sunscreen",
-    "gift_tier_2_range_label": "4600-6000",
-    "gift_tier_3_product": "dirt-make-up-cleanser-jelly-nad-10g",
-    "gift_tier_3_minimum_amount": "6100",
-    "gift_tier_3_label": "Beauty Bag + Mini Cleanser Jelly",
-    "gift_tier_3_range_label": "6100-7500"
+    }
   },
   "presets": {
     "Be Yours": {
