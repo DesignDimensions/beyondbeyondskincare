@@ -618,7 +618,7 @@ a.mini-cart__promo-banner:hover {
   column-gap: 0.4rem;
   height: var(--discount-tab-height);
   padding: 0 1.1rem;
-  border-radius: calc(var(--discount-tab-height) / 2) calc(var(--discount-tab-height) / 2) 0 0;
+  border-radius: 0 0 10px 10px;
   font-family: var(--font-heading-family);
   font-size: 1.1rem;
   font-weight: 600;
