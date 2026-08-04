@@ -246,7 +246,6 @@ details[open].menu-opening>.cart-drawer {
   text-align: center;
   font-size: 1.4rem;
   font-weight: 400;
-  letter-spacing: 0;
   line-height: 1.3;
   color: #ffffff;
   background-color: var(--cart-accent);
