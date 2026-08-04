@@ -226,6 +226,8 @@ class DiscountCode extends HTMLElement {
     super();
 
     this.input = this.querySelector('input[name="discount"]');
+    this.message = this.querySelector('.cart-discount__message');
+    this.applyButton = this.querySelector('.cart-discount__apply');
 
     if (isStorageSupported('session')) {
       this.setupDiscount();
@@ -248,6 +250,13 @@ class DiscountCode extends HTMLElement {
         this.applyDiscount(couponButton.dataset.couponCode);
       }
     });
+
+    this.addEventListener('keydown', (event) => {
+      if (event.target === this.input && event.key === 'Enter') {
+        event.preventDefault();
+        this.applyDiscount(this.input.value);
+      }
+    });
   }
 
   setupDiscount() {
@@ -257,12 +266,117 @@ class DiscountCode extends HTMLElement {
     }
   }
 
-  applyDiscount(code) {
-    if (!code) return;
+  async applyDiscount(code) {
+    code = (code || '').trim();
+    if (!code || this.loading) return;
 
-    // Shopify has no AJAX endpoint to apply a discount code to the cart, so this is a
-    // real navigation: the discount route sets the code for checkout, then redirects.
-    window.location.href = `${theme.routes.root_url}discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent(theme.routes.cart_url)}`;
+    this.setLoading(true);
+    this.showMessage(theme.discountStrings.applying);
+
+    try {
+      // Shopify exposes no JSON endpoint for discount codes -- /discount/<code> is the native
+      // route that attaches one to the session. Fetching it applies the code in the background
+      // instead of navigating; redirecting to cart.js keeps the throwaway response small.
+      const redirect = encodeURIComponent(`${theme.routes.cart_url}.js`);
+      const response = await fetch(
+        `${theme.routes.root_url}discount/${encodeURIComponent(code)}?redirect=${redirect}`,
+        { method: 'GET', credentials: 'same-origin' }
+      );
+      if (!response.ok) throw new Error(`Discount route responded with ${response.status}`);
+
+      // A no-op cart update returns the fresh cart plus re-rendered sections in one round trip,
+      // so the drawer reflects the discount without a page load.
+      const sections = this.getSectionsToRender();
+      const body = JSON.stringify({
+        sections: sections.map((section) => section.section),
+        sections_url: window.location.pathname
+      });
+      const updated = await fetch(`${theme.routes.cart_update_url}`, {...fetchConfig(), ...{ body }});
+      if (!updated.ok) throw new Error(`Cart update responded with ${updated.status}`);
+
+      const state = await updated.json();
+      const applied = this.isCodeApplied(state, code);
+
+      if (isStorageSupported('session')) {
+        if (applied) {
+          window.sessionStorage.removeItem('discount');
+        } else {
+          window.sessionStorage.setItem('discount', code);
+        }
+      }
+
+      this.renderSections(sections, state);
+
+      // The section render replaces this element, so the outcome has to land on its successor.
+      const current = document.querySelector('discount-code') || this;
+      current.setLoading(false);
+      if (applied) {
+        if (current.input) current.input.value = '';
+        current.showMessage(theme.discountStrings.applied.replace('[code]', code), 'success');
+      } else {
+        if (current.input) {
+          current.input.value = code;
+          current.input.focus();
+        }
+        current.showMessage(theme.discountStrings.invalid.replace('[code]', code), 'error');
+      }
+
+      document.dispatchEvent(new CustomEvent('cart:updated', { detail: { cart: JSON.stringify(state) } }));
+      publish(PUB_SUB_EVENTS.cartUpdate, { source: 'discount-code' });
+    } catch (error) {
+      console.error(error);
+      this.setLoading(false);
+      this.showMessage(theme.discountStrings.error, 'error');
+    }
+  }
+
+  // Shopify reports an accepted code as a discount application on the cart or on the lines it
+  // touches; a code that is unknown or not applicable to this cart leaves nothing behind.
+  isCodeApplied(cart, code) {
+    const wanted = code.trim().toLowerCase();
+    const titles = (cart.cart_level_discount_applications || []).map((discount) => discount.title);
+
+    (cart.items || []).forEach((item) => {
+      (item.line_level_discount_allocations || []).forEach((allocation) => {
+        titles.push(allocation.discount_application?.title);
+      });
+      (item.discounts || []).forEach((discount) => titles.push(discount.title));
+    });
+
+    return titles.some((title) => (title || '').trim().toLowerCase() === wanted);
+  }
+
+  getSectionsToRender() {
+    const miniCart = document.querySelector('mini-cart');
+    if (miniCart) return miniCart.getSectionsToRender();
+
+    return [{ id: 'mini-cart', section: 'mini-cart', selector: '.shopify-section' }];
+  }
+
+  renderSections(sections, state) {
+    sections.forEach((section) => {
+      const element = document.getElementById(section.id);
+      const html = state.sections?.[section.section];
+      if (!element || !html) return;
+
+      const parsed = new DOMParser().parseFromString(html, 'text/html').querySelector(section.selector);
+      if (parsed) element.innerHTML = parsed.innerHTML;
+    });
+  }
+
+  setLoading(loading) {
+    this.loading = loading;
+    this.classList.toggle('cart-discount--loading', loading);
+    if (this.applyButton) this.applyButton.disabled = loading;
+  }
+
+  showMessage(text, status) {
+    if (!this.message) return;
+
+    this.message.textContent = text || '';
+    this.message.hidden = !text;
+    this.message.classList.toggle('cart-discount__message--error', status === 'error');
+    this.message.classList.toggle('cart-discount__message--success', status === 'success');
   }
 }
 
