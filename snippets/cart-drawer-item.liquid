@@ -95,9 +95,10 @@
       <div class="cart-item__head">
         <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
         <span class="cart-item__price">
-          {%- if item.original_price != item.final_price -%}
+          {%- if compare_price > 0 -%}
             <s class="cart-item__price-compare">
-              <price-money><bdi>{{ item.original_price | money }}</bdi></price-money>
+              <span class="visually-hidden">{{ 'products.product.price.regular_price' | t }}</span>
+              <price-money><bdi>{{ compare_price | money }}</bdi></price-money>
             </s>
           {%- endif -%}
           <span class="cart-item__price-final">
