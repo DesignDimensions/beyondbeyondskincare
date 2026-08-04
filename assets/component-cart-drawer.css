@@ -637,7 +637,7 @@ a.mini-cart__promo-banner:hover {
   flex: 0 0 auto;
   width: var(--discount-tab-flare);
   height: var(--discount-tab-flare);
-  background-color: var(--cart-accent);
+  background-color: #00059b
 }
 
 .cart-item__discount-tab-edge:first-child {
