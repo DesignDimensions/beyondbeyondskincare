@@ -171,17 +171,9 @@
 
 <script src="{{ 'search-modal.js' | asset_url }}" defer="defer"></script>
 {%- comment -%}
-  The drawer renders its recommendations straight from the assigned collection, so there is no
-  async fetch to boot -- only the stylesheet is still needed.
+  Recommendations render straight from the assigned collection inside the drawer, styled by
+  component-cart-drawer.css -- no async fetch to boot and no separate stylesheet.
 {%- endcomment -%}
-{%- if settings.cart_recommendations_collection != blank -%}
-  <link
-    rel="stylesheet"
-    href="{{ 'component-cart-recommendations.css' | asset_url }}"
-    media="print"
-    onload="this.media='all'"
-  >
-{%- endif -%}
 
 <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
   {%- if section.settings.cart_icon == 'bag' %}
