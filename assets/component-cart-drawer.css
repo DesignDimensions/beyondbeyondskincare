@@ -969,7 +969,7 @@ a.mini-cart__promo-banner:hover {
 }
 
 .cart-discount__message--error {
-  color: rgb(var(--color-error, 214 43 43));
+  color: var(--color-critical);
 }
 
 .cart-discount__coupons {
