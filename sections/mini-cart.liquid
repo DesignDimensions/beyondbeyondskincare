@@ -237,6 +237,17 @@
     </div>
 
     <div class="mini-cart__footer" data-animate data-animate-delay-7>
+      {%- if cart.total_discount > 0 -%}
+        {%- assign cart_discount_percent = cart.total_discount | times: 100.0 | divided_by: cart.original_total_price | round -%}
+        <span class="mini-cart__savings">
+          <span class="mini-cart__savings-edge" aria-hidden="true"></span>
+          <span class="mini-cart__savings-body">
+            {{- 'general.cart.discount.percent_off' | t: percent: cart_discount_percent -}}
+          </span>
+          <span class="mini-cart__savings-edge" aria-hidden="true"></span>
+        </span>
+      {%- endif -%}
+
       <div class="cart-summary">
         <div class="cart-summary__row">
           <span class="cart-summary__label">
@@ -250,11 +261,6 @@
             <span class="cart-summary__total">{{ cart.total_price | money }}</span>
           </span>
         </div>
-
-        {%- if cart.total_discount > 0 -%}
-          {%- assign cart_discount_percent = cart.total_discount | times: 100.0 | divided_by: cart.original_total_price | round -%}
-          <p class="cart-summary__savings">{{ 'general.cart.discount.percent_off' | t: percent: cart_discount_percent }}</p>
-        {%- endif -%}
 
         {%- if cart.cart_level_discount_applications.size > 0 -%}
           <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">
