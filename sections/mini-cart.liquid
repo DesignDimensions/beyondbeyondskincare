@@ -15,6 +15,12 @@
   endif
 
   comment
+    Upsells are whatever sits in the collection a merchant assigns, shown whenever that
+    collection has products -- no per-product curation and no on/off switch to keep in sync.
+  endcomment
+  assign recommended_products = settings.cart_recommendations_collection.products
+
+  comment
     The discounts actually on the cart, straight from Shopify. A code can land cart-wide or on
     individual lines depending on how it was configured, so both are collected and deduped by
     title -- Shopify names a code discount after the code itself.
