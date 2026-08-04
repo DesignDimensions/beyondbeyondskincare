@@ -38,7 +38,6 @@
 }
 
 @media screen and (min-width: 750px) {
-
   .mini-cart--open #MainContent,
   .mini-cart--open .shopify-section-footer,
   .mini-cart--opening #MainContent,
@@ -119,13 +118,13 @@
   background-color: rgba(var(--color-overlay), 0.5);
 }
 
-details[open]>.cart-drawer {
+details[open] > .cart-drawer {
   transition-property: transform, visibility;
   transition-duration: var(--duration-long);
   transition-timing-function: ease;
 }
 
-details[open].menu-opening>.cart-drawer {
+details[open].menu-opening > .cart-drawer {
   transform: translateX(0);
   visibility: visible;
 }
@@ -141,12 +140,12 @@ details[open].menu-opening>.cart-drawer {
   }
 }
 
-.cart-drawer>cart-items {
+.cart-drawer > cart-items {
   display: block;
   height: 100%;
 }
 
-.cart-drawer>.loading-overlay {
+.cart-drawer > .loading-overlay {
   width: 100%;
   height: 100%;
   display: flex;
@@ -183,7 +182,7 @@ details[open].menu-opening>.cart-drawer {
 
 .mini-cart__header {
   flex: 0 0 auto;
-  padding: 1.4rem 1.6rem .4rem;
+  padding: 1.4rem 1.6rem;
   background-color: var(--cart-surface);
   border-bottom: 0.1rem solid var(--cart-line);
 }
@@ -206,11 +205,11 @@ details[open].menu-opening>.cart-drawer {
 }
 
 .mini-cart__count {
-  /* font-family: var(--font-body-family);
+  font-family: var(--font-body-family);
   font-size: 1.3rem;
   font-weight: 400;
   letter-spacing: 0;
-  color: var(--cart-muted); */
+  color: var(--cart-muted);
 }
 
 .mini-cart__close {
@@ -246,6 +245,7 @@ details[open].menu-opening>.cart-drawer {
   text-align: center;
   font-size: 1.4rem;
   font-weight: 400;
+  letter-spacing: 0;
   line-height: 1.3;
   color: #ffffff;
   background-color: var(--cart-accent);
@@ -467,7 +467,6 @@ a.mini-cart__promo-banner:hover {
   0% {
     background-position: -150% 0;
   }
-
   to {
     background-position: 150% 0;
   }
@@ -478,8 +477,6 @@ a.mini-cart__promo-banner:hover {
 }
 
 .cart-item__body {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: flex-start;
   column-gap: 1.2rem;
@@ -535,7 +532,6 @@ a.mini-cart__promo-banner:hover {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-top: 5px;
 }
 
 @media screen and (hover: hover) {
@@ -547,11 +543,8 @@ a.mini-cart__promo-banner:hover {
 .cart-item__price {
   flex: 0 0 auto;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: flex-end;
-  column-gap: 0.6rem;
+  flex-direction: column;
+  align-items: flex-end;
   row-gap: 0.2rem;
   text-align: end;
   font-family: var(--font-price-family);
@@ -567,17 +560,11 @@ a.mini-cart__promo-banner:hover {
 }
 
 .cart-item__price-compare {
-  /* The strike is drawn from this element's own font metrics, so it has to carry the
-     same font-size as the text inside it or the line lands below the digits. */
-  font-size: 1.2rem;
   color: var(--cart-muted);
-  text-decoration-line: line-through;
-  text-decoration-thickness: 0.1rem;
-  text-decoration-skip-ink: none;
 }
 
 .cart-item__price-compare bdi {
-  font-size: inherit;
+  font-size: 1.2rem;
 }
 
 .cart-item__meta {
@@ -589,80 +576,8 @@ a.mini-cart__promo-banner:hover {
   color: var(--cart-muted);
 }
 
-/* Line discounts read as a ribbon growing out of the top edge of the card: a stadium-topped
-   body with a concave fillet on each side flaring outward into the card surface. */
-.cart-item--discounted {
-  margin-top: 1.2rem;
-
-  --discount-tab-height: 2.2rem;
-  --discount-tab-flare: 1.1rem;
-}
-
-/* Sits flush on the card's top edge, overlapping only the 0.1rem border so the ribbon's base
-   merges into the surface instead of leaving a hard horizontal edge across the card. */
-.cart-item__discount-tab {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, calc(-100% + 0.1rem));
-  max-width: calc(100% - 2.4rem);
-  display: flex;
-  align-items: flex-end;
-  pointer-events: none;
-}
-
-.cart-item__discount-tab-body {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  column-gap: 0.4rem;
-  height: var(--discount-tab-height);
-  padding: 0 1.1rem;
-  border-radius: 0 0 10px 10px;
-  font-family: var(--font-heading-family);
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-  height: 20px;
-  white-space: nowrap;
-  color: #ffffff;
-  background-color: var(--cart-accent);
-  margin-bottom: -10px;
-}
-
-/* Square blocks with a quarter-disc masked out of the corner facing the body, so the ribbon
-   curves outward into the card instead of stopping at a hard vertical edge. */
-.cart-item__discount-tab-edge {
-  flex: 0 0 auto;
-  width: 12px;
-  height: 10px;
-  background-color: #00059b
-}
-
-.cart-item__discount-tab-edge:first-child {
-  -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 0 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 10px at 0 0, transparent 99%, #000 100%);
-  margin-right: -2px;
-}
-
-.cart-item__discount-tab-edge:last-child {
-  -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 100% 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 10px at 100% 0, transparent 99%, #000 100%);
-  margin-left: -2px;
-}
-
-.cart-item__discount-tab .icon {
-  flex: 0 0 auto;
-  width: 1.1rem;
-  height: 1.1rem;
-  color: currentColor;
-}
-
-.cart-item__discount-tab-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.cart-item__meta .discounts {
+  margin: 0;
 }
 
 .cart-item__controls {
@@ -754,7 +669,7 @@ a.mini-cart__promo-banner:hover {
   width: 100%;
 }
 
-.cart-item__actions .loading-overlay:not(.hidden)~* {
+.cart-item__actions .loading-overlay:not(.hidden) ~ * {
   visibility: hidden;
 }
 
@@ -890,15 +805,15 @@ a.mini-cart__promo-banner:hover {
   display: flex;
   align-items: center;
   height: 4.4rem;
-  border: 0.1rem dashed var(--cart-line-strong);
+  border: 0.1rem solid var(--cart-line-strong);
   border-radius: var(--cart-radius-sm);
 }
 
 .cart-discount__icon {
   position: absolute;
   inset-inline-start: 1.2rem;
-  width: 1.8rem;
-  height: 1.8rem;
+  width: 1.6rem;
+  height: 1.6rem;
   color: var(--cart-accent);
   pointer-events: none;
 }
@@ -947,35 +862,12 @@ a.mini-cart__promo-banner:hover {
 
 /* Nothing to apply until something is typed, and the mock shows the field bare
    at rest -- so the button only surfaces once the input has content. */
-.cart-discount__input:placeholder-shown~.cart-discount__apply {
+.cart-discount__input:placeholder-shown ~ .cart-discount__apply {
   opacity: 0;
   pointer-events: none;
 }
 
-.cart-discount--loading .cart-discount__field {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.cart-discount__message {
-  margin: 0.8rem 0 0;
-  font-size: 1.2rem;
-  line-height: 1.3;
-  color: var(--cart-muted);
-}
-
-.cart-discount__message--success {
-  color: var(--cart-success);
-}
-
-.cart-discount__message--error {
-  color: var(--color-critical);
-}
-
-/* The applied discounts come straight from cart.cart_level_discount_applications and the
-   line-level allocations -- Shopify gives the storefront no way to list codes that have not
-   been applied, so there is nothing here to configure. */
-.cart-discount__applied {
+.cart-discount__coupons {
   margin-top: 1.2rem;
 }
 
@@ -1016,71 +908,60 @@ a.mini-cart__promo-banner:hover {
   transition: transform var(--duration-default) ease;
 }
 
-.cart-discount__applied[open] .cart-discount__view .icon {
+.cart-discount__coupons[open] .cart-discount__view .icon {
   transform: rotate(90deg);
 }
 
-.cart-discount__applied-list {
+.cart-discount__coupons-list {
   display: flex;
   flex-direction: column;
-  row-gap: 0.6rem;
+  row-gap: 0.8rem;
   margin: 1.2rem 0 0;
   padding: 0;
   list-style: none;
 }
 
-.cart-discount__applied-item {
+.cart-discount__coupon {
   display: flex;
   align-items: center;
-  column-gap: 0.6rem;
-  padding: 0.6rem 1rem;
+  justify-content: space-between;
+  column-gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.2rem;
+  text-align: start;
+  background-color: transparent;
+  border: 0.1rem dashed var(--cart-line-strong);
   border-radius: var(--cart-radius-sm);
-  background-color: color-mix(in srgb, var(--cart-accent) 8%, transparent);
-  color: var(--cart-accent);
-}
-
-.cart-discount__applied-item .icon {
-  flex: 0 0 auto;
-  width: 1.3rem;
-  height: 1.3rem;
-}
-
-.cart-discount__applied-code {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.05rem;
-  text-transform: uppercase;
-}
-
-.cart-discount__remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: inherit;
   cursor: pointer;
 }
 
-.cart-discount__remove .icon {
-  width: 1rem;
-  height: 1rem;
+.cart-discount__coupon-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-@media screen and (hover: hover) {
-  .cart-discount__remove:hover {
-    background-color: color-mix(in srgb, var(--cart-accent) 14%, transparent);
-  }
+.cart-discount__coupon-code {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  color: var(--cart-strong);
+}
+
+.cart-discount__coupon-description {
+  margin-top: 0.2rem;
+  font-size: 1.2rem;
+  color: var(--cart-muted);
+}
+
+.cart-discount__coupon-apply {
+  flex: 0 0 auto;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.05rem;
+  text-transform: uppercase;
+  color: var(--cart-accent);
 }
 
 /* --------------------------------------------------------------------------
@@ -1233,7 +1114,7 @@ a.mini-cart__promo-banner:hover {
   flex-grow: 1;
 }
 
-.mini-cart__actions details+details {
+.mini-cart__actions details + details {
   border-inline-start: 0.1rem solid var(--cart-line);
 }
 
@@ -1242,7 +1123,7 @@ a.mini-cart__promo-banner:hover {
   cursor: pointer;
 }
 
-.mini-cart__action summary>span {
+.mini-cart__action summary > span {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1259,7 +1140,7 @@ a.mini-cart__promo-banner:hover {
   top: -0.1rem;
 }
 
-.mini-cart__action[open]>summary::before {
+.mini-cart__action[open] > summary::before {
   max-width: 100%;
   max-height: 100%;
   background-color: rgba(var(--color-overlay), 0.85);
@@ -1267,7 +1148,7 @@ a.mini-cart__promo-banner:hover {
   cursor: url(cross.svg), url(cross.png), zoom-out;
 }
 
-.mini-cart__action[open]>summary+* {
+.mini-cart__action[open] > summary + * {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -1382,7 +1263,7 @@ a.mini-cart__promo-banner:hover {
   margin: 0;
 }
 
-#ShippingCalculatorSuccess p+p {
+#ShippingCalculatorSuccess p + p {
   margin-top: 1rem;
 }
 
@@ -1395,67 +1276,11 @@ a.mini-cart__promo-banner:hover {
    -------------------------------------------------------------------------- */
 
 .mini-cart__footer {
-  position: relative;
-  z-index: 1;
   flex: 0 0 auto;
   padding: 1.4rem 1.6rem 1.6rem;
   background-color: var(--cart-surface);
   border-top: 0.1rem solid var(--cart-line);
   box-shadow: 0 -0.4rem 1.6rem rgba(16, 17, 20, 0.05);
-}
-
-/* The cart-wide saving rides the top edge of the footer as a ribbon, mirroring the geometry of
-   the per-item .cart-item__discount-tab but in green. The footer's own z-index lifts it clear of
-   the scrolling canvas so the ribbon is not painted over as items scroll beneath. */
-.mini-cart__savings {
-  position: absolute;
-  z-index: 2;
-  top: 0;
-  left: 50%;
-  /* No border compensation, unlike the item ribbon: the footer carries its own border-top, so
-     top:0 already resolves inside it and lands the ribbon's base on the same line. */
-  transform: translate(-50%, -100%);
-  max-width: calc(100% - 3.2rem);
-  display: flex;
-  align-items: flex-end;
-  pointer-events: none;
-}
-
-.mini-cart__savings-body {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  height: 20px;
-  padding: 0 1.1rem;
-  border-radius: 0 0 10px 10px;
-  font-family: var(--font-heading-family);
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  color: #ffffff;
-  background-color: var(--cart-success);
-  margin-bottom: -10px;
-}
-
-.mini-cart__savings-edge {
-  flex: 0 0 auto;
-  width: 12px;
-  height: 10px;
-  background-color: var(--cart-success);
-}
-
-.mini-cart__savings-edge:first-child {
-  -webkit-mask-image: radial-gradient(circle 10px at 0 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 10px at 0 0, transparent 99%, #000 100%);
-  margin-right: -2px;
-}
-
-.mini-cart__savings-edge:last-child {
-  -webkit-mask-image: radial-gradient(circle 10px at 100% 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 10px at 100% 0, transparent 99%, #000 100%);
-  margin-left: -2px;
 }
 
 .cart-summary {
@@ -1505,6 +1330,15 @@ a.mini-cart__promo-banner:hover {
   font-size: 1.7rem;
   font-weight: 700;
   color: var(--cart-strong);
+}
+
+.cart-summary__savings {
+  margin: 0;
+  text-align: end;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--cart-success);
 }
 
 .cart-summary .discounts {
@@ -1575,31 +1409,9 @@ a.mini-cart__promo-banner:hover {
 }
 
 .mini-cart__footer .button-container .button[name='checkout'] {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  column-gap: 1.2rem;
-  padding-inline: 1.6rem;
-  text-align: start;
   background-color: var(--cart-strong);
   border-color: var(--cart-strong);
   color: #ffffff;
-}
-
-.mini-cart__footer .button-container .button[name='checkout'] .button__label {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Pushed to the trailing edge on its own so the label keeps the leading edge whether or not a
-   merchant has set an image. */
-.mini-cart__footer .button-container .button[name='checkout'] .button__image {
-  flex: 0 0 auto;
-  margin-inline-start: auto;
-  max-height: 2.4rem;
-  width: auto;
-  object-fit: contain;
 }
 
 .mini-cart__footer .button-container .button[disabled] {
@@ -1691,7 +1503,7 @@ a.mini-cart__promo-banner:hover {
   margin: 0;
 }
 
-.mini-cart__empty-message p+p {
+.mini-cart__empty-message p + p {
   margin-top: 1rem;
 }
 
@@ -1781,7 +1593,7 @@ a.mini-cart__promo-banner:hover {
   transition-delay: calc(var(--duration-default) + 360ms);
 }
 
-details[open].menu-opening>.cart-drawer [data-animate] {
+details[open].menu-opening > .cart-drawer [data-animate] {
   opacity: 1;
   transform: none;
 }

@@ -14,38 +14,16 @@
     assign items_in_cart = cart.item_count | minus: gift_wraps_in_cart
   endif
 
-  comment
-    Upsells are whatever sits in the collection a merchant assigns, shown whenever that
-    collection has products -- no per-product curation and no on/off switch to keep in sync.
-  endcomment
-  assign recommended_products = settings.cart_recommendations_collection.products
-  assign show_recommendations = false
-  if settings.cart_recommendations_collection != blank and recommended_products.size > 0
-    assign show_recommendations = true
-  endif
-
-  comment
-    The discounts actually on the cart, straight from Shopify. A code can land cart-wide or on
-    individual lines depending on how it was configured, so both are collected and deduped by
-    title -- Shopify names a code discount after the code itself.
-  endcomment
-  assign applied_discount_titles = ''
-  for discount in cart.cart_level_discount_applications
-    if discount.type == 'discount_code'
-      assign applied_discount_titles = applied_discount_titles | append: discount.title | append: '||'
-    endif
-  endfor
-  for item in cart.items
-    for allocation in item.line_level_discount_allocations
-      if allocation.discount_application.type == 'discount_code'
-        assign title_marker = allocation.discount_application.title | append: '||'
-        unless applied_discount_titles contains title_marker
-          assign applied_discount_titles = applied_discount_titles | append: title_marker
-        endunless
+  assign cart_coupons_count = 0
+  if settings.cart_coupons_enabled
+    for coupon_number in (1..3)
+      assign code_key = 'cart_coupon_' | append: coupon_number | append: '_code'
+      assign coupon_code = settings[code_key]
+      if coupon_code != blank
+        assign cart_coupons_count = cart_coupons_count | plus: 1
       endif
     endfor
-  endfor
-  assign applied_discount_codes = applied_discount_titles | split: '||'
+  endif
 
   assign show_cart_extras = false
   if settings.show_cart_note or settings.show_shipping_calculator
@@ -107,11 +85,11 @@
         </ul>
       {%- endif -%}
 
-      {%- if show_recommendations -%}
+      {%- if settings.cart_recommendations_enabled and settings.cart_recommendations_products != blank -%}
         <div class="cart-card cart-recommendations">
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommended_products limit: 8 -%}
+            {%- for recommendation in settings.cart_recommendations_products -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
@@ -139,7 +117,7 @@
       {%- if cart != empty -%}
         <discount-code class="cart-card cart-discount" data-animate data-animate-delay-5>
           <div class="cart-discount__field">
-            {% render 'icon', icon: 'discount-percent', class: 'cart-discount__icon' %}
+            {% render 'icon', icon: 'discount', class: 'cart-discount__icon' %}
             <label for="CartDiscountCode" class="visually-hidden">{{ 'general.cart.discount.caption' | t }}</label>
             <input
               type="text"
@@ -152,35 +130,38 @@
             <button type="button" class="cart-discount__apply">{{ 'general.cart.discount.button' | t }}</button>
           </div>
 
-          <p class="cart-discount__message" role="status" aria-live="polite" hidden></p>
-
-          {%- if applied_discount_codes.size > 0 -%}
-            <details class="cart-discount__applied">
+          {%- if cart_coupons_count > 0 -%}
+            <details class="cart-discount__coupons">
               <summary class="cart-discount__summary">
                 <span class="cart-discount__available">
-                  {{- 'general.cart.discount.applied_count' | t: count: applied_discount_codes.size -}}
+                  {{- 'general.cart.coupons.available' | t: count: cart_coupons_count -}}
                 </span>
                 <span class="cart-discount__view">
-                  {{ 'general.cart.discount.view_applied' | t }}
+                  {{ 'general.cart.discount.view_coupons' | t }}
                   {% render 'icon', icon: 'chevron' %}
                 </span>
               </summary>
-              <ul class="cart-discount__applied-list list-unstyled" role="list">
-                {%- for applied_code in applied_discount_codes -%}
-                  <li class="cart-discount__applied-item">
-                    {% render 'icon', icon: 'discount' %}
-                    <span class="cart-discount__applied-code">{{ applied_code }}</span>
-                    <button
-                      type="button"
-                      class="cart-discount__remove"
-                      data-remove-code="{{ applied_code | escape }}"
-                    >
-                      <span class="visually-hidden">
-                        {{- 'general.cart.discount.remove' | t: code: applied_code -}}
-                      </span>
-                      {% render 'icon', icon: 'close' %}
-                    </button>
-                  </li>
+              <ul class="cart-discount__coupons-list list-unstyled">
+                {%- for coupon_number in (1..3) -%}
+                  {%- liquid
+                    assign code_key = 'cart_coupon_' | append: coupon_number | append: '_code'
+                    assign description_key = 'cart_coupon_' | append: coupon_number | append: '_description'
+                    assign coupon_code = settings[code_key]
+                    assign coupon_description = settings[description_key]
+                  -%}
+                  {%- if coupon_code != blank -%}
+                    <li>
+                      <button type="button" class="cart-discount__coupon" data-coupon-code="{{ coupon_code | escape }}">
+                        <span class="cart-discount__coupon-text">
+                          <span class="cart-discount__coupon-code">{{ coupon_code }}</span>
+                          {%- if coupon_description != blank -%}
+                            <span class="cart-discount__coupon-description">{{ coupon_description | escape }}</span>
+                          {%- endif -%}
+                        </span>
+                        <span class="cart-discount__coupon-apply">{{ 'general.cart.coupons.apply' | t }}</span>
+                      </button>
+                    </li>
+                  {%- endif -%}
                 {%- endfor -%}
               </ul>
             </details>
@@ -188,15 +169,26 @@
         </discount-code>
       {%- endif -%}
 
-      {%- if cart != empty and show_recommendations -%}
-        <div class="cart-card cart-recommendations" data-animate data-animate-delay-6>
+      {%- if cart != empty and settings.cart_recommendations_enabled -%}
+        {%- liquid
+          assign cart_recommendations_limit = 4
+          if settings.cart_recommendations_products != blank
+            assign cart_recommendations_limit = settings.cart_recommendations_products.count
+          endif
+        -%}
+        <cart-recommendations
+          class="cart-card cart-recommendations"
+          data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ cart.items.first.product_id }}&limit={{ cart_recommendations_limit }}"
+          data-animate
+          data-animate-delay-6
+        >
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommended_products limit: 8 -%}
+            {%- for recommendation in recommendations.products -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
-        </div>
+        </cart-recommendations>
       {%- endif -%}
 
       {%- if gift_wrapping != nil -%}
@@ -236,17 +228,6 @@
     </div>
 
     <div class="mini-cart__footer" data-animate data-animate-delay-7>
-      {%- if cart.total_discount > 0 -%}
-        {%- assign cart_discount_percent = cart.total_discount | times: 100.0 | divided_by: cart.original_total_price | round -%}
-        <span class="mini-cart__savings">
-          <span class="mini-cart__savings-edge" aria-hidden="true"></span>
-          <span class="mini-cart__savings-body">
-            {{- 'general.cart.discount.percent_off' | t: percent: cart_discount_percent -}}
-          </span>
-          <span class="mini-cart__savings-edge" aria-hidden="true"></span>
-        </span>
-      {%- endif -%}
-
       <div class="cart-summary">
         <div class="cart-summary__row">
           <span class="cart-summary__label">
@@ -260,6 +241,11 @@
             <span class="cart-summary__total">{{ cart.total_price | money }}</span>
           </span>
         </div>
+
+        {%- if cart.total_discount > 0 -%}
+          {%- assign cart_discount_percent = cart.total_discount | times: 100.0 | divided_by: cart.original_total_price | round -%}
+          <p class="cart-summary__savings">{{ 'general.cart.discount.percent_off' | t: percent: cart_discount_percent }}</p>
+        {%- endif -%}
 
         {%- if cart.cart_level_discount_applications.size > 0 -%}
           <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">
@@ -302,19 +288,10 @@
       </cart-terms>
 
       <div class="button-container">
-        <button class="button" name="checkout" type="submit">
-          <span class="button__label">{{ 'sections.cart.checkout' | t }}</span>
-          {%- if settings.cart_checkout_image != blank -%}
-            <img
-              class="button__image"
-              src="{{ settings.cart_checkout_image | image_url: height: 48 }}"
-              alt="{{ settings.cart_checkout_image.alt | escape }}"
-              width="{{ 24 | times: settings.cart_checkout_image.aspect_ratio | ceil }}"
-              height="24"
-              loading="lazy"
-            />
-          {%- endif -%}
-        </button>
+        <button class="button" name="checkout" type="submit">{{ 'sections.cart.checkout' | t }}</button>
+        {%- unless settings.disable_view_cart -%}
+          <a class="button button--secondary" href="{{ routes.cart_url }}">{{ 'general.cart.view' | t }}</a>
+        {%- endunless -%}
       </div>
 
       {%- if settings.cart_powered_by_text != blank or settings.cart_powered_by_image != blank -%}

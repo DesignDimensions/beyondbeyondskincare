@@ -4782,13 +4782,31 @@
       "settings": {
         "cart_accent_color": {
           "label": "Drawer accent colour",
-          "info": "Used by the promo banner, unlocked gift tiers, discount actions and links inside the cart drawer."
+          "info": "Used by the promo banner, unlocked gift tiers, coupon actions and links inside the cart drawer."
+        },
+        "cart_coupon_1_code": {
+          "label": "Coupon 1 code"
+        },
+        "cart_coupon_1_description": {
+          "label": "Coupon 1 description"
+        },
+        "cart_coupon_2_code": {
+          "label": "Coupon 2 code"
+        },
+        "cart_coupon_2_description": {
+          "label": "Coupon 2 description"
+        },
+        "cart_coupon_3_code": {
+          "label": "Coupon 3 code"
+        },
+        "cart_coupon_3_description": {
+          "label": "Coupon 3 description"
+        },
+        "cart_coupons_enabled": {
+          "label": "Show available coupons list"
         },
         "cart_drawer_enabled": {
           "label": "Enable cart drawer"
-        },
-        "cart_checkout_image": {
-          "label": "Checkout button image"
         },
         "cart_powered_by_image": {
           "label": "Logo"
@@ -4805,20 +4823,23 @@
         "cart_promo_banner_text": {
           "label": "Banner text"
         },
-        "cart_recommendations_collection": {
-          "info": "Its products are shown in the cart drawer. Leave empty to hide the block.",
-          "label": "Recommendations collection"
+        "cart_recommendations_enabled": {
+          "label": "Enable cart recommendations"
         },
         "cart_recommendations_heading": {
-          "info": "Visible when a recommendations collection is set.",
+          "info": "Visible when cart recommendations enabled.",
           "label": "Heading"
         },
+        "cart_recommendations_products": {
+          "info": "Visible when cart is empty.",
+          "label": "Product list"
+        },
         "cart_recommendations_show_price": {
-          "info": "Visible when a recommendations collection is set.",
+          "info": "Visible when cart recommendations enabled.",
           "label": "Show price"
         },
         "cart_recommendations_show_vendor": {
-          "info": "Visible when a recommendations collection is set.",
+          "info": "Visible when cart recommendations enabled.",
           "label": "Show vendor"
         },
         "disable_view_cart": {
