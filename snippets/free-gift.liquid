@@ -11,9 +11,12 @@
 
       trigger-handle: gift-handle | another-gift-handle
 
-  Several offers may grant the same gift (the beauty bag comes with four of
-  them). free-gift.js groups those by gift product so a shared discount is
-  counted once, not once per offer.
+  Where an offer grants several items, Shopify's discount points at a single
+  hamper product that bundles them — so every offer here grants exactly one
+  product. Two offers do share a gift (on-the-go and the-essential-edit both
+  grant the lip butter); free-gift.js groups those by gift product so the
+  entitlements add up and the discounts are counted once each, not once per
+  offer.
 
   These must mirror the Buy-X-Get-Y automatic discounts in Shopify admin. The
   script only ever keeps a gift the discount actually pays for, so an offer
@@ -22,9 +25,9 @@
 
 {%- capture free_gift_offers -%}
 the-travel-edit: beauty-bag
-the-ultimate-night-repair-super-cream-1: beauty-bag | dirt-make-up-cleanser-jelly-nad-10g
-the-morning-edit: beauty-bag | moisture-surge-lip-butter
-the-evening-edit: beauty-bag | dirt-make-up-cleanser-jelly-nad-10g | hydro-active-all-day-cream-ceramides-nad-20g
+the-ultimate-night-repair-super-cream-1: beauty-bag-jelly-cleanser-mini
+the-morning-edit: lip-butter-beauty-bag
+the-evening-edit: hydro-active-day-cream-mini-cleanser-jelly-mini-beauty-bag
 on-the-go: moisture-surge-lip-butter
 the-essential-edit: moisture-surge-lip-butter
 {%- endcapture -%}
