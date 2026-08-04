@@ -187,7 +187,11 @@
         "title": "Coupon",
         "tooltip": "Discount will be applied at checkout",
         "view_coupons": "View coupons",
-        "placeholder": "Enter Coupon Code"
+        "placeholder": "Enter Coupon Code",
+        "applying": "Applying…",
+        "applied": "{{ code }} applied",
+        "invalid": "{{ code }} isn’t valid for this cart",
+        "error": "Couldn’t apply that code. Please try again."
       },
       "free_shipping": {
         "congratulations_html": "You are eligible for free shipping.",
