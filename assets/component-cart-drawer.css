@@ -635,8 +635,8 @@ a.mini-cart__promo-banner:hover {
    curves outward into the card instead of stopping at a hard vertical edge. */
 .cart-item__discount-tab-edge {
   flex: 0 0 auto;
-  width: var(--discount-tab-flare);
-  height: var(--discount-tab-flare);
+  width: 11px;
+  height: 10px;
   background-color: #00059b
 }
 
