@@ -174,7 +174,7 @@
       "discount": {
         "button": "Apply",
         "caption": "Add a discount code",
-        "percent_off": "({{ percent }}% OFF)",
+        "percent_off": " {{ percent }}% ",
         "title": "Coupon",
         "tooltip": "Discount will be applied at checkout",
         "placeholder": "Enter Coupon Code",
