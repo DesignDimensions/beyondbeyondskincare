@@ -277,13 +277,18 @@ class DiscountCode extends HTMLElement {
       // Shopify exposes no JSON endpoint for discount codes -- /discount/<code> is the native
       // route that attaches one to the session. Fetching it applies the code in the background
       // instead of navigating; redirecting to cart.js keeps the throwaway response small.
-      const root = theme.routes.root_url.endsWith('/') ? theme.routes.root_url : `${theme.routes.root_url}/`;
-      const redirect = encodeURIComponent(`${theme.routes.cart_url}.js`);
       const response = await fetch(
-        `${root}discount/${encodeURIComponent(code)}?redirect=${redirect}`,
+        this.discountUrl(code, `${theme.routes.cart_url}.js`),
         { method: 'GET', credentials: 'same-origin' }
       );
-      if (!response.ok) throw new Error(`Discount route responded with ${response.status}`);
+
+      // `shopify theme dev` does not proxy /discount/*, and a password-protected storefront
+      // refuses it outright. Neither can be fixed from here, so hand the code to the route the
+      // way it was designed to be used rather than losing it.
+      if (!response.ok) {
+        window.location.href = this.discountUrl(code, theme.routes.cart_url);
+        return;
+      }
 
       // Read the resulting cart back and re-render the drawer from it, so the outcome comes
       // from the server rather than from guessing whether the code was accepted.
@@ -329,6 +334,11 @@ class DiscountCode extends HTMLElement {
       this.setLoading(false);
       this.showMessage(theme.discountStrings.error, 'error');
     }
+  }
+
+  discountUrl(code, redirectTo) {
+    const root = theme.routes.root_url.endsWith('/') ? theme.routes.root_url : `${theme.routes.root_url}/`;
+    return `${root}discount/${encodeURIComponent(code)}?redirect=${encodeURIComponent(redirectTo)}`;
   }
 
   // Shopify reports an accepted code as a discount application on the cart or on the lines it
