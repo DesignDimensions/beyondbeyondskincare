@@ -57,6 +57,17 @@
   if item.product.has_only_default_variant == false and item.product.variants.size > 1 and is_gift_wrap == false and is_gift_tier == false
     assign show_variant_picker = true
   endif
+
+  comment
+    Strike through the highest "was" price we know about: the variant's compare at price when the
+    product is on sale, otherwise the pre-discount line price when a cart discount applies.
+  endcomment
+  assign compare_price = 0
+  if item.variant.compare_at_price > item.original_price
+    assign compare_price = item.variant.compare_at_price
+  elsif item.original_price > item.final_price
+    assign compare_price = item.original_price
+  endif
 -%}
 
 <li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}"
