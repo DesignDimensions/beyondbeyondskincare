@@ -68,14 +68,41 @@
   elsif item.original_price > item.final_price
     assign compare_price = item.original_price
   endif
+
+  comment
+    Line discounts are surfaced as a tab tucked behind the top edge of the card, so several
+    titles are collapsed onto the one line.
+  endcomment
+  assign has_discounts = false
+  assign discount_titles = ''
+  if item.line_level_discount_allocations.size > 0
+    assign has_discounts = true
+    for discount in item.line_level_discount_allocations
+      assign discount_titles = discount_titles | append: discount.discount_application.title | append: ' · '
+    endfor
+    assign discount_titles = discount_titles | remove_last: ' · '
+  endif
+
+  assign show_meta = false
+  if item.selling_plan_allocation != null or item.unit_price_measurement
+    assign show_meta = true
+  endif
 -%}
 
-<li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}"
+<li class="cart-card cart-item{% if is_gift_tier %} cart-item--gift{% endif %}{% if has_discounts %} cart-item--discounted{% endif %}"
   data-variant-id="{{ item.variant_id }}"
   data-handle="{{ item.product.handle }}"
   data-quantity="{{ item.quantity }}"
   data-price="{{ item.original_price }}"
 >
+  {%- if has_discounts -%}
+    <span class="cart-item__discount-tab">
+      <span class="visually-hidden">{{ 'customer.order.discount' | t }}:</span>
+      {%- render 'icon', icon: 'discount' -%}
+      <span class="cart-item__discount-tab-text">{{ discount_titles }}</span>
+    </span>
+  {%- endif -%}
+
   <div class="cart-item__body">
     {%- if item.image -%}
       <a href="{{ item.url }}" class="cart-item__media">
