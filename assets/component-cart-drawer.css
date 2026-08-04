@@ -588,16 +588,16 @@ a.mini-cart__promo-banner:hover {
   color: var(--cart-muted);
 }
 
-/* Line discounts read as a tab emerging from behind the top edge of the card. The negative
-   z-index keeps the tucked portion under the card surface — .cart-item deliberately has no
-   z-index of its own so it never becomes the stacking context the tab is measured against. */
+/* Line discounts read as a tab emerging from behind the top edge of the card. The card surface
+   (.cart-item__body) sits at z-index 1 and paints over the tab's lower edge — a negative z-index
+   here would drop the tab behind .mini-cart's opaque canvas background instead. */
 .cart-item--discounted {
   margin-top: 1rem;
 }
 
 .cart-item__discount-tab {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
