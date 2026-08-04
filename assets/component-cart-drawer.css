@@ -642,8 +642,8 @@ a.mini-cart__promo-banner:hover {
 
 .cart-item__discount-tab-edge:first-child {
   -webkit-mask-image: radial-gradient(circle var(--discount-tab-flare) at 0 0, transparent 99%, #000 100%);
-  mask-image: radial-gradient(circle 5px at 0 0, transparent 99%, #000 100%);
-  margin-right: -1px;
+  mask-image: radial-gradient(circle 9px at 0 0, transparent 99%, #000 100%);
+  margin-right: -2px;
 }
 
 .cart-item__discount-tab-edge:last-child {
