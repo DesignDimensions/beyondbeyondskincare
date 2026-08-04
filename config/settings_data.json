@@ -56,6 +56,7 @@
     "disable_view_cart": false,
     "show_free_shipping_message": false,
     "free_shipping_minimum_amount": "USD:500,EUR:475,JPY:65000",
+    "cart_recommendations_collection": "acne-scars-blemishes",
     "cart_recommendations_heading": "You Might Also Like",
     "cart_recommendations_show_vendor": false,
     "cart_recommendations_show_price": true,
