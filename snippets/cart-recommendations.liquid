@@ -113,12 +113,12 @@
 
   comment
     Round-robin the lists together: first pick from every cart line, then second pick from
-    every cart line, and so on. Ten passes covers the longest row in the sheet with room to
-    spare; the size guard makes any extra pass a no-op.
+    every cart line, and so on. Eight passes covers the longest row in the sheet; the size
+    guard makes any extra pass a no-op if a longer row is ever added.
   endcomment
   assign per_line_lists = matched_lists | split: '|'
   assign interleaved = ''
-  for pass in (0..9)
+  for pass in (0..7)
     for line_list in per_line_lists
       assign line_entries = line_list | split: '~'
       if pass < line_entries.size
@@ -174,7 +174,7 @@
 -%}
 
 {%- if show_recommendations -%}
-  <div
+  <cart-recommendations
     class="cart-card cart-recommendations"
     {% if animate_delay %}data-animate data-animate-delay-{{ animate_delay }}{% endif %}
   >
@@ -200,5 +200,5 @@
         {%- endfor -%}
       {%- endif -%}
     </ul>
-  </div>
+  </cart-recommendations>
 {%- endif -%}
