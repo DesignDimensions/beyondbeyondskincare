@@ -471,6 +471,20 @@
       return { landing: landing, wasHidden: wasHidden };
     }
 
+    /* renderTray paints the new state; this waits for the tray's reveal to finish before
+       handing back, so callers that measure the stack get settled coordinates. */
+    function applyCart(data, newVariantId, onReady) {
+      var result = renderTray(data, newVariantId);
+      if (result.wasHidden && !tray.hidden) {
+        motion.reveal(tray, function () {
+          if (onReady) onReady(result);
+        });
+      } else if (onReady) {
+        onReady(result);
+      }
+      return result;
+    }
+
     function toggleTray(open) {
       trayOpen = open;
       tray.classList.toggle("is-open", open);
@@ -478,9 +492,15 @@
       motion.height(trayDrawer, open);
     }
 
+    /* Lets the header count and the mini cart pick up what the chat just changed. The flag
+       stops our own listener treating the echo as an external change and re-rendering the
+       tray out from under an in-flight animation. */
     function syncTheme() {
-      // Lets the header count and the mini cart pick up what the chat just changed.
+      selfSync = true;
       document.dispatchEvent(new CustomEvent("cart:refresh"));
+      setTimeout(function () {
+        selfSync = false;
+      }, 0);
     }
 
     function changeLine(key, quantity) {
