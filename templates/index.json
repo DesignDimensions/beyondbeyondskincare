@@ -190,17 +190,6 @@
             "link": "https://beyondbeyond.co.in/products/moisture-surge-lip-butter"
           }
         },
-        "banner_XGdVyw": {
-          "type": "banner",
-          "settings": {
-            "desktop_banner": "shopify://shop_images/Independence_sale_Cleanser_Jelly.png",
-            "mobile_banner": "shopify://shop_images/Independence_sale_Cleanser_Jelly_mob.png",
-            "title": "",
-            "description": "",
-            "link_text": "",
-            "link": "https://beyondbeyond.co.in/products/dirt-makeup-cleanser-jelly"
-          }
-        },
         "banner_n9hUUn": {
           "type": "banner",
           "settings": {
@@ -210,6 +199,17 @@
             "description": "",
             "link_text": "",
             "link": "https://beyondbeyond.co.in/products/broad-spectrum-active-sunspray"
+          }
+        },
+        "banner_XGdVyw": {
+          "type": "banner",
+          "settings": {
+            "desktop_banner": "shopify://shop_images/Independence_sale_Cleanser_Jelly.png",
+            "mobile_banner": "shopify://shop_images/Independence_sale_Cleanser_Jelly_mob.png",
+            "title": "",
+            "description": "",
+            "link_text": "",
+            "link": "https://beyondbeyond.co.in/products/dirt-makeup-cleanser-jelly"
           }
         },
         "banner_bBtUar": {
@@ -237,8 +237,8 @@
         "banner_pLyFtP",
         "banner_aAD9cG",
         "banner_EP68Le",
-        "banner_XGdVyw",
         "banner_n9hUUn",
+        "banner_XGdVyw",
         "banner_bBtUar"
       ],
       "name": "Home Main Slideshow",
