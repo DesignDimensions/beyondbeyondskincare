@@ -1,0 +1,42 @@
+{% comment %}
+  The cross-sell map behind the cart drawer's recommendation rail, transcribed from the
+  merchandising sheet:
+  https://docs.google.com/spreadsheets/d/13_P5FifrhZOnngJqmBPxGkVt5B45BR3QSHAfY_yXYDA
+
+  One line per sheet row. Column A ("Primary Product in Cart") becomes the key on the left
+  of `>>`, column C ("FINAL Cross-Sell Products") becomes the comma-separated list on the
+  right, and every row ends in a semicolon. Column B is the older working column and is
+  deliberately not used.
+
+  Keys and values are product handles. Append `?variant=<id>` to either side to target a
+  single variant instead of the whole product -- the sheet uses this for the mini sunscreen,
+  which cross-sells differently to the full size. A key with a variant wins over a key with
+  the bare handle, so the specific row always beats the general one.
+
+  Order within a row is the priority order: the rail walks these left to right before it
+  rotates and interleaves them, so put the strongest pairing first.
+
+  Every handle here was checked against the live catalogue on 2026-08-05. A handle that no
+  longer exists is skipped silently rather than erroring, so re-check this file after
+  renaming or deleting a product.
+
+  Usage:
+  {%- capture recommendation_map -%}{% render 'cart-recommendation-map' %}{%- endcapture -%}
+{% endcomment %}
+the-ultimate-night-repair-super-cream-1 >> the-evening-edit, advanced-cellular-repair-serum, advanced-complexion-corrector-serum, deep-clean-enzyme-cleanser;
+the-ultimate-night-repair-supercream-nad-20g >> the-travel-edit, deep-clean-enzyme-cleanser, dirt-make-up-cleanser-jelly-nad-10g, hydro-active-all-day-cream-ceramides-nad-20g, beauty-bag;
+hydro-active-day-cream >> the-morning-edit, deep-clean-enzyme-cleanser, oil-free-matte-sunscreen, broad-spectrum-active-sunspray, advanced-antioxidant-defense-serum, ultra-hydrating-oligo-ha-mist, on-the-go;
+hydro-active-all-day-cream-ceramides-nad-20g >> the-travel-edit, deep-clean-enzyme-cleanser, oil-free-matte-sunscreen?variant=45542677577914, advanced-antioxidant-defense-serum, ultra-hydrating-oligo-ha-mist, broad-spectrum-active-sunspray, on-the-go;
+deep-clean-enzyme-cleanser >> dirt-makeup-cleanser-jelly, ultra-hydrating-oligo-ha-mist, hydro-active-day-cream, the-ultimate-night-repair-super-cream-1, oil-free-matte-sunscreen;
+dirt-makeup-cleanser-jelly >> deep-clean-enzyme-cleanser, the-ultimate-night-repair-supercream-nad-20g, the-evening-edit, advanced-cellular-hydration-serum, oil-free-matte-sunscreen, beauty-bag;
+dirt-make-up-cleanser-jelly-nad-10g >> the-travel-edit, deep-clean-enzyme-cleanser, hydro-active-all-day-cream-ceramides-nad-20g, the-ultimate-night-repair-supercream-nad-20g, oil-free-matte-sunscreen?variant=45542677577914, beauty-bag;
+ultra-hydrating-oligo-ha-mist >> on-the-go, deep-clean-enzyme-cleanser, oil-free-matte-sunscreen, hydro-active-day-cream, broad-spectrum-active-sunspray;
+broad-spectrum-active-sunspray >> on-the-go, oil-free-matte-sunscreen, hydro-active-day-cream, advanced-antioxidant-defense-serum, advanced-cellular-hydration-serum, ultra-hydrating-oligo-ha-mist;
+oil-free-matte-sunscreen >> the-morning-edit, hydro-active-day-cream, broad-spectrum-active-sunspray, ultra-hydrating-oligo-ha-mist, advanced-cellular-hydration-serum, advanced-antioxidant-defense-serum, on-the-go;
+oil-free-matte-sunscreen?variant=45542677577914 >> the-travel-edit, deep-clean-enzyme-cleanser, hydro-active-all-day-cream-ceramides-nad-20g, advanced-cellular-hydration-serum, advanced-antioxidant-defense-serum, broad-spectrum-active-sunspray, ultra-hydrating-oligo-ha-mist, on-the-go;
+moisture-surge-lip-butter >> the-travel-edit, the-ultimate-night-repair-supercream-nad-20g, advanced-cellular-repair-serum, oil-free-matte-sunscreen, hydro-active-all-day-cream-ceramides-nad-20g, beauty-bag;
+advanced-cellular-hydration-serum >> advanced-antioxidant-defense-serum, the-ultimate-night-repair-super-cream-1, hydro-active-day-cream, oil-free-matte-sunscreen, ultra-hydrating-oligo-ha-mist, broad-spectrum-active-sunspray, on-the-go, beauty-bag;
+advanced-complexion-corrector-serum >> the-evening-edit, deep-clean-enzyme-cleanser, advanced-cellular-repair-serum, the-ultimate-night-repair-super-cream-1, beauty-bag;
+advanced-cellular-repair-serum >> the-evening-edit, advanced-complexion-corrector-serum, deep-clean-enzyme-cleanser, the-ultimate-night-repair-super-cream-1, beauty-bag;
+advanced-antioxidant-defense-serum >> advanced-cellular-hydration-serum, hydro-active-day-cream, the-ultimate-night-repair-super-cream-1, oil-free-matte-sunscreen, ultra-hydrating-oligo-ha-mist, broad-spectrum-active-sunspray, on-the-go, beauty-bag;
+beauty-bag >> the-travel-edit, hydro-active-all-day-cream-ceramides-nad-20g, the-ultimate-night-repair-supercream-nad-20g, moisture-surge-lip-butter, on-the-go, oil-free-matte-sunscreen, advanced-antioxidant-defense-serum;
