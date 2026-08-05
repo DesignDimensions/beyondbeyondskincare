@@ -933,12 +933,65 @@ class CartDrawer extends MenuDrawer {
     });
 
     this.onCartRefreshListener = this.onCartRefresh.bind(this);
+    this.onPageShowListener = this.onPageShow.bind(this);
   }
 
   connectedCallback() {
     document.addEventListener('cart:refresh', this.onCartRefreshListener);
+    window.addEventListener('pageshow', this.onPageShowListener);
   }
-  
+
+  disconnectedCallback() {
+    document.removeEventListener('cart:refresh', this.onCartRefreshListener);
+    window.removeEventListener('pageshow', this.onPageShowListener);
+  }
+
+  // Leaving the page with the drawer open leaves the body pinned, and Safari's back button
+  // restores that state from the bfcache -- the page would come back unscrollable.
+  onPageShow(event) {
+    if (event.persisted) this.unlockScroll();
+  }
+
+  openMenuDrawer(summaryElement = false) {
+    // Pinning last: the base class measures the scrollbar and the header's position first, and
+    // both of those read differently once the body has been taken out of flow.
+    super.openMenuDrawer(summaryElement);
+    this.lockScroll();
+  }
+
+  closeMenuDrawer(event, elementToFocus = false) {
+    super.closeMenuDrawer(event, elementToFocus);
+
+    // The base class only closes when it is handed an event; without one the drawer stays open.
+    if (event !== undefined) this.unlockScroll();
+  }
+
+  /*
+    iOS Safari treats `overflow: hidden` on the body as a suggestion -- the page carries on
+    scrolling under the drawer, and that scroll is also what collapses Safari's toolbars and
+    resizes the viewport out from under it. Pinning the body at its current offset is the only
+    lock that holds there, so it is applied on iOS alone: every other browser is served by the
+    `overflow: hidden` the open state already carries, and pinning them would be a needless
+    reflow of the page behind.
+  */
+  lockScroll() {
+    if (!theme.config.isIOS || this.scrollLocked) return;
+
+    this.lockedScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    document.body.style.top = `-${this.lockedScrollTop}px`;
+    document.body.classList.add('mini-cart--scroll-locked');
+    this.scrollLocked = true;
+  }
+
+  unlockScroll() {
+    if (!this.scrollLocked) return;
+
+    this.scrollLocked = false;
+    document.body.classList.remove('mini-cart--scroll-locked');
+    document.body.style.top = '';
+    window.scrollTo(0, this.lockedScrollTop);
+  }
+
   async onCartRefresh(event) {
     const miniCartElement = document.getElementById('mini-cart');
     if (!miniCartElement) return;
