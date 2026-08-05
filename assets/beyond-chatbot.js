@@ -250,12 +250,21 @@
         });
       },
 
+      /* clearProps matters: without it GSAP leaves the measured height inline and the tray
+         can never grow again as items are added. */
       reveal: function (node, done) {
         if (!g) {
           if (done) done();
           return;
         }
-        g.from(node, { height: 0, autoAlpha: 0, duration: d(0.4), ease: EASE_OUT, onComplete: done });
+        g.from(node, {
+          height: 0,
+          autoAlpha: 0,
+          duration: d(0.4),
+          ease: EASE_OUT,
+          clearProps: "height",
+          onComplete: done,
+        });
       },
 
       /* The add-to-routine flight. Separating the eases on the two axes bends the path into
@@ -358,11 +367,17 @@
     var isOpen = false;
     var trayOpen = false;
     var cart = null;
+    var selfSync = false;
 
     // ------------------------------------------------------------- routine tray
 
+    function cartUrl(path) {
+      var root = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || "/";
+      return root.replace(/\/$/, "") + path;
+    }
+
     function fetchCart() {
-      return fetch(window.Shopify && window.Shopify.routes ? window.Shopify.routes.root + "cart.js" : "/cart.js", {
+      return fetch(cartUrl("/cart.js"), {
         headers: { Accept: "application/json" },
         credentials: "same-origin",
       }).then(function (res) {
