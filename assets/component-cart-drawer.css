@@ -304,7 +304,9 @@ a.mini-cart__promo-banner:hover {
   display: flex;
   flex-direction: column;
   row-gap: var(--cart-gutter);
-  padding: var(--cart-gutter);
+  /* No bottom gutter of its own: the pinned block below owns the gap at the scroll boundary,
+     so the spacing reads the same whether the list is mid-scroll or has run out. */
+  padding: var(--cart-gutter) var(--cart-gutter) 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -347,7 +349,7 @@ a.mini-cart__promo-banner:hover {
   display: flex;
   flex-direction: column;
   row-gap: var(--cart-gutter);
-  padding: 0 var(--cart-gutter) var(--cart-gutter);
+  padding: var(--cart-gutter);
   background-color: var(--cart-canvas);
 }
 
@@ -1808,6 +1810,7 @@ a.mini-cart__promo-banner:hover {
 
 .mini-cart__empty,
 .is-empty .mini-cart__main,
+.is-empty .mini-cart__pinned,
 .is-empty .mini-cart__footer {
   display: none;
 }
