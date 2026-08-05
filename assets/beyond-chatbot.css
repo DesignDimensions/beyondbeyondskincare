@@ -127,15 +127,24 @@
     0 1px 2px rgba(10, 10, 11, 0.08),
     0 12px 28px rgba(10, 10, 11, 0.12),
     0 32px 72px rgba(10, 10, 11, 0.16);
+
+  /* Fallback path, used only when GSAP is absent. Visibility is held until the fade-out has
+     finished, otherwise closing snaps instead of animating. */
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.28s;
 }
 
-/* GSAP drives the open/close when it is available; this is the fallback path. */
 .bb-panel.bb-open {
   opacity: 1;
   visibility: visible;
   transform: none;
   pointer-events: auto;
-  transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
 }
 
 /* With GSAP present the panel's opacity, transform, visibility and pointer-events are all
