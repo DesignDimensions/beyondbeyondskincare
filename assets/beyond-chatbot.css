@@ -1,289 +1,624 @@
-/* Beyond Beyond skincare assistant — chat widget */
+/* ------------------------------------------------------------------------------------
+   Beyond Beyond skincare assistant
+
+   A conversation that assembles a routine. The palette is built out of the brand's electric
+   blue rather than around it: even the "grey" surfaces are blue-tinted, so the widget reads
+   as one material instead of a neutral chat box with a coloured button dropped in.
+
+   Blue is reserved for things you can act on -- your own messages, add, checkout. Nothing
+   decorative is blue.
+   ------------------------------------------------------------------------------------ */
 
 .bb-chat {
-  --bb-cream: #ffffff;
-  --bb-surface: #ffffff;
-  --bb-border: rgba(0, 0, 0, 0.1);
-  --bb-ink: #000000;
-  --bb-muted: rgba(0, 0, 0, 0.55);
-  --bb-accent: #0107ef;
-  --bb-accent-ink: #ffffff;
-  --bb-radius: 16px;
-  --bb-radius-sm: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bb-ink: #0a0a0b;
+  --bb-paper: #ffffff;
+  --bb-wash: #f3f4fc;
+  --bb-line: #e4e5f2;
+  --bb-blue: #0107ef;
+  --bb-blue-deep: #0004a8;
+  --bb-mute: #6b6e80;
+  --bb-danger: #b00020;
+
+  --bb-r-panel: 24px;
+  --bb-r-bubble: 16px;
+  --bb-r-card: 14px;
+  --bb-r-tail: 6px;
+
+  /* Falls back to a system stack when the widget is used outside the theme. */
+  --bb-font: var(--font-body-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+
+  font-family: var(--bb-font);
+  -webkit-font-smoothing: antialiased;
 }
 
-.bb-chat * {
+.bb-chat *,
+.bb-chat *::before,
+.bb-chat *::after {
   box-sizing: border-box;
 }
 
-/* Launcher button */
-.bb-chat-launcher {
+.bb-chat button {
+  font-family: inherit;
+}
+
+/* ---------------------------------------------------------------- Launcher */
+
+.bb-launcher {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--bb-accent);
+  width: 58px;
+  height: 58px;
   border: none;
-  cursor: pointer;
+  border-radius: 50%;
+  background: var(--bb-blue);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(1, 7, 239, 0.35);
+  cursor: pointer;
   z-index: 29;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 2px 6px rgba(1, 7, 239, 0.24), 0 12px 28px rgba(1, 7, 239, 0.28);
+  transition: box-shadow 0.2s ease;
 }
 
-.bb-chat-launcher:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(1, 7, 239, 0.4);
+.bb-launcher:hover {
+  box-shadow: 0 4px 10px rgba(1, 7, 239, 0.3), 0 18px 38px rgba(1, 7, 239, 0.34);
 }
 
-.bb-chat-launcher svg {
-  width: 24px;
-  height: 24px;
+.bb-launcher__mark {
+  display: flex;
+  width: 25px;
+  height: 25px;
 }
 
-.bb-chat-launcher.bb-hidden {
-  transform: scale(0.6);
-  opacity: 0;
-  pointer-events: none;
+.bb-launcher__mark svg {
+  width: 100%;
+  height: 100%;
 }
 
-/* Panel */
-.bb-chat-panel {
+/* Count of what is already in the bag, so the routine is legible before opening. */
+.bb-launcher__pip {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bb-ink);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 21px;
+  box-shadow: 0 0 0 2px var(--bb-paper);
+}
+
+.bb-launcher[hidden],
+.bb-launcher__pip[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------------- Panel */
+
+.bb-panel {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 380px;
+  width: 384px;
   max-width: calc(100vw - 24px);
-  height: 620px;
+  height: 640px;
   max-height: calc(100vh - 40px);
-  background: var(--bb-cream);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  background: var(--bb-paper);
+  border-radius: var(--bb-r-panel);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: 999999;
+  z-index: 999998;
   opacity: 0;
-  transform: translateY(16px) scale(0.98);
+  visibility: hidden;
+  transform: translateY(14px) scale(0.97);
+  transform-origin: 100% 100%;
   pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.22s ease;
+
+  /* Three stacked shadows read as real elevation; one big blur reads as a drop shadow. */
+  box-shadow:
+    0 1px 2px rgba(10, 10, 11, 0.08),
+    0 12px 28px rgba(10, 10, 11, 0.12),
+    0 32px 72px rgba(10, 10, 11, 0.16);
+
+  /* Fallback path, used only when GSAP is absent. Visibility is held until the fade-out has
+     finished, otherwise closing snaps instead of animating. */
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.28s;
 }
 
-.bb-chat-panel.bb-open {
+.bb-panel.bb-open {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  visibility: visible;
+  transform: none;
   pointer-events: auto;
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
 }
 
-@media (prefers-reduced-motion: reduce) {
-
-  .bb-chat-panel,
-  .bb-chat-launcher,
-  .bb-msg,
-  .bb-chip {
-    transition: none !important;
-    animation: none !important;
-  }
+/* With GSAP present the panel's opacity, transform, visibility and pointer-events are all
+   driven inline, so the CSS transition above must not also run. */
+.bb-chat.bb-anim .bb-panel {
+  transition: none;
 }
 
-@media (max-width: 480px) {
-  .bb-chat-panel {
-    right: 8px;
-    left: 8px;
-    bottom: 8px;
-    width: auto;
-    height: calc(100vh - 16px);
-    max-height: none;
-  }
-}
+/* ------------------------------------------------------------------ Header */
 
-/* Header */
-.bb-chat-header {
+.bb-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--bb-border);
+  gap: 12px;
+  padding: 14px 16px 14px 18px;
+  border-bottom: 1px solid var(--bb-line);
   flex-shrink: 0;
 }
 
-.bb-chat-header-title {
-  font-family: Georgia, "Times New Roman", ui-serif, serif;
-  font-size: 19px;
-  color: var(--bb-ink);
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-}
-
-.bb-chat-header-sub {
-  font-size: 12px;
-  color: var(--bb-muted);
-  margin-top: 2px;
-  letter-spacing: 0.02em;
-}
-
-.bb-chat-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--bb-muted);
-  padding: 6px;
-  border-radius: 50%;
+/* The mark sits beside the role rather than above it: the store's logo is a near-square
+   lockup, so stacking a label under it makes the header tall without making it clearer. */
+.bb-header__brand {
   display: flex;
-  transition: background 0.15s ease;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
-.bb-chat-close:hover {
-  background: var(--bb-border);
+.bb-header__logo {
+  display: block;
+  width: auto;
+  max-width: 120px;
+  max-height: 48px;
+  flex-shrink: 0;
+  /* If max-width ever clamps a very wide logo, this letterboxes it instead of stretching it,
+     since the height comes from the attribute. */
+  object-fit: contain;
+  object-position: left center;
 }
 
-/* Message list */
-.bb-chat-body {
+.bb-header__wordmark {
+  font-family: var(--font-heading-family, var(--bb-font));
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--bb-ink);
+  flex-shrink: 0;
+}
+
+/* The one small-caps label in the widget: it names the role, it is not a heading. The rule
+   separates it from the mark so the two are not read as one lockup. */
+.bb-header__role {
+  position: relative;
+  padding-left: 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: var(--bb-mute);
+}
+
+.bb-header__role::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 22px;
+  transform: translateY(-50%);
+  background: var(--bb-line);
+}
+
+.bb-header__actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.bb-iconbtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bb-mute);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.bb-iconbtn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.bb-iconbtn:hover {
+  background: var(--bb-wash);
+  color: var(--bb-ink);
+}
+
+/* ----------------------------------------------------------------- Message list */
+
+.bb-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 16px 16px 8px;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  padding: 16px 16px 4px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bb-line) transparent;
 }
 
-.bb-msg {
-  max-width: 84%;
-  padding: 10px 14px;
-  border-radius: var(--bb-radius-sm);
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  animation: bb-rise 0.18s ease;
+.bb-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.bb-body::-webkit-scrollbar-thumb {
+  background: var(--bb-line);
+  border-radius: 999px;
+}
+
+/* GSAP owns entrances when it is loaded. This is the fallback path, scoped so the two never
+   run at once and double up. */
+.bb-chat:not(.bb-anim) .bb-msg,
+.bb-chat:not(.bb-anim) .bb-product,
+.bb-chat:not(.bb-anim) .bb-chip,
+.bb-chat:not(.bb-anim) .bb-typing {
+  animation: bb-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes bb-rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.bb-welcome[hidden] {
+  display: none;
+}
+
+.bb-welcome__lead {
+  margin: 2px 2px 6px;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--bb-mute);
+  text-wrap: pretty;
+}
+
+.bb-msg {
+  max-width: 86%;
+  padding: 10px 14px;
+  border-radius: var(--bb-r-bubble);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  text-wrap: pretty;
 }
 
 .bb-msg-user {
   align-self: flex-end;
-  background: var(--bb-accent);
-  color: var(--bb-accent-ink);
-  border-bottom-right-radius: 4px;
+  background: var(--bb-blue);
+  color: #ffffff;
+  border-bottom-right-radius: var(--bb-r-tail);
 }
 
+/* Tinted rather than bordered -- a white bubble on white needs an outline to exist, which
+   makes every reply look like a form field. */
 .bb-msg-bot {
   align-self: flex-start;
-  background: var(--bb-surface);
+  background: var(--bb-wash);
   color: var(--bb-ink);
-  border: 1px solid var(--bb-border);
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: var(--bb-r-tail);
 }
 
-/* Intro / empty state */
-.bb-chat-intro {
-  font-size: 13.5px;
-  color: var(--bb-muted);
-  line-height: 1.6;
-  padding: 4px 4px 12px;
-}
-
-/* Typing indicator — reuses the brand comma-glyph */
 .bb-typing {
   align-self: flex-start;
   display: flex;
-  gap: 3px;
+  gap: 4px;
   align-items: center;
-  padding: 10px 14px;
-  background: var(--bb-surface);
-  border: 1px solid var(--bb-border);
-  border-radius: var(--bb-radius-sm);
-  border-bottom-left-radius: 4px;
+  padding: 12px 14px;
+  background: var(--bb-wash);
+  border-radius: var(--bb-r-bubble);
+  border-bottom-left-radius: var(--bb-r-tail);
 }
 
-.bb-typing svg {
-  width: 16px;
-  height: 16px;
+.bb-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bb-blue);
+  opacity: 0.3;
 }
 
-.bb-typing svg:nth-child(1) {
-  animation: bb-pulse 1.1s ease-in-out infinite;
-}
+/* ------------------------------------------------------------ Product cards */
 
-.bb-typing svg:nth-child(2) {
-  animation: bb-pulse 1.1s ease-in-out 0.35s infinite;
-}
-
-@keyframes bb-pulse {
-
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-/* Product cards */
 .bb-products {
+  align-self: flex-start;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 2px;
-  max-width: 84%;
-  align-self: flex-start;
 }
 
-.bb-product-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: var(--bb-surface);
-  border: 1px solid var(--bb-border);
-  border-radius: var(--bb-radius-sm);
-  padding: 8px;
-  transition: border-color 0.15s ease;
-}
-
-.bb-product-card:hover {
-  border-color: var(--bb-accent);
-}
-
-.bb-product-link {
+.bb-product {
   display: flex;
   align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: inherit;
+  gap: 11px;
+  padding: 9px;
+  background: var(--bb-paper);
+  border: 1px solid var(--bb-line);
+  border-radius: var(--bb-r-card);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.bb-product-card img {
-  width: 44px;
-  height: 44px;
+.bb-product:hover {
+  border-color: #c9cbe8;
+  box-shadow: 0 2px 10px rgba(10, 10, 11, 0.06);
+}
+
+.bb-product__media {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bb-wash);
+}
+
+.bb-product__media img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
-  background: var(--bb-cream);
+  display: block;
+}
+
+.bb-product__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.bb-product__title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bb-ink);
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bb-product__title:hover {
+  color: var(--bb-blue);
+}
+
+.bb-product__tagline {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--bb-mute);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tabular figures so prices do not shift as the tray total recomputes. */
+.bb-product__price {
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--bb-ink);
+}
+
+.bb-product__was {
+  font-weight: 500;
+  color: var(--bb-mute);
+  text-decoration: line-through;
+  margin-right: 5px;
+}
+
+.bb-product__add {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: var(--bb-blue);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+
+.bb-product__add svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bb-product__add:hover:not(:disabled) {
+  background: var(--bb-blue-deep);
+}
+
+.bb-product__add:disabled {
+  cursor: default;
+}
+
+.bb-product__add.is-added {
+  background: var(--bb-ink);
+}
+
+.bb-product__error {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--bb-danger);
+  padding: 0 2px;
+}
+
+/* ------------------------------------------------------- Routine tray */
+
+.bb-tray {
+  flex-shrink: 0;
+  border-top: 1px solid var(--bb-line);
+  background: var(--bb-paper);
+}
+
+.bb-tray[hidden] {
+  display: none;
+}
+
+.bb-tray__handle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* The signature: the routine as a stacked hand of products, built from the real thumbnails.
+   It is the only place in the widget where elements overlap. */
+.bb-tray__stack {
+  display: flex;
+  flex-shrink: 0;
+  padding-left: 8px;
+}
+
+.bb-tray__thumb {
+  width: 28px;
+  height: 28px;
+  margin-left: -8px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bb-wash);
+  box-shadow: 0 0 0 2px var(--bb-paper);
+}
+
+.bb-tray__more {
+  width: 28px;
+  height: 28px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: var(--bb-ink);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px var(--bb-paper);
+}
+
+.bb-tray__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.bb-tray__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bb-mute);
+}
+
+.bb-tray__count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bb-ink);
+}
+
+.bb-tray__total {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--bb-ink);
   flex-shrink: 0;
 }
 
-.bb-product-info {
+.bb-tray__chevron {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: var(--bb-mute);
+  transform: rotate(180deg);
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bb-tray.is-open .bb-tray__chevron {
+  transform: rotate(0deg);
+}
+
+.bb-tray__drawer {
+  overflow: hidden;
+  height: 0;
+}
+
+.bb-tray__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px;
+  max-height: 176px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.bb-tray__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--bb-line);
+}
+
+.bb-tray__item-media {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--bb-wash);
+}
+
+.bb-tray__item-info {
   flex: 1;
   min-width: 0;
 }
 
-.bb-product-title {
-  font-size: 13px;
+.bb-tray__item-title {
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--bb-ink);
   white-space: nowrap;
@@ -291,157 +626,353 @@
   text-overflow: ellipsis;
 }
 
-.bb-product-price {
-  font-size: 12.5px;
-  color: var(--bb-muted);
+.bb-tray__item-price {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--bb-mute);
   margin-top: 1px;
 }
 
-.bb-product-price .bb-strike {
-  text-decoration: line-through;
-  opacity: 0.6;
-  margin-right: 4px;
-}
-
-.bb-product-arrow {
-  color: var(--bb-accent);
-  font-size: 14px;
+.bb-tray__remove {
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
-}
-
-/* Add-to-cart row within a product card */
-.bb-product-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bb-add-to-cart-btn {
-  flex: 1;
-  background: var(--bb-accent);
-  color: var(--bb-accent-ink);
   border: none;
-  border-radius: 999px;
-  padding: 7px 12px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.bb-add-to-cart-btn:hover {
-  opacity: 0.88;
-}
-
-.bb-add-to-cart-btn:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.bb-cart-confirm {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12.5px;
-  flex: 1;
-}
-
-.bb-cart-confirm-label {
-  color: var(--bb-accent);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.bb-cart-confirm a {
-  color: var(--bb-ink);
-  text-decoration: underline;
-  white-space: nowrap;
-}
-
-.bb-cart-error {
-  font-size: 12px;
-  color: #b00020;
-}
-
-/* Suggested question chips */
-.bb-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 10px 16px 4px;
-  flex-shrink: 0;
-}
-
-.bb-chip {
-  border: 1px solid var(--bb-accent);
-  color: var(--bb-accent);
-  background: transparent;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12.5px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  animation: bb-rise 0.2s ease;
-}
-
-.bb-chip:hover {
-  background: var(--bb-accent);
-  color: var(--bb-accent-ink);
-}
-
-/* Input row */
-.bb-chat-input-row {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px 16px;
-  flex-shrink: 0;
-  border-top: 1px solid var(--bb-border);
-}
-
-.bb-chat-input {
-  flex: 1;
-  border: 1px solid var(--bb-border);
-  background: var(--bb-surface);
-  border-radius: 999px;
-  padding: 10px 16px;
-  font-size: 14px;
-  color: var(--bb-ink);
-  outline: none;
-  transition: border-color 0.15s ease;
-}
-
-.bb-chat-input:focus {
-  border-color: var(--bb-accent);
-}
-
-.bb-chat-send {
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
-  border: none;
-  background: var(--bb-accent);
-  color: var(--bb-accent-ink);
+  background: transparent;
+  color: var(--bb-mute);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  flex-shrink: 0;
-  transition: opacity 0.15s ease;
+  transition: background 0.16s ease, color 0.16s ease;
 }
 
-.bb-chat-send:disabled {
-  opacity: 0.5;
+.bb-tray__remove svg {
+  width: 13px;
+  height: 13px;
+}
+
+.bb-tray__remove:hover {
+  background: var(--bb-wash);
+  color: var(--bb-danger);
+}
+
+.bb-tray__checkout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 16px 14px;
+  padding: 13px 18px;
+  border-radius: 999px;
+  background: var(--bb-blue);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.16s ease;
+}
+
+.bb-tray__checkout:hover {
+  background: var(--bb-blue-deep);
+  color: #ffffff;
+}
+
+.bb-tray__checkout-total {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+/* ------------------------------------------------------------------- Chips */
+
+.bb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px 0;
+  flex-shrink: 0;
+}
+
+.bb-chips:empty {
+  display: none;
+}
+
+.bb-chip {
+  border: 1px solid var(--bb-line);
+  background: var(--bb-paper);
+  color: var(--bb-ink);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.bb-chip:hover {
+  border-color: var(--bb-blue);
+  background: var(--bb-blue);
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------------- Composer */
+
+.bb-composer {
+  position: relative;
+  flex-shrink: 0;
+  padding: 12px 16px 14px;
+}
+
+.bb-composer__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* The field and its ghost layer share these so the completion can never drift out of
+   alignment with the typed text. Change them here, both layers follow. */
+.bb-field {
+  --bb-field-px: 16px;
+  --bb-field-py: 11px;
+  --bb-field-size: 14px;
+  --bb-field-lh: 20px;
+
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.bb-input,
+.bb-ghost {
+  width: 100%;
+  padding: var(--bb-field-py) var(--bb-field-px);
+  font-family: var(--bb-font);
+  font-size: var(--bb-field-size);
+  font-weight: 400;
+  line-height: var(--bb-field-lh);
+  letter-spacing: normal;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+
+.bb-input {
+  position: relative;
+  background: var(--bb-wash);
+  color: var(--bb-ink);
+  outline: none;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.bb-input::placeholder {
+  color: var(--bb-mute);
+}
+
+.bb-input:focus {
+  background: var(--bb-paper);
+  border-color: var(--bb-blue);
+}
+
+/* Sits under the input showing the rest of the best-matching phrase. The typed portion is
+   invisible and exists only to offset the completion to the caret. */
+.bb-ghost {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  color: transparent;
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Invisible on purpose: it only reserves the width of what has been typed so the completion
+   beside it starts exactly at the caret. */
+.bb-ghost__typed {
+  color: transparent;
+}
+
+.bb-ghost__rest {
+  color: var(--bb-mute);
+  opacity: 0;
+}
+
+.bb-composer__hint {
+  margin: 7px 0 0;
+  padding-left: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--bb-mute);
+}
+
+.bb-composer__hint[hidden] {
+  display: none;
+}
+
+/* No Tab key to press on a touch keyboard -- the suggestion list is the affordance there. */
+@media (pointer: coarse) {
+  .bb-composer__hint {
+    display: none;
+  }
+}
+
+.bb-composer__hint kbd {
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border: 1px solid var(--bb-line);
+  border-radius: 4px;
+  background: var(--bb-wash);
+}
+
+.bb-send {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--bb-blue);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.16s ease, opacity 0.16s ease;
+}
+
+.bb-send svg {
+  width: 17px;
+  height: 17px;
+  transform: rotate(180deg);
+}
+
+.bb-send:hover:not(:disabled) {
+  background: var(--bb-blue-deep);
+}
+
+.bb-send:disabled {
+  opacity: 0.4;
   cursor: default;
 }
 
-.bb-chat-send svg {
-  width: 17px;
-  height: 17px;
+/* ------------------------------------------------- Autocomplete suggestions */
+
+.bb-suggest {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(100% - 6px);
+  background: var(--bb-paper);
+  border: 1px solid var(--bb-line);
+  border-radius: var(--bb-r-card);
+  padding: 5px;
+  z-index: 3;
+  box-shadow: 0 2px 8px rgba(10, 10, 11, 0.06), 0 14px 34px rgba(10, 10, 11, 0.14);
 }
 
-/* Focus visibility for keyboard users */
+.bb-suggest[hidden] {
+  display: none;
+}
+
+.bb-suggest__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--bb-ink);
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bb-suggest__item:hover,
+.bb-suggest__item.is-active {
+  background: var(--bb-wash);
+}
+
+.bb-suggest__item svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: var(--bb-mute);
+}
+
+/* The part the visitor has already typed, so the match is obvious at a glance. */
+.bb-suggest__match {
+  font-weight: 700;
+  color: var(--bb-blue);
+}
+
+.bb-suggest__text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The clone that flies from a product card into the tray stack. */
+.bb-flyer {
+  position: fixed;
+  z-index: 999999;
+  border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(10, 10, 11, 0.24);
+}
+
+/* ------------------------------------------------------------ Accessibility */
+
 .bb-chat button:focus-visible,
-.bb-chat input:focus-visible {
-  outline: 2px solid var(--bb-accent);
+.bb-chat input:focus-visible,
+.bb-chat a:focus-visible {
+  outline: 2px solid var(--bb-blue);
   outline-offset: 2px;
+}
+
+.bb-input:focus-visible {
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-chat *,
+  .bb-chat *::before,
+  .bb-chat *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  .bb-body {
+    scroll-behavior: auto;
+  }
+}
+
+/* ----------------------------------------------------------------- Mobile */
+
+@media (max-width: 480px) {
+  .bb-panel {
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
+    width: auto;
+    height: calc(100dvh - 16px);
+    max-height: none;
+  }
+
+  .bb-launcher {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .bb-msg {
+    max-width: 90%;
+  }
 }

@@ -1249,5 +1249,27 @@
         "label": "Enable International Flow"
       }
     ]
+  },
+  {
+    "name": "Chat assistant",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "chat_logo",
+        "label": "Logo",
+        "info": "Shown in the chat header. Falls back to your brand logo, then to the shop name."
+      },
+      {
+        "type": "range",
+        "id": "chat_logo_height",
+        "min": 16,
+        "max": 48,
+        "step": 2,
+        "unit": "px",
+        "label": "Logo height",
+        "info": "Square or stacked logos need more height than a wide wordmark to stay legible.",
+        "default": 34
+      }
+    ]
   }
 ]
