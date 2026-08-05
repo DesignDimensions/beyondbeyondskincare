@@ -102,6 +102,22 @@
   animation-play-state: paused;
 }
 
+/* Height source for the drawer and its backdrop, declared on their shared ancestor.
+   `100%` on a fixed element resolves against the initial containing block, which iOS Safari
+   freezes at the toolbars-visible size: the moment the bottom bar auto-hides, the drawer
+   stops short and the page shows through underneath. `dvh` follows the browser chrome as it
+   collapses; `--viewport-height` (tracked in global.js) covers Safari before 15.4.
+   `svh` is deliberately not used -- it is the toolbars-visible height, i.e. the short one. */
+.cart-drawer-container {
+  --cart-viewport-height: var(--viewport-height, 100vh);
+}
+
+@supports (height: 100dvh) {
+  .cart-drawer-container {
+    --cart-viewport-height: 100dvh;
+  }
+}
+
 .cart-drawer {
   padding: 0;
   position: fixed;
@@ -113,18 +129,9 @@
   width: calc(100% - 4rem);
   height: var(--max-height);
   overflow: hidden;
+  overscroll-behavior: contain;
   background-color: var(--cart-canvas);
-  --max-height: 100%;
-}
-
-.shopify-section-header-sticky.shopify-section-header-hidden .cart-drawer {
-  height: 100vh;
-}
-
-@supports (height: 100svh) {
-  .shopify-section-header-sticky.shopify-section-header-hidden .cart-drawer {
-    height: 100svh;
-  }
+  --max-height: var(--cart-viewport-height);
 }
 
 .cart-drawer-container summary.header__icon::after {
@@ -135,7 +142,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: var(--cart-viewport-height);
   opacity: 0;
   cursor: url(cross.svg), url(cross.png), zoom-out;
   pointer-events: none;
@@ -291,6 +298,9 @@ a.mini-cart__promo-banner:hover {
 
 .mini-cart__main {
   flex: 1 1 auto;
+  /* Without this the column item refuses to shrink past its content on iOS, so the canvas
+     never becomes a scroller and the drag falls through to the page behind. */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   row-gap: var(--cart-gutter);
@@ -1774,11 +1784,13 @@ a.mini-cart__promo-banner:hover {
 
 .is-empty .mini-cart__empty {
   flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   align-items: center;
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scroll-behavior: smooth;
   scrollbar-width: thin;
 }
