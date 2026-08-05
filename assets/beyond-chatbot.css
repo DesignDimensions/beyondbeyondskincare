@@ -157,25 +157,31 @@
 
 .bb-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 18px 14px;
+  padding: 14px 16px 14px 18px;
   border-bottom: 1px solid var(--bb-line);
   flex-shrink: 0;
 }
 
+/* The mark sits beside the role rather than above it: the store's logo is a near-square
+   lockup, so stacking a label under it makes the header tall without making it clearer. */
 .bb-header__brand {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
 }
 
 .bb-header__logo {
   display: block;
   width: auto;
-  max-width: 190px;
+  max-width: 120px;
+  max-height: 48px;
+  flex-shrink: 0;
+  /* If max-width ever clamps a very wide logo, this letterboxes it instead of stretching it,
+     since the height comes from the attribute. */
   object-fit: contain;
   object-position: left center;
 }
@@ -186,15 +192,31 @@
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--bb-ink);
+  flex-shrink: 0;
 }
 
-/* The one small-caps label in the widget: it names the role, it is not a heading. */
+/* The one small-caps label in the widget: it names the role, it is not a heading. The rule
+   separates it from the mark so the two are not read as one lockup. */
 .bb-header__role {
+  position: relative;
+  padding-left: 12px;
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.1em;
+  line-height: 1.35;
   text-transform: uppercase;
   color: var(--bb-mute);
+}
+
+.bb-header__role::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 22px;
+  transform: translateY(-50%);
+  background: var(--bb-line);
 }
 
 .bb-header__actions {
