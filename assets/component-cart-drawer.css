@@ -13,6 +13,17 @@
   overflow: hidden;
 }
 
+/* iOS Safari ignores `overflow: hidden` on the body, so a drag anywhere over the drawer
+   keeps scrolling the page underneath -- and that scroll is also what collapses Safari's
+   toolbars, which resizes the viewport out from under the open drawer. Pinning the body
+   is the only reliable lock there; global.js applies this class and holds the offset in
+   `top` so the position can be restored on close. */
+.mini-cart--scroll-locked {
+  position: fixed;
+  inset-inline: 0;
+  width: 100%;
+}
+
 .mini-cart--open .transition-body:after,
 .mini-cart--opening .transition-body:after,
 .mini-cart--closing .transition-body:after {
@@ -66,8 +77,21 @@
   display: none;
 }
 
-.mini-cart--open .shopify-section-header-hidden {
+/* A transform on the header makes it the containing block for the drawer inside it, which
+   pulls the fixed drawer up by the header's height and leaves the bottom of the screen
+   uncovered. The reset has to cover the opening and closing states too -- the drawer is on
+   screen for all three -- and it has to land in a single frame, so the sticky header's
+   transform transition is suspended while it happens. */
+.mini-cart--open .shopify-section-header-hidden,
+.mini-cart--opening .shopify-section-header-hidden,
+.mini-cart--closing .shopify-section-header-hidden {
   transform: none;
+}
+
+.mini-cart--open .shopify-section-header.animate,
+.mini-cart--opening .shopify-section-header.animate,
+.mini-cart--closing .shopify-section-header.animate {
+  transition: none;
 }
 
 .mini-cart--closing #mini-cart {
@@ -76,6 +100,22 @@
 
 .mini-cart--open announcement-bar[data-compact=false].marquee .announcement-slider {
   animation-play-state: paused;
+}
+
+/* Height source for the drawer and its backdrop, declared on their shared ancestor.
+   `100%` on a fixed element resolves against the initial containing block, which iOS Safari
+   freezes at the toolbars-visible size: the moment the bottom bar auto-hides, the drawer
+   stops short and the page shows through underneath. `dvh` follows the browser chrome as it
+   collapses; `--viewport-height` (tracked in global.js) covers Safari before 15.4.
+   `svh` is deliberately not used -- it is the toolbars-visible height, i.e. the short one. */
+.cart-drawer-container {
+  --cart-viewport-height: var(--viewport-height, 100vh);
+}
+
+@supports (height: 100dvh) {
+  .cart-drawer-container {
+    --cart-viewport-height: 100dvh;
+  }
 }
 
 .cart-drawer {
@@ -89,18 +129,9 @@
   width: calc(100% - 4rem);
   height: var(--max-height);
   overflow: hidden;
+  overscroll-behavior: contain;
   background-color: var(--cart-canvas);
-  --max-height: 100%;
-}
-
-.shopify-section-header-sticky.shopify-section-header-hidden .cart-drawer {
-  height: 100vh;
-}
-
-@supports (height: 100svh) {
-  .shopify-section-header-sticky.shopify-section-header-hidden .cart-drawer {
-    height: 100svh;
-  }
+  --max-height: var(--cart-viewport-height, 100vh);
 }
 
 .cart-drawer-container summary.header__icon::after {
@@ -111,7 +142,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: var(--cart-viewport-height);
   opacity: 0;
   cursor: url(cross.svg), url(cross.png), zoom-out;
   pointer-events: none;
@@ -267,10 +298,15 @@ a.mini-cart__promo-banner:hover {
 
 .mini-cart__main {
   flex: 1 1 auto;
+  /* The overflow below should already zero the automatic minimum size; pinning it makes sure
+     the pane shrinks into a scroller instead of growing and handing the drag to the page. */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   row-gap: var(--cart-gutter);
-  padding: var(--cart-gutter);
+  /* No bottom gutter of its own: the pinned block below owns the gap at the scroll boundary,
+     so the spacing reads the same whether the list is mid-scroll or has run out. */
+  padding: var(--cart-gutter) var(--cart-gutter) 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -299,6 +335,34 @@ a.mini-cart__promo-banner:hover {
   background-color: var(--cart-surface);
   border: 0.1rem solid var(--cart-line);
   border-radius: var(--cart-radius);
+}
+
+/* --------------------------------------------------------------------------
+   Pinned cards
+   -------------------------------------------------------------------------- */
+
+/* The discount field and the cross-sell rail sit outside the scrolling canvas so they hold
+   their place above the footer while the line items scroll -- same gutter, same tinted
+   canvas, so nothing about the cards themselves reads differently for having left it. */
+.mini-cart__pinned {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--cart-gutter);
+  padding: var(--cart-gutter);
+  background-color: var(--cart-canvas);
+}
+
+/* The rail renders nothing when there is nothing left to cross-sell, and neither card is
+   rendered on an empty cart -- no stray gutter above the footer in either case. */
+.mini-cart__pinned:not(:has(> *)) {
+  display: none;
+}
+
+/* enableLoading() reaches only the scrolling canvas. Both of these used to live inside it,
+   so they follow it into the disabled state rather than staying live mid-update. */
+.mini-cart__main.cart__items--disabled ~ .mini-cart__pinned {
+  pointer-events: none;
 }
 
 .cart-card__title {
@@ -1106,6 +1170,8 @@ a.mini-cart__promo-banner:hover {
   padding: 0 1.2rem 0 0;
   list-style: none;
   overflow-x: auto;
+  /* Keeps a swipe that runs off the end of the rail from becoming Safari's back gesture. */
+  overscroll-behavior-inline: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
@@ -1744,17 +1810,20 @@ a.mini-cart__promo-banner:hover {
 
 .mini-cart__empty,
 .is-empty .mini-cart__main,
+.is-empty .mini-cart__pinned,
 .is-empty .mini-cart__footer {
   display: none;
 }
 
 .is-empty .mini-cart__empty {
   flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   align-items: center;
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scroll-behavior: smooth;
   scrollbar-width: thin;
 }

@@ -137,6 +137,47 @@
         </ul>
       </cart-items>
 
+      {%- if gift_wrapping != nil -%}
+        <gift-wrapping class="cart-card gift-wrapping"
+          data-gift-wrap-id="{{ gift_wrap_id }}"
+          data-gift-wrapping="{{ cart.attributes.gift-wrapping | escape }}"
+          cart-items-size="{{ cart.items.size }}"
+          gift-wraps-in-cart="{{ gift_wraps_in_cart }}"
+          items-in-cart="{{ items_in_cart }}"
+        >
+          <input
+            id="gift-wrapping"
+            type="checkbox"
+            name="attributes[gift-wrapping]"
+            value="yes"
+            {% if cart.attributes.gift-wrapping %}checked="checked"{% endif %}
+            class="visually-hidden"
+          />
+          <label for="gift-wrapping" class="gift-wrapping__label">
+            {%- capture gift_price -%}
+              <price-money class="price"><bdi>{{ gift_wrapping.object.price | money }}</bdi></price-money>
+            {%- endcapture -%}
+            <span class="gift-wrapping__text">{{ 'sections.cart.gift_wrapping_html' | t: price: gift_price }}</span>
+            <div class="loading-overlay hidden">
+              <div class="loading-overlay__spinner">
+                {% render 'icon', icon: 'spinner' %}
+              </div>
+            </div>
+            {% render 'icon', icon: 'checkmark', class: 'gift-wrapping__icon' %}
+          </label>
+        </gift-wrapping>
+      {%- endif -%}
+
+      {%- if show_cart_extras -%}
+        {% render 'cart-drawer-extras', gift_wrapping: gift_wrapping %}
+      {%- endif -%}
+    </div>
+
+    {%- comment -%}
+      Held out of the scrolling canvas above: the discount field and the cross-sell rail keep
+      their place over the footer while the line items scroll past them.
+    {%- endcomment -%}
+    <div class="mini-cart__pinned">
       {%- if cart != empty -%}
         <discount-code class="cart-card cart-discount" data-animate data-animate-delay-5>
           <div class="cart-discount__field">
@@ -191,41 +232,6 @@
 
       {%- if cart != empty -%}
         {% render 'cart-recommendations', animate_delay: 6 %}
-      {%- endif -%}
-
-      {%- if gift_wrapping != nil -%}
-        <gift-wrapping class="cart-card gift-wrapping"
-          data-gift-wrap-id="{{ gift_wrap_id }}"
-          data-gift-wrapping="{{ cart.attributes.gift-wrapping | escape }}"
-          cart-items-size="{{ cart.items.size }}"
-          gift-wraps-in-cart="{{ gift_wraps_in_cart }}"
-          items-in-cart="{{ items_in_cart }}"
-        >
-          <input
-            id="gift-wrapping"
-            type="checkbox"
-            name="attributes[gift-wrapping]"
-            value="yes"
-            {% if cart.attributes.gift-wrapping %}checked="checked"{% endif %}
-            class="visually-hidden"
-          />
-          <label for="gift-wrapping" class="gift-wrapping__label">
-            {%- capture gift_price -%}
-              <price-money class="price"><bdi>{{ gift_wrapping.object.price | money }}</bdi></price-money>
-            {%- endcapture -%}
-            <span class="gift-wrapping__text">{{ 'sections.cart.gift_wrapping_html' | t: price: gift_price }}</span>
-            <div class="loading-overlay hidden">
-              <div class="loading-overlay__spinner">
-                {% render 'icon', icon: 'spinner' %}
-              </div>
-            </div>
-            {% render 'icon', icon: 'checkmark', class: 'gift-wrapping__icon' %}
-          </label>
-        </gift-wrapping>
-      {%- endif -%}
-
-      {%- if show_cart_extras -%}
-        {% render 'cart-drawer-extras', gift_wrapping: gift_wrapping %}
       {%- endif -%}
     </div>
 

@@ -34,6 +34,10 @@ class MobileDock extends HTMLElement {
   }
 
   onScroll() {
+    // Pinning the body for the cart drawer on iOS clamps the page to 0 and fires a scroll
+    // event; reacting to it would slide the dock away behind the open drawer.
+    if (document.body.classList.contains('mini-cart--scroll-locked')) return;
+
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     if (scrollTop >= this.scrollY) {
