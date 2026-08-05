@@ -335,6 +335,34 @@ a.mini-cart__promo-banner:hover {
   border-radius: var(--cart-radius);
 }
 
+/* --------------------------------------------------------------------------
+   Pinned cards
+   -------------------------------------------------------------------------- */
+
+/* The discount field and the cross-sell rail sit outside the scrolling canvas so they hold
+   their place above the footer while the line items scroll -- same gutter, same tinted
+   canvas, so nothing about the cards themselves reads differently for having left it. */
+.mini-cart__pinned {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--cart-gutter);
+  padding: 0 var(--cart-gutter) var(--cart-gutter);
+  background-color: var(--cart-canvas);
+}
+
+/* The rail renders nothing when there is nothing left to cross-sell, and neither card is
+   rendered on an empty cart -- no stray gutter above the footer in either case. */
+.mini-cart__pinned:not(:has(> *)) {
+  display: none;
+}
+
+/* enableLoading() reaches only the scrolling canvas. Both of these used to live inside it,
+   so they follow it into the disabled state rather than staying live mid-update. */
+.mini-cart__main.cart__items--disabled ~ .mini-cart__pinned {
+  pointer-events: none;
+}
+
 .cart-card__title {
   margin: 0 0 1.2rem;
   font-family: var(--font-heading-family);
