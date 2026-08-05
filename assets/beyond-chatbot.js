@@ -504,7 +504,7 @@
     }
 
     function changeLine(key, quantity) {
-      return fetch("/cart/change.js", {
+      return fetch(cartUrl("/cart/change.js"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         credentials: "same-origin",
@@ -515,17 +515,19 @@
           return res.json();
         })
         .then(function (data) {
-          renderTray(data);
+          applyCart(data);
           if (trayOpen) motion.height(trayDrawer, true);
           syncTheme();
         })
         .catch(function () {
-          return fetchCart().then(renderTray);
+          return fetchCart().then(function (data) {
+            applyCart(data);
+          });
         });
     }
 
     function addVariant(variantId) {
-      return fetch("/cart/add.js", {
+      return fetch(cartUrl("/cart/add.js"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         credentials: "same-origin",
@@ -593,26 +595,35 @@
       addVariant(product.variant_id)
         .then(fetchCart)
         .then(function (data) {
+          // Measured before the tray renders, while the card is still where the eye left it.
           var from = sourceImg.getBoundingClientRect();
-          var landing = renderTray(data, product.variant_id);
-          syncTheme();
 
           button.innerHTML = ICON.check;
           button.classList.add("is-added");
           button.setAttribute("aria-label", product.title + " is in your routine");
 
-          if (!landing) {
-            motion.bump(trayCount);
-            trayTotals.forEach(motion.bump);
-            return;
-          }
+          applyCart(data, product.variant_id, function (result) {
+            function settle() {
+              motion.bump(trayCount);
+              trayTotals.forEach(function (node) {
+                motion.bump(node);
+              });
+            }
 
-          var to = landing.getBoundingClientRect();
-          motion.fly(from, to, sourceImg.src, function () {
-            motion.landThumb(landing);
-            motion.bump(trayCount);
-            trayTotals.forEach(motion.bump);
+            // Beyond the fourth item there is no visible slot to fly into, so just settle.
+            if (!result.landing) {
+              settle();
+              return;
+            }
+
+            var to = result.landing.getBoundingClientRect();
+            motion.fly(from, to, sourceImg.src, function () {
+              motion.landThumb(result.landing);
+              settle();
+            });
           });
+
+          syncTheme();
         })
         .catch(function () {
           button.disabled = false;
