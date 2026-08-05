@@ -397,7 +397,10 @@
     }
 
     /* Renders the tray from the real cart. `newVariantId` marks the item that has just been
-       added so its thumbnail can be held back for the flight to land on. */
+       added so its thumbnail can be held back for the flight to land on.
+
+       Returns { landing, wasHidden } -- the caller needs wasHidden because the reveal
+       animates the tray's height, and anything measuring the stack has to wait for it. */
     function renderTray(data, newVariantId) {
       cart = data;
       var items = (data && data.items) || [];
@@ -406,7 +409,7 @@
       if (!items.length) {
         if (trayOpen) toggleTray(false);
         tray.hidden = true;
-        return;
+        return { landing: null, wasHidden: true };
       }
 
       var wasHidden = tray.hidden;
@@ -464,9 +467,8 @@
       });
 
       if (trayOpen) trayDrawer.style.height = "auto";
-      if (wasHidden) motion.reveal(tray);
 
-      return landing;
+      return { landing: landing, wasHidden: wasHidden };
     }
 
     function toggleTray(open) {
