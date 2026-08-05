@@ -178,7 +178,36 @@ class CartItems extends HTMLElement {
   getSectionInnerHTML(html, selector) {
     return new DOMParser()
       .parseFromString(html, 'text/html')
- customElements.define('cart-items', CartItems);
+      .querySelector(selector)?.innerHTML;
+  }
+
+  enableLoading(line) {
+    const cartItems = document.getElementById('main-cart-items');
+    if (cartItems) cartItems.classList.add('cart__items--disabled');
+
+    const loadingOverlay = this.querySelectorAll('.loading-overlay')[line - 1];
+    if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+    
+    document.activeElement.blur();
+    if (this.lineItemStatusElement) this.lineItemStatusElement.setAttribute('aria-hidden', false);
+  }
+
+  disableLoading() {
+    const cartItems = document.getElementById('main-cart-items');
+    if (cartItems) cartItems.classList.remove('cart__items--disabled');
+  }
+
+  renderContents(parsedState) {
+    this.getSectionsToRender().forEach((section => {
+      const element = document.getElementById(section.id);
+
+      if (element) {
+        element.innerHTML = this.getSectionInnerHTML(parsedState.sections[section.id], section.selector);
+      }
+    }));
+  }
+}
+customElements.define('cart-items', CartItems);
 
 class CartNote extends HTMLElement {
   constructor() {
