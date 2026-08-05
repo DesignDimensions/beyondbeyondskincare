@@ -799,7 +799,9 @@ body {
 .shop-products-carousel .bestseller-card__media-wrap {
   display: block;
   position: relative;
-  /* background:#e9eef4; */
+  /* Matches the backdrop the product shots are photographed on, so the letterboxing left by
+     object-fit: contain below is invisible rather than a white bar beside the image. */
+  background: #e9eef4;
   border-radius: 12px;
   height: 416px;
   text-decoration: none;
@@ -869,7 +871,10 @@ body {
   display: block;
   width: 100%;
   height: 100%;
-  /* object-fit:contain; */
+  /* The column is fluid but the box height is fixed, so the box aspect changes with the
+     viewport while the shots are a constant 2:3. Without this the default fill stretches
+     them wider and wider as the column grows. */
+  object-fit: contain;
   max-width: 100%;
   max-height: 100%;
 }
