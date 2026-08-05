@@ -169,8 +169,12 @@
 
 {%- comment -%}
   GSAP drives the panel choreography, the message and product staggers, and the add-to-routine
-  flight. beyond-chatbot.js degrades to CSS transitions if this fails to load, so a blocked CDN
-  costs the polish but never the widget.
+  flight. It is vendored into assets rather than pulled from a public CDN so it ships over
+  Shopify's own CDN with the rest of the theme -- one less third-party request and one less
+  thing that can be slow or down on a storefront.
+
+  Both tags are deferred and execute in order, so gsap is defined before the widget reads it.
+  beyond-chatbot.js still checks, and falls back to CSS transitions if it is ever missing.
 {%- endcomment -%}
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+<script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
 <script src="{{ 'beyond-chatbot.js' | asset_url }}" defer></script>

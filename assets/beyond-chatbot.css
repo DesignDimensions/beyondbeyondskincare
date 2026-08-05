@@ -247,6 +247,26 @@
   border-radius: 999px;
 }
 
+/* GSAP owns entrances when it is loaded. This is the fallback path, scoped so the two never
+   run at once and double up. */
+.bb-chat:not(.bb-anim) .bb-msg,
+.bb-chat:not(.bb-anim) .bb-product,
+.bb-chat:not(.bb-anim) .bb-chip,
+.bb-chat:not(.bb-anim) .bb-typing {
+  animation: bb-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes bb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.bb-welcome[hidden] {
+  display: none;
+}
+
 .bb-welcome__lead {
   margin: 2px 2px 6px;
   font-size: 14.5px;
