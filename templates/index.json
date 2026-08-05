@@ -157,15 +157,15 @@
             "link": "shopify://products/the-ultimate-night-repair-super-cream-1"
           }
         },
-        "banner_bBtUar": {
+        "banner_pLyFtP": {
           "type": "banner",
           "settings": {
-            "desktop_banner": "shopify://shop_images/20__off_web.png",
-            "mobile_banner": "shopify://shop_images/20__off_mob.png",
+            "desktop_banner": "shopify://shop_images/Combo_banner_WEB.png",
+            "mobile_banner": "shopify://shop_images/Combo_Banner_mob.png",
             "title": "",
             "description": "",
             "link_text": "",
-            "link": "shopify://collections/all"
+            "link": "https://beyondbeyond.co.in/products/the-essential-edit?_pos=1&_psq=esse&_psid=a438d9acf&_ss=e"
           }
         },
         "banner_aAD9cG": {
@@ -212,15 +212,15 @@
             "link": "https://beyondbeyond.co.in/products/broad-spectrum-active-sunspray"
           }
         },
-        "banner_pLyFtP": {
+        "banner_bBtUar": {
           "type": "banner",
           "settings": {
-            "desktop_banner": "shopify://shop_images/Combo_banner_WEB.png",
-            "mobile_banner": "shopify://shop_images/Combo_Banner_mob.png",
+            "desktop_banner": "shopify://shop_images/20__off_web.png",
+            "mobile_banner": "shopify://shop_images/20__off_mob.png",
             "title": "",
             "description": "",
             "link_text": "",
-            "link": "https://beyondbeyond.co.in/products/the-essential-edit?_pos=1&_psq=esse&_psid=a438d9acf&_ss=e"
+            "link": "shopify://collections/all"
           }
         }
       },
@@ -234,12 +234,12 @@
         "banner_n9eiAd",
         "banner_z4iAaj",
         "banner_bfxNXe",
-        "banner_bBtUar",
+        "banner_pLyFtP",
         "banner_aAD9cG",
         "banner_EP68Le",
         "banner_XGdVyw",
         "banner_n9hUUn",
-        "banner_pLyFtP"
+        "banner_bBtUar"
       ],
       "name": "Home Main Slideshow",
       "settings": {
