@@ -953,7 +953,10 @@
         return;
       }
 
+      // First Escape dismisses the completion, second one closes the panel. Without the
+      // stopPropagation the document handler would do both at once.
       if (event.key === "Escape") {
+        if (!suggestBox.hidden || ghostPhrase) event.stopPropagation();
         clearGhost();
         closeSuggest();
         return;
@@ -998,13 +1001,15 @@
     function closePanel() {
       if (!isOpen) return;
       isOpen = false;
-      panel.setAttribute("aria-hidden", "true");
       launcher.setAttribute("aria-expanded", "false");
       clearGhost();
       closeSuggest();
       motion.closePanel(panel);
       motion.launcher(launcher, true);
+      // Focus moves out before the panel is hidden from assistive tech, so the focused
+      // element is never sitting inside an aria-hidden subtree.
       launcher.focus();
+      panel.setAttribute("aria-hidden", "true");
     }
 
     launcher.addEventListener("click", openPanel);
