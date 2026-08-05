@@ -13,6 +13,17 @@
   overflow: hidden;
 }
 
+/* iOS Safari ignores `overflow: hidden` on the body, so a drag anywhere over the drawer
+   keeps scrolling the page underneath -- and that scroll is also what collapses Safari's
+   toolbars, which resizes the viewport out from under the open drawer. Pinning the body
+   is the only reliable lock there; global.js applies this class and holds the offset in
+   `top` so the position can be restored on close. */
+.mini-cart--scroll-locked {
+  position: fixed;
+  inset-inline: 0;
+  width: 100%;
+}
+
 .mini-cart--open .transition-body:after,
 .mini-cart--opening .transition-body:after,
 .mini-cart--closing .transition-body:after {
@@ -66,8 +77,21 @@
   display: none;
 }
 
-.mini-cart--open .shopify-section-header-hidden {
+/* A transform on the header makes it the containing block for the drawer inside it, which
+   pulls the fixed drawer up by the header's height and leaves the bottom of the screen
+   uncovered. The reset has to cover the opening and closing states too -- the drawer is on
+   screen for all three -- and it has to land in a single frame, so the sticky header's
+   transform transition is suspended while it happens. */
+.mini-cart--open .shopify-section-header-hidden,
+.mini-cart--opening .shopify-section-header-hidden,
+.mini-cart--closing .shopify-section-header-hidden {
   transform: none;
+}
+
+.mini-cart--open .shopify-section-header.animate,
+.mini-cart--opening .shopify-section-header.animate,
+.mini-cart--closing .shopify-section-header.animate {
+  transition: none;
 }
 
 .mini-cart--closing #mini-cart {
