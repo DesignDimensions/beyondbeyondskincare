@@ -298,8 +298,8 @@ a.mini-cart__promo-banner:hover {
 
 .mini-cart__main {
   flex: 1 1 auto;
-  /* Without this the column item refuses to shrink past its content on iOS, so the canvas
-     never becomes a scroller and the drag falls through to the page behind. */
+  /* The overflow below should already zero the automatic minimum size; pinning it makes sure
+     the pane shrinks into a scroller instead of growing and handing the drag to the page. */
   min-height: 0;
   display: flex;
   flex-direction: column;
