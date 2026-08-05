@@ -138,14 +138,10 @@
   transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* With GSAP present the panel's opacity, transform, visibility and pointer-events are all
+   driven inline, so the CSS transition above must not also run. */
 .bb-chat.bb-anim .bb-panel {
   transition: none;
-}
-
-.bb-chat.bb-anim .bb-panel.bb-open,
-.bb-chat.bb-anim .bb-panel.bb-visible {
-  visibility: visible;
-  pointer-events: auto;
 }
 
 /* ------------------------------------------------------------------ Header */
@@ -761,6 +757,12 @@
   z-index: 1;
 }
 
+/* Invisible on purpose: it only reserves the width of what has been typed so the completion
+   beside it starts exactly at the caret. */
+.bb-ghost__typed {
+  color: transparent;
+}
+
 .bb-ghost__rest {
   color: var(--bb-mute);
   opacity: 0;
@@ -776,6 +778,13 @@
 
 .bb-composer__hint[hidden] {
   display: none;
+}
+
+/* No Tab key to press on a touch keyboard -- the suggestion list is the affordance there. */
+@media (pointer: coarse) {
+  .bb-composer__hint {
+    display: none;
+  }
 }
 
 .bb-composer__hint kbd {
