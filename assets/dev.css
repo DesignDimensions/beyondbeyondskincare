@@ -866,7 +866,6 @@ body {
 .shop-products-carousel .bestseller-card__slide.is-active {
   display: flex;
 }
-
 .shop-products-carousel .bestseller-card__image {
   display: block;
   width: 100%;
