@@ -981,7 +981,11 @@
       launcher.setAttribute("aria-expanded", "true");
       motion.launcher(launcher, false);
       motion.openPanel(panel, [header, body, composer]);
-      fetchCart().then(renderTray).catch(function () {});
+      fetchCart()
+        .then(function (data) {
+          applyCart(data);
+        })
+        .catch(function () {});
       // Focusing on touch pops the keyboard over the conversation before it can be read.
       if (window.matchMedia("(pointer: fine)").matches) input.focus();
     }
