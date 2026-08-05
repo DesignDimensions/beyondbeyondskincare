@@ -16,6 +16,8 @@ theme.config = {
   mqlSmall: false,
   mediaQuerySmall: 'screen and (max-width: 749px)',
   isTouch: ('ontouchstart' in window) || window.DocumentTouch && window.document instanceof DocumentTouch || window.navigator.maxTouchPoints || window.navigator.msMaxTouchPoints ? true : false,
+  // iPadOS reports itself as a Mac, so touch points are what separate it from a desktop Safari.
+  isIOS: /iP(hone|ad|od)/.test(window.navigator.userAgent) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1),
   rtl: document.documentElement.getAttribute('dir') === 'rtl' ? true : false
 };
 
