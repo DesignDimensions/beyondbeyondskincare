@@ -201,8 +201,12 @@
         if (!g) {
           node.style.opacity = show ? "1" : "0";
           node.style.pointerEvents = show ? "auto" : "none";
+          node.style.visibility = show ? "visible" : "hidden";
           return;
         }
+        // Made visible up front rather than on the tween's first tick, so the caller can
+        // move focus here immediately -- focus() is a no-op on a hidden element.
+        if (show) node.style.visibility = "visible";
         g.killTweensOf(node);
         g.to(node, {
           autoAlpha: show ? 1 : 0,
@@ -371,9 +375,10 @@
 
     // ------------------------------------------------------------- routine tray
 
+    // Locale-prefixed storefronts serve the cart under /en, /fr and so on.
     function cartUrl(path) {
-      var root = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || "/";
-      return root.replace(/\/$/, "") + path;
+      var base = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || "/";
+      return base.replace(/\/$/, "") + path;
     }
 
     function fetchCart() {
