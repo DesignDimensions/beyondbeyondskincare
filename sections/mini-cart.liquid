@@ -189,15 +189,8 @@
         </discount-code>
       {%- endif -%}
 
-      {%- if cart != empty and show_recommendations -%}
-        <div class="cart-card cart-recommendations" data-animate data-animate-delay-6>
-          <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
-          <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommended_products limit: 8 -%}
-              {% render 'cart-recommendation-card', recommendation: recommendation %}
-            {%- endfor -%}
-          </ul>
-        </div>
+      {%- if cart != empty -%}
+        {% render 'cart-recommendations', animate_delay: 6 %}
       {%- endif -%}
 
       {%- if gift_wrapping != nil -%}
