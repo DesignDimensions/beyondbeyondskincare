@@ -1114,6 +1114,25 @@ a.mini-cart__promo-banner:hover {
   display: none;
 }
 
+/* The scrollbar is hidden and a mouse has no sideways gesture, so the rail advertises
+   itself as draggable instead. cart-recommendations.js does the scrolling. */
+.cart-recommendations__list {
+  cursor: grab;
+}
+
+.cart-recommendations__list.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* Snapping fights a gesture that is still in flight, pulling cards back under the cursor.
+   cart-recommendations.js suspends it mid-wheel and mid-drag, then lets it settle the rail
+   onto a card once the gesture stops. */
+.cart-recommendations__list.is-scrolling,
+.cart-recommendations__list.is-dragging {
+  scroll-snap-type: none;
+}
+
 .cart-recommendations__item {
   position: relative;
   display: flex;

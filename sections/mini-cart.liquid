@@ -109,14 +109,14 @@
       {%- endif -%}
 
       {%- if show_empty_cart_recommendations -%}
-        <div class="cart-card cart-recommendations">
+        <cart-recommendations class="cart-card cart-recommendations">
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
             {%- for recommendation in empty_cart_recommendations limit: 8 -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
-        </div>
+        </cart-recommendations>
       {%- endif -%}
     </div>
 
