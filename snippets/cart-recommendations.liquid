@@ -43,9 +43,24 @@
   endfor
 
   comment
+    The rotation seed is derived from which products are in the cart, never from the clock.
+    The drawer re-fetches this section on every cart:refresh and swaps in the new innerHTML,
+    so a seed that moved between renders would visibly reshuffle the rail a network
+    round-trip after the drawer opens. Same cart, same markup, nothing moves.
+
+    Quantities are deliberately left out: bumping a quantity should not reorder the rail.
+    Adding or removing a product does change the seed, but the recommendations legitimately
+    change at that point anyway.
+  endcomment
+  assign shuffle_seed = 0
+  for item in cart.items
+    assign line_signature = item.variant.id | modulo: 997
+    assign shuffle_seed = shuffle_seed | plus: line_signature
+  endfor
+
+  comment
     One rotated cross-sell list per matching cart line: lists separated by '|', handles by '~'.
   endcomment
-  assign shuffle_seed = 'now' | date: '%s' | times: 1
   assign matched_lists = ''
 
   for item in cart.items
@@ -61,6 +76,7 @@
       assign row_key = row_parts[0] | strip
       if row_key == variant_key
         assign variant_match = row_parts[1]
+        break
       elsif row_key == item.product.handle
         assign handle_match = row_parts[1]
       endif
