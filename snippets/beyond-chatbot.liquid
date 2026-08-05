@@ -12,12 +12,13 @@
 
 {%- liquid
   comment
-    The header shows the logo rather than a wordmark. Merchants can set a dedicated one for
-    the small chat header (the store logo is often too wide at 22px tall); otherwise fall back
-    to the brand logo, and finally to the shop name so the header is never empty.
+    The header carries the logo, not a wordmark. It defaults to the same file the site header
+    uses, and a merchant can point it at a different one -- a tall or stacked lockup often
+    wants a more compact variant at this size. Falls back to the brand logo, then to the shop
+    name, so the header is never empty.
   endcomment
   assign chat_logo = settings.chat_logo | default: shop.brand.logo
-  assign chat_logo_height = settings.chat_logo_height | default: 22
+  assign chat_logo_height = settings.chat_logo_height | default: 34
   assign chat_logo_height_2x = chat_logo_height | times: 2
 -%}
 
@@ -57,7 +58,15 @@
             srcset="{{ chat_logo | image_url: height: chat_logo_height }} 1x, {{ chat_logo | image_url: height: chat_logo_height_2x }} 2x"
             src="{{ chat_logo | image_url: height: chat_logo_height }}"
             alt="{{ shop.name | escape }}"
-            width="{{ chat_logo_height | times: chat_logo.aspect_ratio | ceil }}"
+            {%- comment -%}
+              The store's logos are SVGs, and Shopify reports no intrinsic width or aspect
+              ratio for those -- deriving width from aspect_ratio would render width="0" and
+              collapse the logo. The site header has the same problem and omits width, so the
+              browser takes it from the SVG. Only raster logos get an explicit width.
+            {%- endcomment -%}
+            {%- if chat_logo.aspect_ratio > 0 %}
+              width="{{ chat_logo_height | times: chat_logo.aspect_ratio | ceil }}"
+            {% endif -%}
             height="{{ chat_logo_height }}"
             loading="lazy"
           />
