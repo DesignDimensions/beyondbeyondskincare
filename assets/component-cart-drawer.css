@@ -1178,6 +1178,16 @@ a.mini-cart__promo-banner:hover {
   overflow: hidden;
 }
 
+/* Only present when the cross-sell sheet pins the card to one variant, so the shopper can
+   tell which size the quick-add button will actually put in the cart. */
+.cart-recommendations__variant {
+  color: var(--cart-muted);
+}
+
+.cart-recommendations__variant::before {
+  content: ' — ';
+}
+
 .cart-recommendations__price {
   font-family: var(--font-price-family);
   font-size: 1.3rem;
