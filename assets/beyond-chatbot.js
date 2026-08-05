@@ -1016,15 +1016,23 @@
       if (event.key === "Escape" && isOpen) closePanel();
     });
 
-    // Another surface changed the cart -- keep the tray honest.
+    // Another surface changed the cart -- keep the tray honest, but ignore our own echo.
     document.addEventListener("cart:refresh", function () {
-      if (!isOpen) return;
-      fetchCart().then(renderTray).catch(function () {});
+      if (selfSync) return;
+      fetchCart()
+        .then(function (data) {
+          applyCart(data);
+        })
+        .catch(function () {});
     });
 
     renderChips(STARTERS);
     restoreHistory();
-    fetchCart().then(renderTray).catch(function () {});
+    fetchCart()
+      .then(function (data) {
+        applyCart(data);
+      })
+      .catch(function () {});
   }
 
   if (document.readyState === "loading") {
