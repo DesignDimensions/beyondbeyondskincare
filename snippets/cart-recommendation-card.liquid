@@ -3,21 +3,58 @@
 
   Accepts:
   - recommendation: {Object} Product
+  - variant_id: {String} optional variant to pin the card to, when the cross-sell sheet
+    targets one size rather than the whole product. Falls back to the product's default
+    variant when omitted or when the id no longer exists.
 
   Usage:
   {% render 'cart-recommendation-card', recommendation: recommendation %}
+  {% render 'cart-recommendation-card', recommendation: recommendation, variant_id: variant_id %}
 {% endcomment %}
 
+{%- liquid
+  assign card_variant = recommendation.selected_or_first_available_variant
+  assign variant_pinned = false
+
+  if variant_id != blank
+    for variant in recommendation.variants
+      assign candidate_id = variant.id | append: ''
+      if candidate_id == variant_id
+        assign card_variant = variant
+        assign variant_pinned = true
+        break
+      endif
+    endfor
+  endif
+
+  comment
+    A pinned card links and adds to that exact variant. Otherwise it keeps the old behaviour:
+    quick-add only for single-variant products, everything else goes to the product page.
+  endcomment
+  assign card_url = recommendation.url
+  assign quick_add = false
+  if variant_pinned
+    assign card_url = recommendation.url | append: '?variant=' | append: card_variant.id
+    if card_variant.available
+      assign quick_add = true
+    endif
+  elsif recommendation.available and recommendation.variants.size == 1
+    assign quick_add = true
+  endif
+
+  assign card_media = card_variant.featured_media | default: recommendation.featured_media
+-%}
+
 <li class="cart-recommendations__item">
-  <a href="{{ recommendation.url }}" class="cart-recommendations__link">
-    {%- if recommendation.featured_media -%}
+  <a href="{{ card_url }}" class="cart-recommendations__link">
+    {%- if card_media -%}
       <span class="cart-recommendations__media">
         <img
-          srcset="{{ recommendation.featured_media | image_url: width: 120 }} 1x, {{ recommendation.featured_media | image_url: width: 240 }} 2x"
-          src="{{ recommendation.featured_media | image_url: width: 120 }}"
-          alt="{{ recommendation.featured_media.alt | escape | split: '#' | first }}"
+          srcset="{{ card_media | image_url: width: 120 }} 1x, {{ card_media | image_url: width: 240 }} 2x"
+          src="{{ card_media | image_url: width: 120 }}"
+          alt="{{ card_media.alt | escape | split: '#' | first }}"
           width="120"
-          height="{{ 120 | divided_by: recommendation.featured_media.aspect_ratio | ceil }}"
+          height="{{ 120 | divided_by: card_media.aspect_ratio | ceil }}"
           loading="lazy"
           is="lazy-image"
         />
@@ -28,22 +65,27 @@
         <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
         <span class="cart-recommendations__vendor">{{ recommendation.vendor }}</span>
       {%- endif -%}
-      <span class="cart-recommendations__title">{{ recommendation.title }}</span>
+      <span class="cart-recommendations__title">
+        {{- recommendation.title -}}
+        {%- if variant_pinned and recommendation.has_only_default_variant == false -%}
+          <span class="cart-recommendations__variant">{{ card_variant.title }}</span>
+        {%- endif -%}
+      </span>
       {%- if settings.cart_recommendations_show_price -%}
         <span class="cart-recommendations__price">
-          {%- if recommendation.price < recommendation.compare_at_price -%}
-            <s>{{ recommendation.compare_at_price | money }}</s>
+          {%- if card_variant.price < card_variant.compare_at_price -%}
+            <s>{{ card_variant.compare_at_price | money }}</s>
           {%- endif -%}
-          {{ recommendation.price | money }}
+          {{ card_variant.price | money }}
         </span>
       {%- endif -%}
     </span>
   </a>
 
-  {%- if recommendation.available and recommendation.variants.size == 1 -%}
+  {%- if quick_add -%}
     <add-to-cart
       class="cart-recommendations__add"
-      data-variant-id="{{ recommendation.selected_or_first_available_variant.id }}"
+      data-variant-id="{{ card_variant.id }}"
       role="button"
       tabindex="0"
       aria-label="{{ 'products.product.add_to_cart' | t }}: {{ recommendation.title | escape }}"
@@ -52,7 +94,7 @@
     </add-to-cart>
   {%- else -%}
     <a
-      href="{{ recommendation.url }}"
+      href="{{ card_url }}"
       class="cart-recommendations__add"
       aria-label="{{ 'products.product.choose_options' | t }}: {{ recommendation.title | escape }}"
     >

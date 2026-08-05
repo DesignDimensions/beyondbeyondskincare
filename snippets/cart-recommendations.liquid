@@ -1,0 +1,204 @@
+{% comment %}
+  Renders the cart drawer's cross-sell rail.
+
+  Every line in the cart is looked up in the merchandising sheet (see
+  'cart-recommendation-map'). Each match is rotated by a time-based offset so the rail is not
+  frozen on the same handful of products, then the matched lists are interleaved round-robin
+  so every product in the cart gets a slot rather than the first line filling all of them.
+  Anything already in the cart is dropped, since there is nothing to cross-sell there.
+
+  Falls back to the collection picked in theme settings whenever the cart is empty, nothing
+  in it appears in the sheet, or every candidate was filtered out -- that fallback is the
+  behaviour the rail had before it was made per-product.
+
+  Accepts:
+  - animate_delay: {Number} data-animate-delay-N bucket for the drawer's entrance animation
+
+  Usage:
+  {% render 'cart-recommendations', animate_delay: 6 %}
+{% endcomment %}
+
+{%- liquid
+  assign recommendations_limit = 8
+
+  comment
+    all_products is capped at 20 unique lookups per render and 'free-gift' spends some of
+    that budget, so candidates are resolved lazily and abandoned once this many have been
+    tried. Anything past the cap would return blank and drop out of the rail anyway.
+  endcomment
+  assign lookup_budget = 16
+
+  capture recommendation_map
+    render 'cart-recommendation-map'
+  endcapture
+  assign map_rows = recommendation_map | split: ';'
+
+  comment
+    Handles already in the cart, wrapped in commas on both sides so `contains` cannot match
+    a handle that merely starts with another one.
+  endcomment
+  assign handles_in_cart = ','
+  for item in cart.items
+    assign handles_in_cart = handles_in_cart | append: item.product.handle | append: ','
+  endfor
+
+  comment
+    The rotation seed is derived from which products are in the cart, never from the clock.
+    The drawer re-fetches this section on every cart:refresh and swaps in the new innerHTML,
+    so a seed that moved between renders would visibly reshuffle the rail a network
+    round-trip after the drawer opens. Same cart, same markup, nothing moves.
+
+    Quantities are deliberately left out: bumping a quantity should not reorder the rail.
+    Adding or removing a product does change the seed, but the recommendations legitimately
+    change at that point anyway.
+  endcomment
+  assign shuffle_seed = 0
+  for item in cart.items
+    assign line_signature = item.variant.id | modulo: 997
+    assign shuffle_seed = shuffle_seed | plus: line_signature
+  endfor
+
+  comment
+    One rotated cross-sell list per matching cart line: lists separated by '|', handles by '~'.
+  endcomment
+  assign matched_lists = ''
+
+  for item in cart.items
+    assign variant_key = item.product.handle | append: '?variant=' | append: item.variant.id
+    assign variant_match = ''
+    assign handle_match = ''
+
+    for row in map_rows
+      assign row_parts = row | split: '>>'
+      if row_parts.size < 2
+        continue
+      endif
+      assign row_key = row_parts[0] | strip
+      if row_key == variant_key
+        assign variant_match = row_parts[1]
+        break
+      elsif row_key == item.product.handle
+        assign handle_match = row_parts[1]
+      endif
+    endfor
+
+    comment
+      A row keyed to this exact variant beats the row keyed to the bare handle, which is how
+      the mini sizes get their own cross-sells.
+    endcomment
+    assign matched = handle_match
+    if variant_match != blank
+      assign matched = variant_match
+    endif
+    if matched == blank
+      continue
+    endif
+
+    comment
+      Rotating keeps every cart from leading with the same product; offsetting by the line's
+      position keeps two cart lines from rotating in lockstep.
+    endcomment
+    assign recs = matched | split: ','
+    assign rotate_by = shuffle_seed | plus: forloop.index0 | modulo: recs.size
+    assign last_position = recs.size | minus: 1
+    assign rotated = ''
+    for position in (0..last_position)
+      assign pick = position | plus: rotate_by | modulo: recs.size
+      assign rec_entry = recs[pick] | strip
+      assign rotated = rotated | append: rec_entry | append: '~'
+    endfor
+
+    assign matched_lists = matched_lists | append: rotated | append: '|'
+  endfor
+
+  comment
+    Round-robin the lists together: first pick from every cart line, then second pick from
+    every cart line, and so on. Eight passes covers the longest row in the sheet; the size
+    guard makes any extra pass a no-op if a longer row is ever added.
+  endcomment
+  assign per_line_lists = matched_lists | split: '|'
+  assign interleaved = ''
+  for pass in (0..7)
+    for line_list in per_line_lists
+      assign line_entries = line_list | split: '~'
+      if pass < line_entries.size
+        assign interleaved = interleaved | append: line_entries[pass] | append: '~'
+      endif
+    endfor
+  endfor
+
+  comment
+    Walk the merged order and keep the first `recommendations_limit` products that are not
+    already in the cart, not already picked, and actually purchasable right now.
+  endcomment
+  assign candidates = interleaved | split: '~'
+  assign chosen = ''
+  assign chosen_count = 0
+  assign lookups_used = 0
+  assign seen_handles = ','
+
+  for candidate in candidates
+    if chosen_count >= recommendations_limit or lookups_used >= lookup_budget
+      break
+    endif
+
+    assign candidate_handle = candidate | split: '?' | first
+    assign candidate_marker = candidate_handle | prepend: ',' | append: ','
+    if handles_in_cart contains candidate_marker
+      continue
+    endif
+    if seen_handles contains candidate_marker
+      continue
+    endif
+    assign seen_handles = seen_handles | append: candidate_handle | append: ','
+
+    assign lookups_used = lookups_used | plus: 1
+    assign candidate_product = all_products[candidate_handle]
+    unless candidate_product.available
+      continue
+    endunless
+
+    assign chosen = chosen | append: candidate | append: '~'
+    assign chosen_count = chosen_count | plus: 1
+  endfor
+
+  assign chosen_entries = chosen | split: '~'
+
+  assign fallback_products = settings.cart_recommendations_collection.products
+  assign show_recommendations = true
+  if chosen_entries.size == 0
+    if settings.cart_recommendations_collection == blank or fallback_products.size == 0
+      assign show_recommendations = false
+    endif
+  endif
+-%}
+
+{%- if show_recommendations -%}
+  <cart-recommendations
+    class="cart-card cart-recommendations"
+    {% if animate_delay %}data-animate data-animate-delay-{{ animate_delay }}{% endif %}
+  >
+    <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
+    <ul class="cart-recommendations__list list-unstyled">
+      {%- if chosen_entries.size > 0 -%}
+        {%- for entry in chosen_entries -%}
+          {%- liquid
+            assign entry_handle = entry | split: '?' | first
+            assign entry_variant_id = ''
+            if entry contains '?variant='
+              assign entry_variant_id = entry | split: '?variant=' | last
+            endif
+          -%}
+          {% render 'cart-recommendation-card',
+            recommendation: all_products[entry_handle],
+            variant_id: entry_variant_id
+          %}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for recommendation in fallback_products limit: recommendations_limit -%}
+          {% render 'cart-recommendation-card', recommendation: recommendation %}
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </cart-recommendations>
+{%- endif -%}
