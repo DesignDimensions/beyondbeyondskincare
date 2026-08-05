@@ -1,55 +1,176 @@
 {% comment %}
-  Beyond Beyond skincare assistant widget.
+  Beyond Beyond skincare assistant.
+
+  The widget's job is to turn a conversation into a routine the visitor can buy without ever
+  leaving it: the assistant recommends products, they add them inline, and the routine tray
+  above the composer keeps a running count and total with a checkout button. Nothing here
+  sends the visitor to another page until they choose to check out.
+
   Include once, near the end of theme.liquid, before </body>:
     {% render 'beyond-chatbot' %}
 {% endcomment %}
 
+{%- liquid
+  comment
+    The header shows the logo rather than a wordmark. Merchants can set a dedicated one for
+    the small chat header (the store logo is often too wide at 22px tall); otherwise fall back
+    to the brand logo, and finally to the shop name so the header is never empty.
+  endcomment
+  assign chat_logo = settings.chat_logo | default: shop.brand.logo
+  assign chat_logo_height = settings.chat_logo_height | default: 22
+  assign chat_logo_height_2x = chat_logo_height | times: 2
+-%}
+
 {{ 'beyond-chatbot.css' | asset_url | stylesheet_tag }}
 
-<div class="bb-chat">
-  <button id="bb-chat-launcher" class="bb-chat-launcher" aria-label="Open skincare assistant chat" type="button">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9 4c-2.8 0-5 2.2-5 5 0 2.5 1.8 4.5 4.1 4.9-.4 2.7-2.1 4.6-4.1 5.6l.8 1.5c3.4-1.5 6.2-4.6 6.2-9.5V9c0-2.8-2.2-5-5-5z" fill="#ffffff"/>
-      <circle cx="17" cy="8" r="4" fill="#ffffff"/>
-    </svg>
+<div class="bb-chat" data-bb-root>
+  <button
+    id="bb-launcher"
+    class="bb-launcher"
+    type="button"
+    aria-label="Open the skincare assistant"
+    aria-expanded="false"
+    aria-controls="bb-panel"
+  >
+    <span class="bb-launcher__mark" aria-hidden="true">
+      {%- comment -%} The brand's comma glyph -- "beyond, beyond." {%- endcomment -%}
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 4c-2.8 0-5 2.2-5 5 0 2.5 1.8 4.5 4.1 4.9-.4 2.7-2.1 4.6-4.1 5.6l.8 1.5c3.4-1.5 6.2-4.6 6.2-9.5V9c0-2.8-2.2-5-5-5z" fill="currentColor"/>
+        <circle cx="17" cy="8" r="4" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="bb-launcher__pip" data-bb-pip hidden></span>
   </button>
 
-  <div id="bb-chat-panel" class="bb-chat-panel" role="dialog" aria-label="Beyond Beyond skincare assistant">
-    <div class="bb-chat-header">
-      <div>
-        <div class="bb-chat-header-title">beyond, beyond.</div>
-        <div class="bb-chat-header-sub">Skincare Assistant</div>
+  <section
+    id="bb-panel"
+    class="bb-panel"
+    role="dialog"
+    aria-label="Beyond Beyond skincare assistant"
+    aria-hidden="true"
+  >
+    <header class="bb-header">
+      <div class="bb-header__brand">
+        {%- if chat_logo != blank -%}
+          <img
+            class="bb-header__logo"
+            srcset="{{ chat_logo | image_url: height: chat_logo_height }} 1x, {{ chat_logo | image_url: height: chat_logo_height_2x }} 2x"
+            src="{{ chat_logo | image_url: height: chat_logo_height }}"
+            alt="{{ shop.name | escape }}"
+            width="{{ chat_logo_height | times: chat_logo.aspect_ratio | ceil }}"
+            height="{{ chat_logo_height }}"
+            loading="lazy"
+          />
+        {%- else -%}
+          <span class="bb-header__wordmark">{{ shop.name }}</span>
+        {%- endif -%}
+        <span class="bb-header__role">Skincare assistant</span>
       </div>
-      <button id="bb-chat-close" class="bb-chat-close" aria-label="Close chat" type="button">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
+
+      <div class="bb-header__actions">
+        <button id="bb-reset" class="bb-iconbtn" type="button" aria-label="Start a new conversation">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M4 12a8 8 0 1 1 2.4 5.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M4 18.5V13h5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button id="bb-close" class="bb-iconbtn" type="button" aria-label="Close chat">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="bb-body" class="bb-body" role="log" aria-live="polite" aria-relevant="additions">
+      <div id="bb-welcome" class="bb-welcome">
+        <p class="bb-welcome__lead">
+          Tell me about your skin and I'll build you a routine — and you can add every step to
+          your bag right here.
+        </p>
+      </div>
     </div>
 
-    <div id="bb-chat-body" class="bb-chat-body">
-      <p id="bb-chat-intro" class="bb-chat-intro">
-        Hi! I can help you find the right product, explain ingredients, or build a routine — ask me anything about Beyond Beyond skincare.
+    {%- comment -%}
+      The routine tray. Stays hidden until something is in the bag, then docks above the
+      composer with a running total so the routine is always visible as it is assembled.
+    {%- endcomment -%}
+    <div id="bb-tray" class="bb-tray" hidden>
+      <button
+        id="bb-tray-toggle"
+        class="bb-tray__handle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="bb-tray-drawer"
+      >
+        <span class="bb-tray__stack" data-bb-tray-stack aria-hidden="true"></span>
+        <span class="bb-tray__meta">
+          <span class="bb-tray__label">Your routine</span>
+          <span class="bb-tray__count" data-bb-tray-count></span>
+        </span>
+        <span class="bb-tray__total" data-bb-tray-total></span>
+        <svg class="bb-tray__chevron" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div id="bb-tray-drawer" class="bb-tray__drawer">
+        <ul class="bb-tray__list" data-bb-tray-list></ul>
+        <a class="bb-tray__checkout" href="{{ routes.cart_url }}/checkout" data-bb-checkout>
+          <span>Checkout</span>
+          <span class="bb-tray__checkout-total" data-bb-tray-total></span>
+        </a>
+      </div>
+    </div>
+
+    <div id="bb-chips" class="bb-chips"></div>
+
+    <div class="bb-composer">
+      <div id="bb-suggest" class="bb-suggest" role="listbox" aria-label="Suggested questions" hidden></div>
+
+      <div class="bb-composer__row">
+        <div class="bb-field">
+          {%- comment -%}
+            Ghost layer sits behind the input and mirrors its metrics exactly, so the greyed
+            completion lines up with what has already been typed. bb-ghost__typed is invisible
+            and only there to push the completion to the right offset.
+          {%- endcomment -%}
+          <div class="bb-ghost" aria-hidden="true">
+            <span class="bb-ghost__typed" data-bb-ghost-typed></span><span class="bb-ghost__rest" data-bb-ghost-rest></span>
+          </div>
+          <input
+            id="bb-input"
+            class="bb-input"
+            type="text"
+            placeholder="Ask about your skin…"
+            autocomplete="off"
+            autocapitalize="sentences"
+            spellcheck="false"
+            role="combobox"
+            aria-autocomplete="both"
+            aria-expanded="false"
+            aria-controls="bb-suggest"
+          />
+        </div>
+
+        <button id="bb-send" class="bb-send" type="button" aria-label="Send message">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M4 12l16-7-6 7 6 7-16-7z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="bb-composer__hint" data-bb-hint hidden>
+        Press <kbd>Tab</kbd> to complete
       </p>
     </div>
-
-    <div id="bb-chat-chips" class="bb-chips"></div>
-
-    <div class="bb-chat-input-row">
-      <input
-        id="bb-chat-input"
-        class="bb-chat-input"
-        type="text"
-        placeholder="Ask about a product or concern…"
-        autocomplete="off"
-      />
-      <button id="bb-chat-send" class="bb-chat-send" aria-label="Send message" type="button">
-        <svg style="transform: rotate(180deg)" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 12l16-7-6 7 6 7-16-7z" fill="currentColor"/>
-        </svg>
-      </button>
-    </div>
-  </div>
+  </section>
 </div>
 
+{%- comment -%}
+  GSAP drives the panel choreography, the message and product staggers, and the add-to-routine
+  flight. beyond-chatbot.js degrades to CSS transitions if this fails to load, so a blocked CDN
+  costs the polish but never the widget.
+{%- endcomment -%}
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="{{ 'beyond-chatbot.js' | asset_url }}" defer></script>
