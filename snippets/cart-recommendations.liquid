@@ -95,8 +95,8 @@
     endif
 
     comment
-      Rotating by the clock keeps the same cart from always leading with the same product;
-      offsetting by the line's position keeps two cart lines from rotating in lockstep.
+      Rotating keeps every cart from leading with the same product; offsetting by the line's
+      position keeps two cart lines from rotating in lockstep.
     endcomment
     assign recs = matched | split: ','
     assign rotate_by = shuffle_seed | plus: forloop.index0 | modulo: recs.size
