@@ -15,13 +15,14 @@
   endif
 
   comment
-    Upsells are whatever sits in the collection a merchant assigns, shown whenever that
-    collection has products -- no per-product curation and no on/off switch to keep in sync.
+    The empty-cart rail has no cart lines to cross-sell against, so it stays on the collection
+    a merchant assigns. The rail inside the cart itself is per-product -- see
+    'cart-recommendations'.
   endcomment
-  assign recommended_products = settings.cart_recommendations_collection.products
-  assign show_recommendations = false
-  if settings.cart_recommendations_collection != blank and recommended_products.size > 0
-    assign show_recommendations = true
+  assign empty_cart_recommendations = settings.cart_recommendations_collection.products
+  assign show_empty_cart_recommendations = false
+  if settings.cart_recommendations_collection != blank and empty_cart_recommendations.size > 0
+    assign show_empty_cart_recommendations = true
   endif
 
   comment
@@ -107,11 +108,11 @@
         </ul>
       {%- endif -%}
 
-      {%- if show_recommendations -%}
+      {%- if show_empty_cart_recommendations -%}
         <div class="cart-card cart-recommendations">
           <p class="cart-card__title">{{ settings.cart_recommendations_heading | escape }}</p>
           <ul class="cart-recommendations__list list-unstyled">
-            {%- for recommendation in recommended_products limit: 8 -%}
+            {%- for recommendation in empty_cart_recommendations limit: 8 -%}
               {% render 'cart-recommendation-card', recommendation: recommendation %}
             {%- endfor -%}
           </ul>
