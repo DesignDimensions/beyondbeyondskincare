@@ -1,0 +1,609 @@
+{%- liquid
+  assign s = section.settings
+  assign products_per_row = s.products_per_row
+  assign product_collection = s.collection
+
+  assign grid_class = 'grid grid--2-col'
+  if s.columns_mobile == '1'
+    assign grid_class = grid_class | append: ' grid--1-col-mobile'
+  endif
+  if products_per_row == 3
+    assign grid_class = grid_class | append: ' grid--3-col-tablet grid--3-col-desktop'
+  elsif products_per_row == 4
+    assign grid_class = grid_class | append: ' grid--3-col-tablet grid--4-col-desktop'
+  endif
+-%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} {
+    --section-padding-top: {{ s.padding_top }}px;
+    --section-padding-bottom: {{ s.padding_bottom }}px;
+    --image-position: {{ s.image_position }};
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-grid__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: {{ s.heading_spacing }}px;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-grid__heading {
+    margin: 0;
+    font-size: {{ s.heading_size }}px;
+    font-weight: {{ s.heading_weight }};
+    letter-spacing: {{ s.heading_letter_spacing }}px;
+    line-height: 1.2;
+    {% if s.heading_uppercase %}text-transform: uppercase;{% endif %}
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-grid__sort {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-grid__sort select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: {{ s.sort_border_width }}px solid currentColor;
+    border-radius: {{ s.sort_border_radius }}px;
+    padding: {{ s.sort_padding_y }}px {{ s.sort_padding_x }}px;
+    font-size: {{ s.sort_font_size }}px;
+    font-family: inherit;
+    letter-spacing: {{ s.sort_letter_spacing }}px;
+    {% if s.sort_uppercase %}text-transform: uppercase;{% endif %}
+    color: inherit;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-grid__sort select:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-grid__empty {
+    padding: 40px 0;
+    text-align: center;
+  }
+
+  @media screen and (max-width: 749px) {
+    #shopify-section-{{ section.id }} .rakhi-grid__header {
+      margin-bottom: {{ s.heading_spacing_mobile }}px;
+      {% if s.stack_header_mobile %}
+        flex-direction: column;
+        align-items: flex-start;
+      {% endif %}
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-grid__heading {
+      font-size: {{ s.heading_size_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-product-grid.css' | asset_url | stylesheet_tag }}
+
+<link rel="stylesheet" href="{{ 'component-slider.css' | asset_url }}" media="print" onload="this.media='all'">
+
+{%- if settings.quick_view_enabled and s.enable_quick_view -%}
+  <link rel="stylesheet" href="{{ 'section-main-product.css' | asset_url }}" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="{{ 'component-deferred-media.css' | asset_url }}" media="print" onload="this.media='all'">
+{%- endif -%}
+
+<div class="rakhi-grid section--padding">
+  <div class="page-width">
+    {%- if s.heading != blank or s.show_sorting -%}
+      <div class="rakhi-grid__header">
+        {%- if s.heading != blank -%}
+          <{{ s.heading_tag }} class="rakhi-grid__heading">{{ s.heading }}</{{ s.heading_tag }}>
+        {%- else -%}
+          <span></span>
+        {%- endif -%}
+
+        {%- if s.show_sorting -%}
+          <div class="rakhi-grid__sort">
+            <label class="visually-hidden" for="RakhiSort-{{ section.id }}">{{ s.sort_label }}</label>
+            <select id="RakhiSort-{{ section.id }}" data-rakhi-sort>
+              <option value="manual">{{ s.sort_label }}</option>
+              <option value="price-ascending">Price: Low to High</option>
+              <option value="price-descending">Price: High to Low</option>
+              <option value="title-ascending">Alphabetically: A–Z</option>
+              <option value="title-descending">Alphabetically: Z–A</option>
+              <option value="date-descending">Newest first</option>
+              <option value="date-ascending">Oldest first</option>
+            </select>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if product_collection == blank -%}
+      <div class="rakhi-grid__empty">
+        <p>{{ 'Select a collection in the section settings to show products here.' }}</p>
+      </div>
+    {%- elsif product_collection.products.size == 0 -%}
+      <div class="rakhi-grid__empty">
+        <p>{{ 'sections.collection_template.no_products' | t }}</p>
+      </div>
+    {%- else -%}
+      <ul
+        id="RakhiProductGrid-{{ section.id }}"
+        data-id="{{ section.id }}"
+        class="product-grid {{ grid_class }}"
+        data-rakhi-grid
+        role="list"
+      >
+        {%- for product in product_collection.products limit: s.products_to_show -%}
+          {%- liquid
+            assign lazy_load = true
+            if forloop.first
+              assign lazy_load = false
+            endif
+          -%}
+          <li
+            class="grid__item"
+            data-sort-position="{{ forloop.index }}"
+            data-sort-price="{{ product.price | default: 0 }}"
+            data-sort-title="{{ product.title | strip_html | escape | downcase }}"
+            data-sort-date="{{ product.created_at | date: '%s' }}"
+          >
+            {% render 'card-product',
+              card_product: product,
+              card_collection: product_collection,
+              media_size: s.image_ratio,
+              show_image_slider: true,
+              skin_text: s.skin_text,
+              show_secondary_image: s.show_secondary_image,
+              show_quick_buy: s.show_quick_buy,
+              show_vendor: s.show_vendor,
+              show_rating: s.show_rating,
+              enable_quick_view: s.enable_quick_view,
+              enable_color_swatches: s.enable_color_swatches,
+              enable_countdown: s.enable_countdown,
+              enable_image_fill: s.enable_image_fill,
+              lazy_load: lazy_load
+            %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (() => {
+    const scope = document.currentScript && document.currentScript.previousElementSibling;
+    if (!scope || scope.dataset.rakhiGridInit === '1') return;
+    scope.dataset.rakhiGridInit = '1';
+
+    // --- Product card image slider (mirrors the collection page behaviour) ---
+    scope.querySelectorAll('[data-collection-product-slider]').forEach((slider) => {
+      const image = slider.querySelector('[data-collection-product-image]');
+      const dotsWrap = slider.querySelector('[data-collection-product-dots]');
+      const prev = slider.querySelector('[data-collection-product-prev]');
+      const next = slider.querySelector('[data-collection-product-next]');
+      const imagesScript = slider.querySelector('[data-collection-product-images]');
+      const images = imagesScript ? JSON.parse(imagesScript.textContent) : [];
+
+      if (!image || !images.length) return;
+
+      let index = 0;
+      const setSlide = (nextIndex) => {
+        index = (nextIndex + images.length) % images.length;
+        const item = images[index];
+        image.src = item.src;
+        if (item.srcset) image.srcset = item.srcset;
+        if (item.sizes) image.sizes = item.sizes;
+        image.alt = item.alt || image.alt || '';
+        if (dotsWrap) {
+          dotsWrap.querySelectorAll('button').forEach((dot, dotIndex) => {
+            dot.classList.toggle('is-active', dotIndex === index);
+          });
+        }
+      };
+
+      if (dotsWrap) {
+        if (images.length < 2) {
+          dotsWrap.hidden = true;
+        }
+        dotsWrap.innerHTML = images.map((_, slideIndex) => `<button type="button" class="${slideIndex === 0 ? 'is-active' : ''}" aria-label="Slide ${slideIndex + 1}"></button>`).join('');
+        dotsWrap.querySelectorAll('button').forEach((dot, slideIndex) => {
+          dot.addEventListener('click', () => setSlide(slideIndex));
+        });
+      }
+
+      if (images.length < 2) {
+        if (prev) prev.style.display = 'none';
+        if (next) next.style.display = 'none';
+        if (dotsWrap) dotsWrap.style.display = 'none';
+      } else {
+        prev && prev.addEventListener('click', (event) => {
+          event.preventDefault();
+          setSlide(index - 1);
+        });
+        next && next.addEventListener('click', (event) => {
+          event.preventDefault();
+          setSlide(index + 1);
+        });
+      }
+
+      setSlide(0);
+    });
+
+    // --- Sorting ---
+    const select = scope.querySelector('[data-rakhi-sort]');
+    const grid = scope.querySelector('[data-rakhi-grid]');
+    if (!select || !grid) return;
+
+    const num = (el, attr) => Number(el.getAttribute(attr)) || 0;
+    const str = (el, attr) => el.getAttribute(attr) || '';
+
+    const comparators = {
+      manual: (a, b) => num(a, 'data-sort-position') - num(b, 'data-sort-position'),
+      'price-ascending': (a, b) => num(a, 'data-sort-price') - num(b, 'data-sort-price'),
+      'price-descending': (a, b) => num(b, 'data-sort-price') - num(a, 'data-sort-price'),
+      'title-ascending': (a, b) => str(a, 'data-sort-title').localeCompare(str(b, 'data-sort-title')),
+      'title-descending': (a, b) => str(b, 'data-sort-title').localeCompare(str(a, 'data-sort-title')),
+      'date-descending': (a, b) => num(b, 'data-sort-date') - num(a, 'data-sort-date'),
+      'date-ascending': (a, b) => num(a, 'data-sort-date') - num(b, 'data-sort-date'),
+    };
+
+    select.addEventListener('change', () => {
+      const compare = comparators[select.value] || comparators.manual;
+      const items = Array.from(grid.children);
+      items.sort(compare);
+      const fragment = document.createDocumentFragment();
+      items.forEach((item) => fragment.appendChild(item));
+      grid.appendChild(fragment);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Rakhi Product Grid",
+  "tag": "section",
+  "class": "section rakhi-grid-section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Products from this collection are shown in the grid."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop Combos"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading HTML tag",
+      "options": [
+        { "value": "h2", "label": "h2" },
+        { "value": "h3", "label": "h3" },
+        { "value": "div", "label": "div" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 24,
+      "step": 1,
+      "label": "Maximum products to show",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Sorting"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sorting",
+      "label": "Show sort by",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "sort_label",
+      "label": "Sort by label",
+      "info": "Shown as the default option in the dropdown.",
+      "default": "Sort by"
+    },
+    {
+      "type": "checkbox",
+      "id": "sort_uppercase",
+      "label": "Uppercase sort text",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "sort_font_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Sort text size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "sort_letter_spacing",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "unit": "px",
+      "label": "Sort letter spacing",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "sort_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Sort border width",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "sort_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Sort border radius",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "sort_padding_x",
+      "min": 4,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Sort horizontal padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "sort_padding_y",
+      "min": 4,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Sort vertical padding",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Heading style"
+    },
+    {
+      "type": "checkbox",
+      "id": "heading_uppercase",
+      "label": "Uppercase heading",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 12,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size (desktop)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size (mobile)",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading weight",
+      "options": [
+        { "value": "300", "label": "Light" },
+        { "value": "400", "label": "Regular" },
+        { "value": "500", "label": "Medium" },
+        { "value": "600", "label": "Semi bold" },
+        { "value": "700", "label": "Bold" }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "range",
+      "id": "heading_letter_spacing",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading letter spacing",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below heading (desktop)",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below heading (mobile)",
+      "default": 24
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_header_mobile",
+      "label": "Stack heading and sort on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Grid layout"
+    },
+    {
+      "type": "range",
+      "id": "products_per_row",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Products per row (desktop)",
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Products per row (mobile)",
+      "options": [
+        { "value": "1", "label": "1 column" },
+        { "value": "2", "label": "2 columns" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" },
+        { "value": "wide", "label": "Wide" }
+      ],
+      "default": "adapt"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        { "value": "20% 0", "label": "Top left" },
+        { "value": "top center", "label": "Top center" },
+        { "value": "80% 0", "label": "Top right" },
+        { "value": "20% 50%", "label": "Middle left" },
+        { "value": "center center", "label": "Middle center" },
+        { "value": "80% 50%", "label": "Middle right" },
+        { "value": "20% 100%", "label": "Bottom left" },
+        { "value": "bottom center", "label": "Bottom center" },
+        { "value": "80% 100%", "label": "Bottom right" }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_image_fill",
+      "label": "Enable image fill",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "skin_text",
+      "label": "Skin suitability text",
+      "default": "Suitable for normal, dry and sensitive skin."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show product rating",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_buy",
+      "label": "Show add to cart button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_quick_view",
+      "label": "Enable quick view",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_color_swatches",
+      "label": "Enable color swatches",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_countdown",
+      "label": "Enable countdown",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rakhi Product Grid"
+    }
+  ]
+}
+{% endschema %}
