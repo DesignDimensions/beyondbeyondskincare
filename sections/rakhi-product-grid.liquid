@@ -642,7 +642,13 @@
         const items = [line];
         // Skipping must never add the gift box, even if it was ticked first.
         if (includeExtras && giftBoxEl && giftBoxEl.checked && giftBoxEl.value) {
-          items.push({ id: giftBoxEl.value, quantity: 1 });
+          // Underscore prefix hides it from the customer-facing property list, and lets the
+          // cart cap the wrap's quantity against the product it belongs to.
+          items.push({
+            id: giftBoxEl.value,
+            quantity: 1,
+            properties: { _gift_wrap_for: String(activeVariantId) },
+          });
         }
 
         const addUrl = (window.theme && theme.routes && theme.routes.cart_add_url) || '/cart/add';
@@ -1125,6 +1131,16 @@
       "unit": "px",
       "label": "Popup logo height",
       "default": 46
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_blur",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Background blur",
+      "default": 6
     },
     {
       "type": "range",
