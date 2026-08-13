@@ -1,21 +1,48 @@
 {%- liquid
   assign s = section.settings
-  assign desktop_image = s.image_desktop
-  assign mobile_image = s.image_mobile | default: s.image_desktop
+  assign bg_image = s.background_image
+  assign fg_desktop = s.image_desktop
+  assign fg_mobile = s.image_mobile | default: s.image_desktop
+  assign fg_primary = fg_desktop | default: fg_mobile
 -%}
 
 {%- style -%}
   #shopify-section-{{ section.id }} .rakhi-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     background-color: {{ s.background_color }};
+    min-height: {{ s.min_height }}px;
     padding-top: {{ s.padding_top }}px;
     padding-bottom: {{ s.padding_bottom }}px;
   }
 
+  /* Full-bleed background, edge to edge on every breakpoint. */
+  #shopify-section-{{ section.id }} .rakhi-banner__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: {{ s.background_position }};
+    z-index: 0;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-banner__inner {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+
+  /* Foreground artwork, centred inside the page width. */
   #shopify-section-{{ section.id }} .rakhi-banner__media {
     display: block;
     width: 100%;
     height: auto;
-    border-radius: {{ s.border_radius }}px;
+    max-width: {{ s.content_max_width }}px;
+    margin-inline: auto;
   }
 
   #shopify-section-{{ section.id }} .rakhi-banner__link {
@@ -26,7 +53,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: 160px;
     color: #ffffff;
     text-align: center;
     padding: 24px;
@@ -34,50 +61,67 @@
 
   @media screen and (max-width: 749px) {
     #shopify-section-{{ section.id }} .rakhi-banner {
+      min-height: {{ s.min_height_mobile }}px;
       padding-top: {{ s.padding_top_mobile }}px;
       padding-bottom: {{ s.padding_bottom_mobile }}px;
     }
 
+    #shopify-section-{{ section.id }} .rakhi-banner__bg {
+      object-position: {{ s.background_position_mobile }};
+    }
+
     #shopify-section-{{ section.id }} .rakhi-banner__media {
-      border-radius: {{ s.border_radius_mobile }}px;
+      max-width: {{ s.content_max_width_mobile }}px;
     }
   }
 {%- endstyle -%}
 
 <div class="rakhi-banner">
-  <div class="rakhi-banner__inner{% unless s.full_width %} page-width{% endunless %}">
-    {%- if desktop_image != blank or mobile_image != blank -%}
+  {%- if bg_image != blank -%}
+    {{
+      bg_image
+      | image_url: width: 3000
+      | image_tag:
+        loading: 'eager',
+        fetchpriority: 'high',
+        class: 'rakhi-banner__bg',
+        sizes: '100vw',
+        widths: '750, 1100, 1500, 1780, 2000, 2600, 3000',
+        alt: ''
+    }}
+  {%- endif -%}
+
+  <div class="rakhi-banner__inner page-width">
+    {%- if fg_primary != blank -%}
       {%- capture banner_media -%}
         <picture>
-          {%- if mobile_image != blank and desktop_image != blank -%}
+          {%- if fg_mobile != blank and fg_desktop != blank -%}
             <source
               media="(max-width: 749px)"
               srcset="
-                {{ mobile_image | image_url: width: 500 }} 500w,
-                {{ mobile_image | image_url: width: 750 }} 750w,
-                {{ mobile_image | image_url: width: 1100 }} 1100w,
-                {{ mobile_image | image_url: width: 1500 }} 1500w
+                {{ fg_mobile | image_url: width: 500 }} 500w,
+                {{ fg_mobile | image_url: width: 750 }} 750w,
+                {{ fg_mobile | image_url: width: 1100 }} 1100w
               "
               sizes="100vw"
-              width="{{ mobile_image.width }}"
-              height="{{ mobile_image.height }}"
+              width="{{ fg_mobile.width }}"
+              height="{{ fg_mobile.height }}"
             >
           {%- endif -%}
-          {%- assign primary_image = desktop_image | default: mobile_image -%}
           <img
             class="rakhi-banner__media"
-            src="{{ primary_image | image_url: width: 2000 }}"
+            src="{{ fg_primary | image_url: width: 2000 }}"
             srcset="
-              {{ primary_image | image_url: width: 750 }} 750w,
-              {{ primary_image | image_url: width: 1100 }} 1100w,
-              {{ primary_image | image_url: width: 1500 }} 1500w,
-              {{ primary_image | image_url: width: 2000 }} 2000w,
-              {{ primary_image | image_url: width: 3000 }} 3000w
+              {{ fg_primary | image_url: width: 750 }} 750w,
+              {{ fg_primary | image_url: width: 1100 }} 1100w,
+              {{ fg_primary | image_url: width: 1500 }} 1500w,
+              {{ fg_primary | image_url: width: 2000 }} 2000w,
+              {{ fg_primary | image_url: width: 3000 }} 3000w
             "
-            sizes="{% if s.full_width %}100vw{% else %}(min-width: {{ settings.page_width }}px) {{ settings.page_width }}px, 100vw{% endif %}"
-            width="{{ primary_image.width }}"
-            height="{{ primary_image.height }}"
-            alt="{{ s.image_alt | default: primary_image.alt | escape }}"
+            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width }}px, 100vw"
+            width="{{ fg_primary.width }}"
+            height="{{ fg_primary.height }}"
+            alt="{{ s.image_alt | default: fg_primary.alt | escape }}"
             loading="eager"
             fetchpriority="high"
           >
@@ -89,9 +133,9 @@
       {%- else -%}
         {{ banner_media }}
       {%- endif -%}
-    {%- else -%}
+    {%- elsif bg_image == blank -%}
       <div class="rakhi-banner__placeholder">
-        <p>Add a desktop and mobile image in the section settings.</p>
+        <p>Add a background image and a desktop/mobile image in the section settings.</p>
       </div>
     {%- endif -%}
   </div>
@@ -103,6 +147,62 @@
   "tag": "section",
   "class": "section rakhi-banner-section",
   "settings": [
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "info": "Spans the full width of the screen on desktop and mobile."
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "info": "Shown behind the image, and on its own if no image is set.",
+      "default": "#0107EF"
+    },
+    {
+      "type": "select",
+      "id": "background_position",
+      "label": "Background position (desktop)",
+      "options": [
+        { "value": "top left", "label": "Top left" },
+        { "value": "top center", "label": "Top center" },
+        { "value": "top right", "label": "Top right" },
+        { "value": "center left", "label": "Middle left" },
+        { "value": "center center", "label": "Middle center" },
+        { "value": "center right", "label": "Middle right" },
+        { "value": "bottom left", "label": "Bottom left" },
+        { "value": "bottom center", "label": "Bottom center" },
+        { "value": "bottom right", "label": "Bottom right" }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "select",
+      "id": "background_position_mobile",
+      "label": "Background position (mobile)",
+      "options": [
+        { "value": "top left", "label": "Top left" },
+        { "value": "top center", "label": "Top center" },
+        { "value": "top right", "label": "Top right" },
+        { "value": "center left", "label": "Middle left" },
+        { "value": "center center", "label": "Middle center" },
+        { "value": "center right", "label": "Middle right" },
+        { "value": "bottom left", "label": "Bottom left" },
+        { "value": "bottom center", "label": "Bottom center" },
+        { "value": "bottom right", "label": "Bottom right" }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "header",
+      "content": "Foreground image",
+      "info": "Centred inside the page width, on top of the background."
+    },
     {
       "type": "image_picker",
       "id": "image_desktop",
@@ -118,7 +218,7 @@
       "type": "text",
       "id": "image_alt",
       "label": "Image alt text",
-      "info": "Describes the banner for screen readers and search engines."
+      "info": "Describes the banner wording for screen readers and search engines."
     },
     {
       "type": "url",
@@ -127,45 +227,48 @@
       "info": "Optional. Makes the whole banner clickable."
     },
     {
-      "type": "header",
-      "content": "Layout"
-    },
-    {
-      "type": "color",
-      "id": "background_color",
-      "label": "Background color",
-      "default": "#0107EF"
-    },
-    {
-      "type": "checkbox",
-      "id": "full_width",
-      "label": "Make image full width",
-      "info": "Off keeps the image inside the page width.",
-      "default": false
+      "type": "range",
+      "id": "content_max_width",
+      "min": 300,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "label": "Maximum width (desktop)",
+      "default": 1200
     },
     {
       "type": "range",
-      "id": "border_radius",
-      "min": 0,
-      "max": 60,
-      "step": 2,
+      "id": "content_max_width_mobile",
+      "min": 200,
+      "max": 800,
+      "step": 10,
       "unit": "px",
-      "label": "Image corner radius (desktop)",
-      "default": 0
-    },
-    {
-      "type": "range",
-      "id": "border_radius_mobile",
-      "min": 0,
-      "max": 40,
-      "step": 2,
-      "unit": "px",
-      "label": "Image corner radius (mobile)",
-      "default": 0
+      "label": "Maximum width (mobile)",
+      "default": 560
     },
     {
       "type": "header",
-      "content": "Padding"
+      "content": "Size"
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "min": 120,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "label": "Minimum height (desktop)",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "min_height_mobile",
+      "min": 100,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "Minimum height (mobile)",
+      "default": 200
     },
     {
       "type": "range",
@@ -175,7 +278,7 @@
       "step": 4,
       "unit": "px",
       "label": "Padding top (desktop)",
-      "default": 0
+      "default": 40
     },
     {
       "type": "range",
@@ -185,7 +288,7 @@
       "step": 4,
       "unit": "px",
       "label": "Padding bottom (desktop)",
-      "default": 0
+      "default": 40
     },
     {
       "type": "range",
@@ -195,7 +298,7 @@
       "step": 4,
       "unit": "px",
       "label": "Padding top (mobile)",
-      "default": 0
+      "default": 28
     },
     {
       "type": "range",
@@ -205,7 +308,7 @@
       "step": 4,
       "unit": "px",
       "label": "Padding bottom (mobile)",
-      "default": 0
+      "default": 28
     }
   ],
   "presets": [
