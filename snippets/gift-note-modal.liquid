@@ -36,7 +36,11 @@
       padding: 20px;
     }
 
-    .gift-note-modal__overlay {
+    /* base.css hides `div:empty` globally, which would swallow this backdrop.
+       A class+:empty selector outranks it without needing !important. */
+    .gift-note-modal__overlay,
+    .gift-note-modal__overlay:empty {
+      display: block;
       position: absolute;
       inset: 0;
       background: rgba(0, 0, 0, {{ settings.gift_note_dim | divided_by: 100.0 }});
@@ -282,26 +286,56 @@
       .gift-note-modal__spinner { animation-duration: 1.6s; }
     }
 
+    /* Mobile is a full-screen sheet rather than a centred card. */
     @media screen and (max-width: 749px) {
-      .gift-note-modal__dialog { padding: 20px 20px 24px; }
-      .gift-note-modal__eyebrow { letter-spacing: 3px; font-size: 12px; }
+      .gift-note-modal { padding: 0; align-items: stretch; }
+
+      .gift-note-modal__dialog {
+        max-width: none;
+        max-height: none;
+        min-height: 100%;
+        padding: 22px 24px 34px;
+      }
+
+      .gift-note-modal__logo { height: 58px; max-width: 165px; }
+      .gift-note-modal__close svg { width: 34px; height: 34px; }
+
+      .gift-note-modal__eyebrow {
+        margin-top: 26px;
+        letter-spacing: 5px;
+        font-size: 14px;
+      }
+
       .gift-note-modal__heading {
         font-size: {{ settings.gift_note_heading_size_mobile }}px;
-        margin-bottom: 20px;
+        margin: 14px 0 26px;
       }
-      .gift-note-modal__body { grid-template-columns: minmax(0, 1fr); gap: 18px; }
 
-      /* Stacked on mobile there is no side column to borrow height from. */
+      .gift-note-modal__body { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+
+      /* Stacked here, so it needs its own ratio instead of borrowing the
+         content column's height. Full bleed within the dialog padding. */
       .gift-note-modal__media {
         min-height: 0;
         width: 100%;
-        max-width: {{ settings.gift_note_image_width }}px;
-        margin: 0 auto;
-        aspect-ratio: 183 / 230;
+        max-width: none;
+        margin: 0;
+        aspect-ratio: 692 / 420;
       }
 
-      .gift-note-modal__product { font-size: 19px; }
-      .gift-note-modal__giftbox { font-size: 16px; }
+      .gift-note-modal__product {
+        font-size: 24px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 18px;
+      }
+
+      .gift-note-modal__note { min-height: 240px; border-radius: 12px; font-size: 16px; }
+      .gift-note-modal__giftbox { font-size: 19px; margin-top: 18px; }
+      .gift-note-modal__giftbox input { width: 20px; height: 20px; }
+      .gift-note-modal__actions { margin-top: 26px; }
+      .gift-note-modal__submit { padding: 19px 20px; font-size: 17px; letter-spacing: 4px; }
+      .gift-note-modal__skip { font-size: 16px; margin-top: 18px; }
     }
   {%- endstyle -%}
 
