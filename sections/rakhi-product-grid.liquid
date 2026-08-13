@@ -146,6 +146,16 @@
             if forloop.first
               assign lazy_load = false
             endif
+
+            # Sub-title under the product name: prefer the product's own Concerns
+            # metafield so each card reads differently, fall back to the section text.
+            assign card_skin_text = s.skin_text
+            if s.use_concerns_metafield
+              assign product_concerns = product.metafields.custom.concerns.value
+              if product_concerns != blank
+                assign card_skin_text = product_concerns | join: ', '
+              endif
+            endif
           -%}
           <li
             class="grid__item"
@@ -159,7 +169,7 @@
               card_collection: product_collection,
               media_size: s.image_ratio,
               show_image_slider: true,
-              skin_text: s.skin_text,
+              skin_text: card_skin_text,
               show_secondary_image: s.show_secondary_image,
               show_quick_buy: s.show_quick_buy,
               show_vendor: s.show_vendor,
