@@ -897,9 +897,36 @@
       const compare = comparators[input.value] || comparators.manual;
       const items = Array.from(grid.children);
       items.sort(compare);
-      const fragment = document.createDocumentFragment();
-      items.forEach((item) => fragment.appendChild(item));
-      grid.appendChild(fragment);
+
+      const reorder = () => {
+        const fragment = document.createDocumentFragment();
+        items.forEach((item) => fragment.appendChild(item));
+        grid.appendChild(fragment);
+      };
+
+      // The wrappers are display:contents, so animate the cards themselves.
+      const cards = Array.from(grid.querySelectorAll('[data-bestseller-card]'));
+      if (typeof window.gsap === 'undefined'
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || !cards.length) {
+        reorder();
+      } else {
+        gsap.killTweensOf(cards);
+        gsap.to(cards, {
+          opacity: 0,
+          y: 10,
+          duration: 0.18,
+          ease: 'power2.in',
+          onComplete: () => {
+            reorder();
+            gsap.fromTo(
+              Array.from(grid.querySelectorAll('[data-bestseller-card]')),
+              { opacity: 0, y: 10 },
+              { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out', stagger: 0.04, clearProps: 'all' }
+            );
+          },
+        });
+      }
 
       // Match the collection page: picking an option closes the disclosure.
       sortEl.open = false;
