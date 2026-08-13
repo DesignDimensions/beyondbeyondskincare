@@ -549,17 +549,22 @@
         }
       };
 
+      // Enabled once there is something to submit: a message, a ticked gift wrap,
+      // or both. With neither, Skip for Now is the equivalent action.
       const syncSubmitState = () => {
         if (!submitEl) return;
         const hasNote = Boolean(noteEl && noteEl.value.trim());
-        if (submitEl.disabled === !hasNote) return;
-        submitEl.disabled = !hasNote;
+        const wantsWrap = Boolean(giftBoxEl && giftBoxEl.checked && giftBoxEl.value);
+        const enable = hasNote || wantsWrap;
+        if (submitEl.disabled === !enable) return;
+        submitEl.disabled = !enable;
         if (animate()) gsap.fromTo(submitEl, { scale: 0.99 }, { scale: 1, duration: 0.25, ease: 'power2.out' });
       };
 
       noteEl && noteEl.addEventListener('input', syncSubmitState);
 
       giftBoxEl && giftBoxEl.addEventListener('change', () => {
+        syncSubmitState();
         if (!animate()) return;
         gsap.fromTo(giftBoxEl, { scale: 0.8 }, { scale: 1, duration: 0.3, ease: 'back.out(3)' });
       });
