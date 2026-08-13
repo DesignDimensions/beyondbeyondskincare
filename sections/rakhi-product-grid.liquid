@@ -87,6 +87,10 @@
   }
 {%- endstyle -%}
 
+{%- if s.show_sorting -%}
+  {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
 <div class="rakhi-grid section--padding">
   <div class="page-width">
     {%- if s.heading != blank or s.show_sorting -%}
