@@ -397,6 +397,10 @@
               data-gift-product-title="{{ product.title | escape }}"
               data-gift-product-image="{{ product.featured_image | image_url: width: 800 }}"
               data-gift-product-image-alt="{{ product.featured_image.alt | default: product.title | escape }}"
+              {% if card_gift_variant != blank %}
+                data-gift-box-variant="{{ card_gift_variant }}"
+                data-gift-box-price="{{ card_gift_price }}"
+              {% endif %}
             {% endif %}
             data-sort-position="{{ forloop.index }}"
             data-sort-price="{{ product.price | default: 0 }}"
@@ -472,12 +476,10 @@
             placeholder="{{ s.gift_modal_placeholder | escape }}"
           ></textarea>
 
-          {%- if gift_box_variant != blank -%}
-            <label class="rakhi-gift-modal__giftbox">
-              <input type="checkbox" data-gift-modal-giftbox value="{{ gift_box_variant.id }}">
-              <span>{{ s.gift_box_label }} {{ gift_box_variant.price | money }}</span>
-            </label>
-          {%- endif -%}
+          <label class="rakhi-gift-modal__giftbox" data-gift-modal-giftbox-wrap hidden>
+            <input type="checkbox" data-gift-modal-giftbox value="">
+            <span data-gift-modal-giftbox-label>{{ s.gift_box_label }}</span>
+          </label>
         </div>
       </div>
 
