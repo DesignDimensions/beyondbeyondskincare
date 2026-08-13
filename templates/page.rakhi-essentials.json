@@ -67,7 +67,19 @@
         "skin_text": "Suitable for normal, dry and sensitive skin.",
         "padding_top": 60,
         "padding_bottom": 60
-      }
+      },
+      "blocks": {
+        "gift-daily-essentials": {
+          "type": "gift_product",
+          "settings": {
+            "product": "the-daily-essentials",
+            "gift_box_product": "daily-essentials-gift-wrap"
+          }
+        }
+      },
+      "block_order": [
+        "gift-daily-essentials"
+      ]
     }
   },
   "order": [
