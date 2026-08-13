@@ -19,6 +19,8 @@
     --section-padding-top: {{ s.padding_top }}px;
     --section-padding-bottom: {{ s.padding_bottom }}px;
     --image-position: {{ s.image_position }};
+    /* .collection-grid-section adds its own 64px padding; padding is driven by the settings below instead */
+    padding: 0;
   }
 
   #shopify-section-{{ section.id }} .rakhi-grid__header {
@@ -268,7 +270,7 @@
 {
   "name": "Rakhi Product Grid",
   "tag": "section",
-  "class": "section rakhi-grid-section",
+  "class": "section collection-grid-section rakhi-grid-section",
   "settings": [
     {
       "type": "collection",
