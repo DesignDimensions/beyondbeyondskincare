@@ -55,6 +55,13 @@
       object-position: {{ s.image_position }};
     }
 
+    /* The carousel styles reserve a fixed 55px (two lines) for every title and cap
+       it at 95% width. Let it size to its own content here instead. */
+    #shopify-section-{{ section.id }} .bestseller-card__title {
+      min-height: 0;
+      width: 100%;
+    }
+
     #shopify-section-{{ section.id }} .rakhi-grid__empty {
       padding: 40px 0;
       text-align: center;
