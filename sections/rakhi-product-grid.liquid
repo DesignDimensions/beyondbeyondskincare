@@ -220,23 +220,23 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: 12px;
     cursor: pointer;
     color: {{ s.gift_box_label_color }};
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 500;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     accent-color: {{ s.gift_box_label_color }};
     cursor: pointer;
     flex: 0 0 auto;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__actions {
-    margin-top: 26px;
+    margin-top: 24px;
     text-align: center;
   }
 
@@ -244,11 +244,11 @@
     display: block;
     width: 100%;
     background: transparent;
-    border: 1px solid currentColor;
-    padding: 16px 20px;
+    border: 1px solid #111111;
+    padding: 15px 20px;
     font-family: inherit;
-    font-size: 17px;
-    letter-spacing: 2px;
+    font-size: 15px;
+    letter-spacing: 3px;
     text-transform: uppercase;
     cursor: pointer;
   }
@@ -260,13 +260,14 @@
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__skip {
     display: inline-block;
-    margin-top: 16px;
+    margin-top: 14px;
     background: none;
     border: 0;
     padding: 4px;
     font-family: inherit;
-    font-size: 16px;
+    font-size: 14px;
     text-decoration: underline;
+    text-underline-offset: 3px;
     cursor: pointer;
     color: inherit;
   }
@@ -1093,10 +1094,40 @@
       "id": "gift_modal_width",
       "min": 500,
       "max": 1200,
-      "step": 20,
+      "step": 10,
       "unit": "px",
       "label": "Popup maximum width",
-      "default": 900
+      "default": 930
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_image_width",
+      "min": 120,
+      "max": 360,
+      "step": 10,
+      "unit": "px",
+      "label": "Product image width",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_logo_height",
+      "min": 20,
+      "max": 90,
+      "step": 2,
+      "unit": "px",
+      "label": "Popup logo height",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "label": "Background dim",
+      "default": 45
     },
     {
       "type": "header",
