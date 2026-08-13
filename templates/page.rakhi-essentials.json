@@ -1,0 +1,95 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "narrow": true,
+        "padding_top": 60,
+        "padding_bottom": 72
+      }
+    },
+    "rakhi_banner": {
+      "type": "rakhi-banner-sec",
+      "settings": {
+        "heading": "Love, Care & Protection",
+        "heading_tag": "h1",
+        "subtext": "- Powered By <strong>NAD+<\/strong>",
+        "background_color": "#0a0af0",
+        "text_color": "#ffffff",
+        "image_position": "center center",
+        "overlay_opacity": 0,
+        "full_width": false,
+        "heading_alignment": "center",
+        "subtext_alignment": "right",
+        "gap": 24,
+        "min_height": 220,
+        "min_height_mobile": 160,
+        "heading_size": 64,
+        "heading_size_mobile": 28,
+        "heading_weight": "300",
+        "heading_letter_spacing": 0,
+        "subtext_size": 22,
+        "subtext_size_mobile": 14,
+        "heading_alignment_mobile": "center",
+        "subtext_alignment_mobile": "right",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "rakhi_grid": {
+      "type": "rakhi-product-grid",
+      "settings": {
+        "heading": "Shop Combos",
+        "heading_tag": "h2",
+        "products_to_show": 8,
+        "show_sorting": true,
+        "sort_label": "Sort by",
+        "sort_uppercase": true,
+        "sort_font_size": 14,
+        "sort_letter_spacing": 1,
+        "sort_border_width": 1,
+        "sort_border_radius": 0,
+        "sort_padding_x": 16,
+        "sort_padding_y": 12,
+        "heading_uppercase": true,
+        "heading_size": 20,
+        "heading_size_mobile": 16,
+        "heading_weight": "700",
+        "heading_letter_spacing": 4,
+        "heading_spacing": 40,
+        "heading_spacing_mobile": 24,
+        "stack_header_mobile": false,
+        "products_per_row": 4,
+        "columns_mobile": "2",
+        "image_ratio": "adapt",
+        "image_position": "center center",
+        "enable_image_fill": true,
+        "show_secondary_image": false,
+        "skin_text": "",
+        "show_vendor": false,
+        "show_rating": true,
+        "show_quick_buy": true,
+        "enable_quick_view": true,
+        "enable_color_swatches": true,
+        "enable_countdown": true,
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    }
+  },
+  "order": [
+    "main",
+    "rakhi_banner",
+    "rakhi_grid"
+  ]
+}
