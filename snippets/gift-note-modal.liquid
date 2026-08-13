@@ -436,9 +436,37 @@
 
       let activeVariantId = null;
       let lastFocused = null;
-      let previousOverflow = '';
       let closing = false;
       let spinTween = null;
+      let lockedScrollY = 0;
+
+      // overflow:hidden on <body> alone does not hold on iOS and loses the scroll
+      // position, so pin the body and restore it on close.
+      const lockScroll = () => {
+        lockedScrollY = window.scrollY || window.pageYOffset || 0;
+        const body = document.body;
+        body.dataset.giftNotePrevPosition = body.style.position;
+        body.dataset.giftNotePrevTop = body.style.top;
+        body.dataset.giftNotePrevWidth = body.style.width;
+        body.dataset.giftNotePrevOverflow = body.style.overflow;
+        body.style.position = 'fixed';
+        body.style.top = `-${lockedScrollY}px`;
+        body.style.width = '100%';
+        body.style.overflow = 'hidden';
+      };
+
+      const unlockScroll = () => {
+        const body = document.body;
+        body.style.position = body.dataset.giftNotePrevPosition || '';
+        body.style.top = body.dataset.giftNotePrevTop || '';
+        body.style.width = body.dataset.giftNotePrevWidth || '';
+        body.style.overflow = body.dataset.giftNotePrevOverflow || '';
+        delete body.dataset.giftNotePrevPosition;
+        delete body.dataset.giftNotePrevTop;
+        delete body.dataset.giftNotePrevWidth;
+        delete body.dataset.giftNotePrevOverflow;
+        window.scrollTo(0, lockedScrollY);
+      };
 
       // GSAP is deferred, so it may not be parsed yet on a very fast first click.
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -544,8 +572,7 @@
 
         lastFocused = document.activeElement;
         modal.hidden = false;
-        previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
+        lockScroll();
 
         playOpen();
         if (noteEl) noteEl.focus();
@@ -554,7 +581,7 @@
       const finishClose = () => {
         modal.hidden = true;
         activeVariantId = null;
-        document.body.style.overflow = previousOverflow;
+        unlockScroll();
         if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
       };
 
