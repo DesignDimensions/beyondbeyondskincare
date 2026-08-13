@@ -181,10 +181,10 @@
             endif
           -%}
           {%- comment -%}
-            Captured rather than rendered inline: a {% render %} tag sitting inside an
-            open HTML tag breaks Liquid's parse of the surrounding element.
-            Emits nothing unless the product qualifies — config lives in
-            Theme settings -> "Gift note popup", shared with the product page.
+            Captured rather than rendered inline: a render tag sitting inside an open
+            HTML tag breaks Liquid's parse of the surrounding element, which silently
+            drops the whole loop body. Emits nothing unless the product qualifies —
+            config lives in Theme settings, shared with the product page.
           {%- endcomment -%}
           {%- capture gift_note_attrs -%}
             {%- render 'gift-note-trigger', product: product -%}
