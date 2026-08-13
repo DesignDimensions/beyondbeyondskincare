@@ -100,9 +100,14 @@
                             {%- endfor -%}
                           {%- endif -%}
 
+                          {%- comment -%}
+                            The gift note is rendered below as an editable multi-row block,
+                            so skip it here rather than printing it twice.
+                          {%- endcomment -%}
+                          {%- assign gift_note_key = 'Gift Message' -%}
                           {%- for property in item.properties -%}
                             {%- assign property_first_char = property.first | slice: 0 -%}
-                            {%- if property.last != blank and property_first_char != '_' -%}
+                            {%- if property.last != blank and property_first_char != '_' and property.first != gift_note_key -%}
                               <div class="product-option">
                                 <dt>{{ property.first }}: </dt>
                                 <dd>
@@ -119,6 +124,8 @@
                           {%- endfor -%}
                         </dl>
                       {%- endif -%}
+
+                      {% render 'cart-gift-note', item: item, line: forloop.index, note_property: 'Gift Message' %}
 
                       {%- if item.selling_plan_allocation != null -%}
                         <div class="product-option">{{ item.selling_plan_allocation.selling_plan.name }}</div>
