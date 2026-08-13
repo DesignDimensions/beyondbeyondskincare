@@ -37,34 +37,6 @@
     },
     "rakhi_grid": {
       "type": "rakhi-product-grid",
-      "blocks": {
-        "gift-radiance": {
-          "type": "gift_product",
-          "settings": {
-            "product": "the-radiance-edit",
-            "gift_box_product": "radiance-edit-gift-wrap"
-          }
-        },
-        "gift-repair": {
-          "type": "gift_product",
-          "settings": {
-            "product": "the-repair-ritual",
-            "gift_box_product": "repair-ritual-gift-wrap"
-          }
-        },
-        "gift-daily": {
-          "type": "gift_product",
-          "settings": {
-            "product": "the-daily-essentials",
-            "gift_box_product": "daily-essentials-gift-wrap"
-          }
-        }
-      },
-      "block_order": [
-        "gift-radiance",
-        "gift-repair",
-        "gift-daily"
-      ],
       "settings": {
         "collection": "rakhi-essentials",
         "heading": "Shop Combos",
@@ -94,8 +66,53 @@
         "use_concerns_metafield": true,
         "skin_text": "Suitable for normal, dry and sensitive skin.",
         "padding_top": 60,
-        "padding_bottom": 60
-      }
+        "padding_bottom": 60,
+        "enable_gift_modal": true,
+        "gift_note_property": "Gift Message",
+        "gift_note_max": 250,
+        "gift_modal_eyebrow": "A little something from you",
+        "gift_modal_heading": "Add A Message To Your Gift",
+        "gift_modal_heading_size": 40,
+        "gift_modal_heading_size_mobile": 26,
+        "gift_modal_placeholder": "Write a message...",
+        "gift_box_label": "Add Gift Box for",
+        "gift_box_label_color": "#0107EF",
+        "gift_modal_button": "Add Note",
+        "gift_modal_skip": "Skip for Now",
+        "gift_modal_width": 930,
+        "gift_modal_image_width": 200,
+        "gift_modal_logo_height": 46,
+        "gift_modal_overlay_opacity": 45,
+        "gift_modal_logo": "shopify://shop_images/Frame_511.svg"
+      },
+      "blocks": {
+        "gift-radiance": {
+          "type": "gift_product",
+          "settings": {
+            "product": "the-radiance-edit",
+            "gift_box_product": "radiance-edit-gift-wrap"
+          }
+        },
+        "gift-repair": {
+          "type": "gift_product",
+          "settings": {
+            "product": "the-repair-ritual",
+            "gift_box_product": "repair-ritual-gift-wrap"
+          }
+        },
+        "gift-daily": {
+          "type": "gift_product",
+          "settings": {
+            "product": "the-daily-essentials",
+            "gift_box_product": "daily-essentials-gift-wrap"
+          }
+        }
+      },
+      "block_order": [
+        "gift-radiance",
+        "gift-repair",
+        "gift-daily"
+      ]
     }
   },
   "order": [
