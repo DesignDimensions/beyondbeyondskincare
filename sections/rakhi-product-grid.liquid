@@ -3,16 +3,10 @@
   assign products_per_row = s.products_per_row
   assign product_collection = s.collection
 
-  # Handles of the products that open the gift-note popup instead of adding straight
-  # to cart. Padded with pipes so 'contains' can't match a partial handle.
-  assign gift_handles = '|'
-  for gift_product in s.gift_modal_products
-    assign gift_handles = gift_handles | append: gift_product.handle | append: '|'
-  endfor
-
-  assign gift_box_variant = s.gift_box_product.selected_or_first_available_variant
+  # Each block pairs a product with its own gift wrap, so the popup can offer the
+  # right wrap (and price) per product rather than one shared gift box.
   assign gift_modal_enabled = false
-  if s.enable_gift_modal and s.gift_modal_products.size > 0
+  if s.enable_gift_modal and section.blocks.size > 0
     assign gift_modal_enabled = true
   endif
 -%}
