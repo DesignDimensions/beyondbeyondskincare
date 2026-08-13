@@ -696,18 +696,27 @@
         }
         if (giftBoxWrap) giftBoxWrap.hidden = !giftVariant;
 
+        syncSubmitState();
+
         lastFocused = document.activeElement;
         modal.hidden = false;
         previousOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
+
+        playOpen();
         if (noteEl) noteEl.focus();
       };
 
-      const closeModal = () => {
+      const finishClose = () => {
         modal.hidden = true;
         activeVariantId = null;
         document.body.style.overflow = previousOverflow;
         if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      };
+
+      const closeModal = () => {
+        if (closing) return;
+        playClose(finishClose);
       };
 
       const addToCart = (includeExtras) => {
