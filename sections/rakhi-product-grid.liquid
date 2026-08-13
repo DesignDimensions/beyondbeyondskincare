@@ -214,6 +214,79 @@
   </div>
 </div>
 
+{%- if gift_modal_enabled -%}
+  {%- assign modal_logo = s.gift_modal_logo | default: settings.logo -%}
+  <div class="rakhi-gift-modal" data-gift-modal hidden>
+    <div class="rakhi-gift-modal__overlay" data-gift-modal-close></div>
+    <div
+      class="rakhi-gift-modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="GiftModalHeading-{{ section.id }}"
+    >
+      <div class="rakhi-gift-modal__head">
+        {%- if modal_logo != blank -%}
+          <img
+            class="rakhi-gift-modal__logo"
+            src="{{ modal_logo | image_url: width: 300 }}"
+            alt="{{ shop.name | escape }}"
+            width="{{ modal_logo.width }}"
+            height="{{ modal_logo.height }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <span class="rakhi-gift-modal__logo-text">{{ shop.name }}</span>
+        {%- endif -%}
+
+        <button type="button" class="rakhi-gift-modal__close" data-gift-modal-close aria-label="{{ 'accessibility.close' | t }}">
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+            <path d="M4 4 L20 20 M20 4 L4 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          </svg>
+        </button>
+      </div>
+
+      {%- if s.gift_modal_eyebrow != blank -%}
+        <p class="rakhi-gift-modal__eyebrow">{{ s.gift_modal_eyebrow }}</p>
+      {%- endif -%}
+      <h2 class="rakhi-gift-modal__heading" id="GiftModalHeading-{{ section.id }}">{{ s.gift_modal_heading }}</h2>
+
+      <div class="rakhi-gift-modal__body">
+        <div class="rakhi-gift-modal__media">
+          <img data-gift-modal-image src="" alt="" loading="lazy">
+        </div>
+
+        <div class="rakhi-gift-modal__content">
+          <p class="rakhi-gift-modal__product" data-gift-modal-title></p>
+
+          <label class="visually-hidden" for="GiftNote-{{ section.id }}">{{ s.gift_modal_heading }}</label>
+          <textarea
+            id="GiftNote-{{ section.id }}"
+            class="rakhi-gift-modal__note"
+            data-gift-modal-note
+            rows="5"
+            maxlength="{{ s.gift_note_max }}"
+            placeholder="{{ s.gift_modal_placeholder | escape }}"
+          ></textarea>
+
+          {%- if gift_box_variant != blank -%}
+            <label class="rakhi-gift-modal__giftbox">
+              <input type="checkbox" data-gift-modal-giftbox value="{{ gift_box_variant.id }}">
+              <span>{{ s.gift_box_label }} {{ gift_box_variant.price | money }}</span>
+            </label>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="rakhi-gift-modal__actions">
+        <button type="button" class="rakhi-gift-modal__submit" data-gift-modal-submit>{{ s.gift_modal_button }}</button>
+        <button type="button" class="rakhi-gift-modal__skip" data-gift-modal-skip>{{ s.gift_modal_skip }}</button>
+      </div>
+
+      <p class="rakhi-gift-modal__error" data-gift-modal-error hidden role="alert"></p>
+    </div>
+  </div>
+{%- endif -%}
+
 <script>
   (() => {
     const scope = document.currentScript && document.currentScript.previousElementSibling;
