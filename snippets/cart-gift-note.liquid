@@ -1,0 +1,75 @@
+{% comment %}
+  Renders an editable gift note for one cart line item.
+
+  Shows the full note across as many rows as it needs (the variant pill elsewhere
+  truncates properties onto a single line), plus an edit affordance that writes the
+  new value back with /cart/change.js.
+
+  Accepts:
+  - item: {Object} Cart line item
+  - line: {Number} 1-based line index for this item
+  - note_property: {String} Property name holding the note. Default: 'Gift Message'
+
+  Usage:
+  {% render 'cart-gift-note', item: item, line: line %}
+{% endcomment %}
+
+{%- liquid
+  assign note_key = note_property | default: 'Gift Message'
+  assign note_value = item.properties[note_key]
+
+  # /cart/change.js replaces the whole property set, so keep the others to send back.
+  assign other_properties = ''
+  for property in item.properties
+    if property.first != note_key and property.last != blank
+      assign other_properties = other_properties | append: property.first | append: '\t' | append: property.last | append: '\n'
+    endif
+  endfor
+-%}
+
+{%- if note_value != blank -%}
+  <div
+    class="cart-gift-note"
+    data-cart-gift-note
+    data-line="{{ line }}"
+    data-note-key="{{ note_key | escape }}"
+    data-other-properties="{{ other_properties | escape }}"
+  >
+    <div class="cart-gift-note__head">
+      <span class="cart-gift-note__label">{{ note_key }}</span>
+      <button
+        type="button"
+        class="cart-gift-note__edit"
+        data-cart-gift-note-edit
+        aria-label="Edit {{ note_key | downcase }}"
+      >
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false">
+          <path
+            d="M4 20h4l10-10-4-4L4 16v4z M14 6l4 4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <p class="cart-gift-note__text" data-cart-gift-note-text>{{ note_value }}</p>
+
+    <div class="cart-gift-note__editor" data-cart-gift-note-editor hidden>
+      <label class="visually-hidden" for="CartGiftNote-{{ line }}">{{ note_key }}</label>
+      <textarea
+        id="CartGiftNote-{{ line }}"
+        class="cart-gift-note__input"
+        data-cart-gift-note-input
+        rows="3"
+      >{{ note_value }}</textarea>
+      <div class="cart-gift-note__actions">
+        <button type="button" class="cart-gift-note__save" data-cart-gift-note-save>Save</button>
+        <button type="button" class="cart-gift-note__cancel" data-cart-gift-note-cancel>Cancel</button>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
