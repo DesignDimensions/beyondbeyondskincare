@@ -70,6 +70,13 @@
     display: contents;
   }
 
+  /* The carousel styles pin this to `contain` so 2:3 shots never stretch in a
+     fluid column. Overridden here (this section only) so images fill the frame. */
+  #shopify-section-{{ section.id }} .bestseller-card__image {
+    object-fit: {{ s.image_fit }};
+    object-position: {{ s.image_position }};
+  }
+
   #shopify-section-{{ section.id }} .rakhi-grid__empty {
     padding: 40px 0;
     text-align: center;
@@ -508,6 +515,35 @@
     {
       "type": "header",
       "content": "Product card"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "info": "Cover fills the frame and crops the edges. Contain shows the whole image with space around it.",
+      "options": [
+        { "value": "cover", "label": "Cover (fill the frame)" },
+        { "value": "contain", "label": "Contain (show whole image)" }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "info": "Which part of the image stays visible when it is cropped.",
+      "options": [
+        { "value": "top left", "label": "Top left" },
+        { "value": "top center", "label": "Top center" },
+        { "value": "top right", "label": "Top right" },
+        { "value": "center left", "label": "Middle left" },
+        { "value": "center center", "label": "Middle center" },
+        { "value": "center right", "label": "Middle right" },
+        { "value": "bottom left", "label": "Bottom left" },
+        { "value": "bottom center", "label": "Bottom center" },
+        { "value": "bottom right", "label": "Bottom right" }
+      ],
+      "default": "center center"
     },
     {
       "type": "text",
