@@ -582,8 +582,8 @@
             assign card_size_value = variant_size_value
           elsif card_product.metafields.custom.product_size != blank
             assign card_size_value = card_product.metafields.custom.product_size | replace: ',', ' |' | replace: '| ', ' | ' | strip
-          elsif card_product.metafields.custom.size != blank
-            assign card_size_value = card_product.metafields.custom.size | replace: ',', ' |' | replace: '| ', ' | ' | strip
+          elsif card_product.metafields.custom["size"] != blank
+            assign card_size_value = card_product.metafields.custom["size"] | replace: ',', ' |' | replace: '| ', ' | ' | strip
           endif
 
           assign card_size_compact = card_size_value | strip | replace: ' ', '' | replace: '.', '' | replace: ',', '' | replace: '-', '' | replace: '/', '' | replace: '+', ''

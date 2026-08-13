@@ -151,7 +151,8 @@
     {%- endif -%}
     {%- assign size_value = size_value | replace: ',', ' |' | replace: '| ', ' | ' | strip -%}
     {%- assign size_compact = size_value | strip | replace: ' ', '' | replace: '.', '' | replace: ',', '' | replace: '-', '' | replace: '/', '' | replace: '+', '' -%}
-    {%- if size_value == blank or size_compact == blank or size_compact == '0' or size_compact == '0.0' or size_compact == '0.00' -%}
+    {%- assign size_handle = size_value | downcase | strip -%}
+    {%- if size_value == blank or size_compact == blank or size_compact == '0' or size_compact == '0.0' or size_compact == '0.00' or size_handle == 'default title' or size_handle == 'title' -%}
       {%- assign size_value = blank -%}
     {%- endif -%}
     {%- assign size_parts = size_value | split: '|' -%}
