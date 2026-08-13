@@ -21,22 +21,22 @@
     "rakhi_banner": {
       "type": "rakhi-banner-sec",
       "settings": {
+        "background_image": "shopify://shop_images/865faa62a3253299b34e2cd77757bfc6_1_2.png",
+        "background_color": "#0107ef",
+        "background_position": "center center",
+        "background_position_mobile": "center center",
         "image_desktop": "shopify://shop_images/Frame_40807_1.png",
         "image_mobile": "shopify://shop_images/Frame_1321318865.png",
         "image_alt": "Love, Care & Protection - Powered By NAD+",
         "link": "",
-        "background_color": "#0107ef",
-        "padding_top": 0,
-        "padding_bottom": 0,
-        "padding_top_mobile": 0,
-        "padding_bottom_mobile": 0,
-        "background_position": "center center",
-        "background_position_mobile": "center center",
         "content_max_width": 1200,
         "content_max_width_mobile": 560,
         "min_height": 320,
         "min_height_mobile": 200,
-        "background_image": "shopify://shop_images/865faa62a3253299b34e2cd77757bfc6_1_1.png"
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "padding_top_mobile": 0,
+        "padding_bottom_mobile": 0
       }
     },
     "rakhi_grid": {
