@@ -12,311 +12,313 @@
 -%}
 
 {%- style -%}
-  #shopify-section-{{ section.id }} {
-    --section-padding-top: {{ s.padding_top }}px;
-    --section-padding-bottom: {{ s.padding_bottom }}px;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-grid__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: {{ s.heading_spacing }}px;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-grid__heading {
-    margin: 0;
-    font-size: {{ s.heading_size }}px;
-    font-weight: {{ s.heading_weight }};
-    letter-spacing: {{ s.heading_letter_spacing }}px;
-    line-height: 1.2;
-    {% if s.heading_uppercase %}text-transform: uppercase;{% endif %}
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-grid__sort {
-    flex: 0 0 auto;
-  }
-
-  /* The shared carousel grid hard-codes 64px side padding and auto-fit columns.
-     This section sits inside .page-width, so reset both and drive the column
-     count from the section settings instead. */
-  #shopify-section-{{ section.id }} .shop-products-carousel__grid {
-    padding-left: 0;
-    padding-right: 0;
-    grid-template-columns: repeat({{ products_per_row }}, minmax(0, 1fr));
-    column-gap: {{ s.column_gap }}px;
-    row-gap: {{ s.row_gap }}px;
-  }
-
-  /* Wrapper exists only to carry sort data and be reorderable — it must not
-     create a box, or it would become the grid item instead of the card. */
-  #shopify-section-{{ section.id }} .rakhi-grid__item {
-    display: contents;
-  }
-
-  /* The carousel styles pin this to `contain` so 2:3 shots never stretch in a
-     fluid column. Overridden here (this section only) so images fill the frame. */
-  #shopify-section-{{ section.id }} .bestseller-card__image {
-    object-fit: {{ s.image_fit }};
-    object-position: {{ s.image_position }};
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-grid__empty {
-    padding: 40px 0;
-    text-align: center;
-  }
-
-  @media screen and (max-width: 989px) {
-    #shopify-section-{{ section.id }} .shop-products-carousel__grid {
-      grid-template-columns: repeat({{ products_per_row | at_most: 3 }}, minmax(0, 1fr));
-    }
-  }
-
-  @media screen and (max-width: 749px) {
-    #shopify-section-{{ section.id }} .shop-products-carousel__grid {
-      grid-template-columns: repeat({{ s.columns_mobile }}, minmax(0, 1fr));
-      column-gap: {{ s.column_gap_mobile }}px;
-      row-gap: {{ s.row_gap_mobile }}px;
+    #shopify-section-{{ section.id }} {
+      --section-padding-top: {{ s.padding_top }}px;
+      --section-padding-bottom: {{ s.padding_bottom }}px;
     }
 
     #shopify-section-{{ section.id }} .rakhi-grid__header {
-      margin-bottom: {{ s.heading_spacing_mobile }}px;
-      {% if s.stack_header_mobile %}
-        flex-direction: column;
-        align-items: flex-start;
-      {% endif %}
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: {{ s.heading_spacing }}px;
     }
 
     #shopify-section-{{ section.id }} .rakhi-grid__heading {
-      font-size: {{ s.heading_size_mobile }}px;
+      margin: 0;
+      font-size: {{ s.heading_size }}px;
+      font-weight: {{ s.heading_weight }};
+      letter-spacing: {{ s.heading_letter_spacing }}px;
+      line-height: 1.2;
+      {% if s.heading_uppercase %}text-transform: uppercase;{% endif %}
     }
-  }
 
-  /* ---------- Gift note popup ---------- */
-  #shopify-section-{{ section.id }} .rakhi-gift-modal[hidden] {
-    display: none;
-  }
+    #shopify-section-{{ section.id }} .rakhi-grid__sort {
+      flex: 0 0 auto;
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal {
-    position: fixed;
-    inset: 0;
-    /* The sticky header and drawers in this theme go up to 99999. */
-    z-index: 100000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+    /* The shared carousel grid hard-codes 64px side padding and auto-fit columns.
+       This section sits inside .page-width, so reset both and drive the column
+       count from the section settings instead. */
+    #shopify-section-{{ section.id }} .shop-products-carousel__grid {
+      padding-left: 0;
+      padding-right: 0;
+      grid-template-columns: repeat({{ products_per_row }}, minmax(0, 1fr));
+      column-gap: {{ s.column_gap }}px;
+      row-gap: {{ s.row_gap }}px;
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, {{ s.gift_modal_overlay_opacity | divided_by: 100.0 }});
-    backdrop-filter: blur({{ s.gift_modal_blur }}px);
-    -webkit-backdrop-filter: blur({{ s.gift_modal_blur }}px);
-  }
+    /* Wrapper exists only to carry sort data and be reorderable — it must not
+       create a box, or it would become the grid item instead of the card. */
+    #shopify-section-{{ section.id }} .rakhi-grid__item {
+      display: contents;
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
-    position: relative;
-    background: #ffffff;
-    width: 100%;
-    max-width: {{ s.gift_modal_width }}px;
-    max-height: calc(100vh - 40px);
-    overflow-y: auto;
-    padding: 26px 30px 30px;
-  }
+    /* The carousel styles pin this to `contain` so 2:3 shots never stretch in a
+       fluid column. Overridden here (this section only) so images fill the frame. */
+    #shopify-section-{{ section.id }} .bestseller-card__image {
+      object-fit: {{ s.image_fit }};
+      object-position: {{ s.image_position }};
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-  }
+    #shopify-section-{{ section.id }} .rakhi-grid__empty {
+      padding: 40px 0;
+      text-align: center;
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__logo {
-    display: block;
-    width: auto;
-    height: 60px;
-    max-width: 180px;
-    object-fit: contain;
-  }
+    @media screen and (max-width: 989px) {
+      #shopify-section-{{ section.id }} .shop-products-carousel__grid {
+        grid-template-columns: repeat({{ products_per_row | at_most: 3 }}, minmax(0, 1fr));
+      }
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__logo-text {
-    font-size: 20px;
-    font-weight: 700;
-  }
+    @media screen and (max-width: 749px) {
+      #shopify-section-{{ section.id }} .shop-products-carousel__grid {
+        grid-template-columns: repeat({{ s.columns_mobile }}, minmax(0, 1fr));
+        column-gap: {{ s.column_gap_mobile }}px;
+        row-gap: {{ s.row_gap_mobile }}px;
+      }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__close {
-    background: none;
-    border: 0;
-    padding: 4px;
-    cursor: pointer;
-    color: inherit;
-    line-height: 0;
-  }
+      #shopify-section-{{ section.id }} .rakhi-grid__header {
+        margin-bottom: {{ s.heading_spacing_mobile }}px;
+        {% if s.stack_header_mobile %}
+          flex-direction: column;
+          align-items: flex-start;
+        {% endif %}
+      }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__eyebrow {
-    margin: 8px 0 0;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    font-size: 13px;
-    font-weight: 500;
-  }
+      #shopify-section-{{ section.id }} .rakhi-grid__heading {
+        font-size: {{ s.heading_size_mobile }}px;
+      }
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__heading {
-    margin: 10px 0 26px;
-    text-align: center;
-    font-size: {{ s.gift_modal_heading_size }}px;
-    font-weight: 700;
-    line-height: 1.15;
-  }
+    /* ---------- Gift note popup ---------- */
+    #shopify-section-{{ section.id }} .rakhi-gift-modal[hidden] {
+      display: none;
+    }
 
-  /* Fixed media column keeps the image from ballooning as the dialog widens. */
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
-    display: grid;
-    grid-template-columns: {{ s.gift_modal_image_width }}px minmax(0, 1fr);
-    gap: 28px;
-    align-items: start;
-  }
+    #shopify-section-{{ section.id }} .rakhi-gift-modal {
+      position: fixed;
+      inset: 0;
+      /* The sticky header and drawers in this theme go up to 99999. */
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 1 / 1.08;
-    height: auto;
-    object-fit: cover;
-    background: #f2f4f7;
-  }
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, {{ s.gift_modal_overlay_opacity | divided_by: 100.0 }});
+      backdrop-filter: blur({{ s.gift_modal_blur }}px);
+      -webkit-backdrop-filter: blur({{ s.gift_modal_blur }}px);
+    }
 
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
-    margin: 0 0 12px;
-    font-size: 20px;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__note {
-    display: block;
-    width: 100%;
-    border: 1px solid #d7d7d7;
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-family: inherit;
-    font-size: 15px;
-    line-height: 1.4;
-    resize: vertical;
-    min-height: 148px;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__note::placeholder {
-    color: #9b9b9b;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox[hidden] {
-    display: none;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 12px;
-    cursor: pointer;
-    color: {{ s.gift_box_label_color }};
-    font-size: 16px;
-    font-weight: 500;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input {
-    width: 15px;
-    height: 15px;
-    accent-color: {{ s.gift_box_label_color }};
-    cursor: pointer;
-    flex: 0 0 auto;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__actions {
-    margin-top: 24px;
-    text-align: center;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__submit {
-    display: block;
-    width: 100%;
-    background: transparent;
-    border: 1px solid #111111;
-    padding: 15px 20px;
-    font-family: inherit;
-    font-size: 15px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__submit[aria-busy='true'] {
-    opacity: 0.6;
-    pointer-events: none;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__skip {
-    display: inline-block;
-    margin-top: 14px;
-    background: none;
-    border: 0;
-    padding: 4px;
-    font-family: inherit;
-    font-size: 14px;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-    color: inherit;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__error {
-    margin: 14px 0 0;
-    text-align: center;
-    color: #d02c2c;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-gift-modal__error[hidden] {
-    display: none;
-  }
-
-  @media screen and (max-width: 749px) {
     #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
-      padding: 20px 20px 24px;
+      position: relative;
+      background: #ffffff;
+      width: 100%;
+      max-width: {{ s.gift_modal_width }}px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      padding: 26px 30px 30px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__logo {
+      display: block;
+      width: auto;
+      height: 60px;
+      max-width: 180px;
+      object-fit: contain;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__logo-text {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__close {
+      background: none;
+      border: 0;
+      padding: 4px;
+      cursor: pointer;
+      color: inherit;
+      line-height: 0;
     }
 
     #shopify-section-{{ section.id }} .rakhi-gift-modal__eyebrow {
-      letter-spacing: 3px;
-      font-size: 12px;
-    }
+  margin: 8px 0 0;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      font-size: 16px;
+      font-weight: 800;
+      color: #202020;  }
 
     #shopify-section-{{ section.id }} .rakhi-gift-modal__heading {
-      font-size: {{ s.gift_modal_heading_size_mobile }}px;
-      margin-bottom: 20px;
+      margin: 10px 0 26px;
+      text-align: center;
+      font-size: {{ s.gift_modal_heading_size }}px;
+      font-weight: 700;
+      line-height: 1.15;
     }
 
+    /* Fixed media column keeps the image from ballooning as the dialog widens. */
     #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 18px;
+      display: grid;
+      grid-template-columns: {{ s.gift_modal_image_width }}px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
     }
-
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__media {
+          aspect-ratio: 183 / 230;
+    }
     #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
-      max-width: {{ s.gift_modal_image_width }}px;
-      margin: 0 auto;
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1.08;
+      height: auto;
+      object-fit: cover;
+      background: #f2f4f7;
     }
 
     #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
-      font-size: 19px;
+      margin: 0 0 12px;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__note {
+      display: block;
+      width: 100%;
+      border: 1px solid #d7d7d7;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1.4;
+      resize: vertical;
+      min-height: 148px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__note::placeholder {
+      color: #9b9b9b;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox[hidden] {
+      display: none;
     }
 
     #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      cursor: pointer;
+      color: {{ s.gift_box_label_color }};
       font-size: 16px;
+      font-weight: 500;
     }
-  }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input {
+      width: 15px;
+      height: 15px;
+      accent-color: {{ s.gift_box_label_color }};
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__actions {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__submit {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: 1px solid #111111;
+      padding: 15px 20px;
+      font-family: inherit;
+      font-size: 15px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__submit[aria-busy='true'] {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__skip {
+      display: inline-block;
+      margin-top: 14px;
+      background: none;
+      border: 0;
+      padding: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__error {
+      margin: 14px 0 0;
+      text-align: center;
+      color: #d02c2c;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__error[hidden] {
+      display: none;
+    }
+
+    @media screen and (max-width: 749px) {
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
+        padding: 20px 20px 24px;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__eyebrow {
+        letter-spacing: 3px;
+        font-size: 12px;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__heading {
+        font-size: {{ s.gift_modal_heading_size_mobile }}px;
+        margin-bottom: 20px;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
+        max-width: {{ s.gift_modal_image_width }}px;
+        margin: 0 auto;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
+        font-size: 19px;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox {
+        font-size: 16px;
+      }
+    }
 {%- endstyle -%}
 
 {%- if s.show_sorting -%}
@@ -339,7 +341,9 @@
             Options come from the collection so the labels match, minus the ones that
             need server data (best selling, relevance) — this sorts in the browser.
           {%- endcomment -%}
-          {%- assign supported_sorts = 'manual,title-ascending,title-descending,price-ascending,price-descending,created-ascending,created-descending' | split: ',' -%}
+          {%- assign supported_sorts = 'manual,title-ascending,title-descending,price-ascending,price-descending,created-ascending,created-descending'
+            | split: ','
+          -%}
           <div class="sorting rakhi-grid__sort">
             <div class="facet-filters__field">
               <details class="disclosure-has-popup facets__disclosure facet-filters__sort" data-rakhi-sort>
@@ -360,7 +364,9 @@
                               name="rakhi_sort_by_{{ section.id }}"
                               value="{{ option.value | escape }}"
                               id="RakhiSort-{{ section.id }}-{{ option.value | escape }}"
-                              {% if option.value == 'manual' %}checked="checked"{% endif %}
+                              {% if option.value == 'manual' %}
+                                checked="checked"
+                              {% endif %}
                               class="visually-hidden"
                             >
                             <span class="label">{{ option.name | escape }}</span>
@@ -472,7 +478,12 @@
           <span class="rakhi-gift-modal__logo-text">{{ shop.name }}</span>
         {%- endif -%}
 
-        <button type="button" class="rakhi-gift-modal__close" data-gift-modal-close aria-label="{{ 'accessibility.close' | t }}">
+        <button
+          type="button"
+          class="rakhi-gift-modal__close"
+          data-gift-modal-close
+          aria-label="{{ 'accessibility.close' | t }}"
+        >
           <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
             <path d="M4 4 L20 20 M20 4 L4 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
           </svg>
