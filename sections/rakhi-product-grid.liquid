@@ -348,6 +348,44 @@
       display: none;
     }
 
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__loading[hidden] {
+      display: none;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__loading {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__spinner {
+      width: 34px;
+      height: 34px;
+      border: 2px solid rgba(0, 0, 0, 0.15);
+      border-top-color: {{ s.gift_box_label_color }};
+      border-radius: 50%;
+      /* GSAP drives this when available; the keyframes are the no-JS fallback. */
+      animation: rakhi-spin 0.8s linear infinite;
+    }
+
+    @keyframes rakhi-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__spinner {
+        animation-duration: 1.6s;
+      }
+    }
+
     @media screen and (max-width: 749px) {
       #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
         padding: 20px 20px 24px;
@@ -599,6 +637,11 @@
       </div>
 
       <p class="rakhi-gift-modal__error" data-gift-modal-error hidden role="alert"></p>
+
+      <div class="rakhi-gift-modal__loading" data-gift-modal-loading hidden aria-live="polite">
+        <span class="rakhi-gift-modal__spinner" aria-hidden="true"></span>
+        <span>{{ s.gift_modal_loading_text }}</span>
+      </div>
     </div>
   </div>
 {%- endif -%}
