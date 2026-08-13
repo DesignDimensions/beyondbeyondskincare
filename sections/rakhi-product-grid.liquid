@@ -318,6 +318,12 @@
       pointer-events: none;
     }
 
+    /* Stays disabled until a message is typed; Skip for Now remains available. */
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__submit:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
     #shopify-section-{{ section.id }} .rakhi-gift-modal__skip {
       display: inline-block;
       margin-top: 14px;
@@ -384,6 +390,11 @@
 
 {%- if s.show_sorting -%}
   {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+{%- if gift_modal_enabled -%}
+  {%- comment -%} Already vendored in the theme (also used by the chatbot). {%- endcomment -%}
+  <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
 {%- endif -%}
 
 <div class="rakhi-grid section--padding">
@@ -583,7 +594,7 @@
       </div>
 
       <div class="rakhi-gift-modal__actions">
-        <button type="button" class="rakhi-gift-modal__submit" data-gift-modal-submit>{{ s.gift_modal_button }}</button>
+        <button type="button" class="rakhi-gift-modal__submit" data-gift-modal-submit disabled>{{ s.gift_modal_button }}</button>
         <button type="button" class="rakhi-gift-modal__skip" data-gift-modal-skip>{{ s.gift_modal_skip }}</button>
       </div>
 
