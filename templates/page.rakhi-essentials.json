@@ -38,7 +38,7 @@
     "rakhi_grid": {
       "type": "rakhi-product-grid",
       "settings": {
-        "collection": "testing",
+        "collection": "rakhi-essentials",
         "heading": "Shop Combos",
         "heading_tag": "h2",
         "products_to_show": 8,
@@ -69,7 +69,21 @@
         "padding_bottom": 60
       },
       "blocks": {
-        "gift-daily-essentials": {
+        "gift-radiance": {
+          "type": "gift_product",
+          "settings": {
+            "product": "the-radiance-edit",
+            "gift_box_product": "radiance-edit-gift-wrap"
+          }
+        },
+        "gift-repair": {
+          "type": "gift_product",
+          "settings": {
+            "product": "the-repair-ritual",
+            "gift_box_product": "repair-ritual-gift-wrap"
+          }
+        },
+        "gift-daily": {
           "type": "gift_product",
           "settings": {
             "product": "the-daily-essentials",
@@ -78,7 +92,9 @@
         }
       },
       "block_order": [
-        "gift-daily-essentials"
+        "gift-radiance",
+        "gift-repair",
+        "gift-daily"
       ]
     }
   },
