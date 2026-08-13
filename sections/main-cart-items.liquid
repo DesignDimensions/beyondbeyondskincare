@@ -125,7 +125,8 @@
                         </dl>
                       {%- endif -%}
 
-                      {% render 'cart-gift-note', item: item, line: forloop.index, note_property: 'Gift Message' %}
+                      {%- assign gift_note_line = item.index | plus: 1 -%}
+                      {% render 'cart-gift-note', item: item, line: gift_note_line, note_property: 'Gift Message' %}
 
                       {%- if item.selling_plan_allocation != null -%}
                         <div class="product-option">{{ item.selling_plan_allocation.selling_plan.name }}</div>
