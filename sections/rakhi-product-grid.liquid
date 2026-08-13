@@ -306,6 +306,7 @@
   {{ 'component-facets.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
 
+<!-- RAKHIDEBUG enabled={{ gift_modal_enabled }} count={{ section.blocks.size }} {% for b in section.blocks %}[type={{ b.type }} prod={{ b.settings.product.handle }} wrap={{ b.settings.gift_box_product.handle }}]{% endfor %} -->
 <div class="rakhi-grid section--padding">
   <div class="page-width">
     {%- if s.heading != blank or s.show_sorting -%}
