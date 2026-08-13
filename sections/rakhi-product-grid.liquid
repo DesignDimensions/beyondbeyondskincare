@@ -531,6 +531,122 @@
       setSlide(0);
     });
 
+    // --- Gift note popup ---
+    const modal = scope.querySelector('[data-gift-modal]');
+    const modalGrid = scope.querySelector('[data-rakhi-grid]');
+
+    if (modal && modalGrid) {
+      const imageEl = modal.querySelector('[data-gift-modal-image]');
+      const titleEl = modal.querySelector('[data-gift-modal-title]');
+      const noteEl = modal.querySelector('[data-gift-modal-note]');
+      const giftBoxEl = modal.querySelector('[data-gift-modal-giftbox]');
+      const submitEl = modal.querySelector('[data-gift-modal-submit]');
+      const skipEl = modal.querySelector('[data-gift-modal-skip]');
+      const errorEl = modal.querySelector('[data-gift-modal-error]');
+      const notePropertyName = {{ s.gift_note_property | json }};
+
+      let activeVariantId = null;
+      let lastFocused = null;
+      let previousOverflow = '';
+
+      const showError = (message) => {
+        if (!errorEl) return;
+        errorEl.textContent = message;
+        errorEl.hidden = !message;
+      };
+
+      const openModal = (item, variantId) => {
+        activeVariantId = variantId;
+        showError('');
+
+        if (titleEl) titleEl.textContent = item.dataset.giftProductTitle || '';
+        if (imageEl) {
+          imageEl.src = item.dataset.giftProductImage || '';
+          imageEl.alt = item.dataset.giftProductImageAlt || '';
+        }
+        if (noteEl) noteEl.value = '';
+        if (giftBoxEl) giftBoxEl.checked = false;
+
+        lastFocused = document.activeElement;
+        modal.hidden = false;
+        previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        if (noteEl) noteEl.focus();
+      };
+
+      const closeModal = () => {
+        modal.hidden = true;
+        activeVariantId = null;
+        document.body.style.overflow = previousOverflow;
+        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      };
+
+      const addToCart = (includeExtras) => {
+        if (!activeVariantId) return;
+
+        const miniCart = document.querySelector('mini-cart');
+        const sections = miniCart ? miniCart.getSectionsToRender().map((section) => section.id) : [];
+
+        const line = { id: activeVariantId, quantity: 1 };
+        if (includeExtras) {
+          const note = ((noteEl && noteEl.value) || '').trim();
+          if (note) line.properties = { [notePropertyName]: note };
+        }
+
+        const items = [line];
+        // Skipping must never add the gift box, even if it was ticked first.
+        if (includeExtras && giftBoxEl && giftBoxEl.checked && giftBoxEl.value) {
+          items.push({ id: giftBoxEl.value, quantity: 1 });
+        }
+
+        const addUrl = (window.theme && theme.routes && theme.routes.cart_add_url) || '/cart/add';
+        const body = JSON.stringify({ items, sections, sections_url: window.location.pathname });
+        const config = typeof fetchConfig === 'function'
+          ? { ...fetchConfig('javascript'), body }
+          : { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body };
+
+        submitEl.setAttribute('aria-busy', 'true');
+        showError('');
+
+        fetch(addUrl, config)
+          .then((response) => response.json())
+          .then((state) => {
+            if (state.status === 422 || state.status === 404 || state.status === 400) {
+              showError(state.description || state.message || 'This item could not be added to your cart.');
+              return;
+            }
+            closeModal();
+            if (miniCart) miniCart.renderContents(state);
+            document.dispatchEvent(new CustomEvent('ajaxProduct:added', { detail: { product: state } }));
+          })
+          .catch(() => showError('Something went wrong. Please try again.'))
+          .finally(() => submitEl.removeAttribute('aria-busy'));
+      };
+
+      // Capture phase so this runs before <add-to-cart>'s own click handler,
+      // which is bound directly on the element and would otherwise add straight away.
+      modalGrid.addEventListener('click', (event) => {
+        const item = event.target.closest('[data-gift-modal-trigger]');
+        if (!item) return;
+        const trigger = event.target.closest('add-to-cart[data-variant-id]');
+        if (!trigger) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        openModal(item, trigger.dataset.variantId);
+      }, true);
+
+      modal.querySelectorAll('[data-gift-modal-close]').forEach((el) => {
+        el.addEventListener('click', closeModal);
+      });
+      submitEl && submitEl.addEventListener('click', () => addToCart(true));
+      skipEl && skipEl.addEventListener('click', () => addToCart(false));
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.hidden) closeModal();
+      });
+    }
+
     // --- Sorting ---
     const sortEl = scope.querySelector('[data-rakhi-sort]');
     const grid = scope.querySelector('[data-rakhi-grid]');
