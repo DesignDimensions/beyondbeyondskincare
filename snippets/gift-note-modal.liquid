@@ -286,56 +286,61 @@
       .gift-note-modal__spinner { animation-duration: 1.6s; }
     }
 
-    /* Mobile is a full-screen sheet rather than a centred card. */
+    /* Mobile keeps a margin around the card and scrolls inside it rather than
+       going full-bleed, so a long note can never push the buttons off-screen. */
     @media screen and (max-width: 749px) {
-      .gift-note-modal { padding: 0; align-items: stretch; }
+      .gift-note-modal { padding: 16px; align-items: center; }
 
       .gift-note-modal__dialog {
         max-width: none;
-        max-height: none;
-        min-height: 100%;
-        padding: 22px 24px 34px;
+        min-height: 0;
+        /* dvh accounts for the mobile browser chrome; vh is the fallback. */
+        max-height: calc(100vh - 32px);
+        max-height: calc(100dvh - 32px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 20px 20px 24px;
       }
 
-      .gift-note-modal__logo { height: 58px; max-width: 165px; }
-      .gift-note-modal__close svg { width: 34px; height: 34px; }
+      .gift-note-modal__logo { height: 44px; max-width: 130px; }
+      .gift-note-modal__close svg { width: 26px; height: 26px; }
 
       .gift-note-modal__eyebrow {
-        margin-top: 26px;
-        letter-spacing: 5px;
-        font-size: 14px;
+        margin-top: 18px;
+        letter-spacing: 3px;
+        font-size: 11px;
       }
 
       .gift-note-modal__heading {
         font-size: {{ settings.gift_note_heading_size_mobile }}px;
-        margin: 14px 0 26px;
+        margin: 10px 0 18px;
       }
 
-      .gift-note-modal__body { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+      .gift-note-modal__body { grid-template-columns: minmax(0, 1fr); gap: 16px; }
 
       /* Stacked here, so it needs its own ratio instead of borrowing the
-         content column's height. Full bleed within the dialog padding. */
+         content column's height. */
       .gift-note-modal__media {
         min-height: 0;
         width: 100%;
         max-width: none;
         margin: 0;
-        aspect-ratio: 692 / 420;
+        aspect-ratio: 16 / 10;
       }
 
       .gift-note-modal__product {
-        font-size: 24px;
+        font-size: 16px;
         font-weight: 700;
         text-align: center;
-        margin-bottom: 18px;
+        margin-bottom: 12px;
       }
 
-      .gift-note-modal__note { min-height: 240px; border-radius: 12px; font-size: 16px; }
-      .gift-note-modal__giftbox { font-size: 19px; margin-top: 18px; }
-      .gift-note-modal__giftbox input { width: 20px; height: 20px; }
-      .gift-note-modal__actions { margin-top: 26px; }
-      .gift-note-modal__submit { padding: 19px 20px; font-size: 17px; letter-spacing: 4px; }
-      .gift-note-modal__skip { font-size: 16px; margin-top: 18px; }
+      .gift-note-modal__note { min-height: 130px; border-radius: 10px; font-size: 14px; }
+      .gift-note-modal__giftbox { font-size: 14px; margin-top: 12px; }
+      .gift-note-modal__giftbox input { width: 16px; height: 16px; }
+      .gift-note-modal__actions { margin-top: 18px; }
+      .gift-note-modal__submit { padding: 14px 18px; font-size: 14px; letter-spacing: 3px; }
+      .gift-note-modal__skip { font-size: 13px; margin-top: 12px; }
     }
   {%- endstyle -%}
 
@@ -680,6 +685,11 @@
       }, true);
 
       modal.querySelectorAll('[data-gift-note-close]').forEach((el) => el.addEventListener('click', closeModal));
+
+      // Clicking anywhere outside the dialog closes it.
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal || event.target.hasAttribute('data-gift-note-close')) closeModal();
+      });
       submitEl && submitEl.addEventListener('click', () => addToCart(true));
       skipEl && skipEl.addEventListener('click', () => addToCart(false));
 
