@@ -2,13 +2,6 @@
   assign s = section.settings
   assign products_per_row = s.products_per_row
   assign product_collection = s.collection
-
-  # Each block pairs a product with its own gift wrap, so the popup can offer the
-  # right wrap (and price) per product rather than one shared gift box.
-  assign gift_modal_enabled = false
-  if s.enable_gift_modal and section.blocks.size > 0
-    assign gift_modal_enabled = true
-  endif
 -%}
 
 {%- style -%}
@@ -93,347 +86,12 @@
       }
     }
 
-    /* ---------- Gift note popup ---------- */
-    #shopify-section-{{ section.id }} .rakhi-gift-modal[hidden] {
-      display: none;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal {
-      position: fixed;
-      inset: 0;
-      /* The sticky header and drawers in this theme go up to 99999. */
-      z-index: 100000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, {{ s.gift_modal_overlay_opacity | divided_by: 100.0 }});
-      backdrop-filter: blur({{ s.gift_modal_blur }}px);
-      -webkit-backdrop-filter: blur({{ s.gift_modal_blur }}px);
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
-      position: relative;
-      background: #ffffff;
-      width: 100%;
-      max-width: {{ s.gift_modal_width }}px;
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      padding: 26px 30px 30px;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__logo {
-      display: block;
-      width: auto;
-      height: 60px;
-      max-width: 180px;
-      object-fit: contain;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__logo-text {
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__close {
-      background: none;
-      border: 0;
-      padding: 4px;
-      cursor: pointer;
-      color: inherit;
-      line-height: 0;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__eyebrow {
-  margin: 8px 0 0;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 5px;
-      font-size: 16px;
-      font-weight: 800;
-      color: #202020;  }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__heading {
-      margin: 15px 0 33px;
-      text-align: center;
-      font-size: {{ s.gift_modal_heading_size }}px;
-      font-weight: 700;
-      line-height: 1.15;
-    }
-
-    /* Fixed media column keeps the image from ballooning as the dialog widens. */
-    /* Stretch so the media column matches the content column's height exactly. */
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
-      display: grid;
-      grid-template-columns: {{ s.gift_modal_image_width }}px minmax(0, 1fr);
-      gap: 28px;
-      align-items: stretch;
-    }
-    .rakhi-gift-modal__content{
-          height: 100%;
-    display: flex;
-    flex-flow: column;
-    justify-content: center;
-    }
-    /* The image is absolutely positioned so it contributes no intrinsic height —
-       the row height comes purely from the content column, and the image fills it. */
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__media {
-      position: relative;
-      min-height: 100%;
-      background: #f2f4f7;
-      overflow: hidden;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
-      position: absolute;
-      inset: 0;
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
-      margin: 0 0 12px;
-      font-size: 20px;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__note {
-      display: block;
-      width: 100%;
-      border: 1px solid #d7d7d7;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-family: inherit;
-      font-size: 15px;
-      line-height: 1.4;
-      resize: vertical;
-      min-height: 148px;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__note::placeholder {
-      color: #9b9b9b;
-    }
-
-    /* Theme-wide focus styling puts a blue glow on inputs; not wanted here. */
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__note:focus,
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__note:focus-visible {
-      outline: none;
-      box-shadow: none;
-      border-color: #b5b5b5;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox[hidden] {
-      display: none;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-      cursor: pointer;
-      color: {{ s.gift_box_label_color }};
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    /* accent-color only tints the checked fill, leaving a grey border when empty.
-       Drawing the box manually keeps it the label colour in both states. */
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      margin: 0;
-      border: 2px solid {{ s.gift_box_label_color }};
-      border-radius: 2px;
-      background: transparent;
-      cursor: pointer;
-      flex: 0 0 auto;
-      display: inline-grid;
-      place-content: center;
-      position: relative;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input::before {
-      content: '';
-      width: 9px;
-      height: 5px;
-      border-left: 2px solid #ffffff;
-      border-bottom: 2px solid #ffffff;
-      transform: rotate(-45deg) translate(1px, -1px);
-      opacity: 0;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input:checked {
-      background: {{ s.gift_box_label_color }};
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input:checked::before {
-      opacity: 1;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input:focus-visible {
-      outline: 2px solid {{ s.gift_box_label_color }};
-      outline-offset: 2px;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__actions {
-      margin-top: 24px;
-      text-align: center;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__submit {
-    display: block;
-    width: 100%;
-    background: transparent;
-    border: 2px solid #000;
-    padding: 15px 20px;
-    font-family: inherit;
-    font-size: 15px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-weight: 600;
-    color: #000;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__submit[aria-busy='true'] {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-
-    /* Stays disabled until a message is typed; Skip for Now remains available. */
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__submit:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__skip {
-      display: inline-block;
-      margin-top: 14px;
-      background: none;
-      border: 0;
-      padding: 4px;
-      font-family: inherit;
-      font-size: 12px;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      cursor: pointer;
-      color: inherit;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__error {
-      margin: 14px 0 0;
-      text-align: center;
-      color: #d02c2c;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__error[hidden] {
-      display: none;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__loading[hidden] {
-      display: none;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__loading {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      background: rgba(255, 255, 255, 0.92);
-      font-size: 16px;
-      letter-spacing: 0.5px;
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-gift-modal__spinner {
-      width: 34px;
-      height: 34px;
-      border: 2px solid rgba(0, 0, 0, 0.15);
-      border-top-color: {{ s.gift_box_label_color }};
-      border-radius: 50%;
-      /* GSAP drives this when available; the keyframes are the no-JS fallback. */
-      animation: rakhi-spin 0.8s linear infinite;
-    }
-
-    @keyframes rakhi-spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__spinner {
-        animation-duration: 1.6s;
-      }
-    }
-
-    @media screen and (max-width: 749px) {
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
-        padding: 20px 20px 24px;
-      }
-
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__eyebrow {
-        letter-spacing: 3px;
-        font-size: 12px;
-      }
-
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__heading {
-        font-size: {{ s.gift_modal_heading_size_mobile }}px;
-        margin-bottom: 20px;
-      }
-
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 18px;
-      }
-
-      /* Stacked on mobile there is no side column to borrow height from, so the
-         media needs its own ratio to stay visible. */
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__media {
-        min-height: 0;
-        width: 100%;
-        max-width: {{ s.gift_modal_image_width }}px;
-        margin: 0 auto;
-        aspect-ratio: 183 / 230;
-      }
-
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
-        font-size: 19px;
-      }
-
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox {
-        font-size: 16px;
-      }
-    }
 {%- endstyle -%}
 
 {%- if s.show_sorting -%}
   {{ 'component-facets.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
 
-{%- if gift_modal_enabled -%}
-  {%- comment -%} Already vendored in the theme (also used by the chatbot). {%- endcomment -%}
-  <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
-{%- endif -%}
 
 <div class="rakhi-grid section--padding">
   <div class="page-width">
@@ -514,36 +172,14 @@
                 assign card_skin_text = product_concerns | join: ', '
               endif
             endif
-
-            assign opens_gift_modal = false
-            assign card_gift_variant = blank
-            assign card_gift_price = blank
-            if gift_modal_enabled
-              for gift_block in section.blocks
-                if gift_block.settings.product != blank and gift_block.settings.product.handle == product.handle
-                  assign opens_gift_modal = true
-                  assign block_gift_variant = gift_block.settings.gift_box_product.selected_or_first_available_variant
-                  if block_gift_variant != blank
-                    assign card_gift_variant = block_gift_variant.id
-                    assign card_gift_price = block_gift_variant.price | money
-                  endif
-                  break
-                endif
-              endfor
-            endif
           -%}
           <div
             class="rakhi-grid__item"
-            {% if opens_gift_modal %}
-              data-gift-modal-trigger
-              data-gift-product-title="{{ product.title | escape }}"
-              data-gift-product-image="{{ product.featured_image | image_url: width: 800 }}"
-              data-gift-product-image-alt="{{ product.featured_image.alt | default: product.title | escape }}"
-              {% if card_gift_variant != blank %}
-                data-gift-box-variant="{{ card_gift_variant }}"
-                data-gift-box-price="{{ card_gift_price }}"
-              {% endif %}
-            {% endif %}
+            {%- comment -%}
+              Emits nothing unless this product qualifies. Config lives in
+              Theme settings -> "Gift note popup", shared with the product page.
+            {%- endcomment -%}
+            {% render 'gift-note-trigger', product: product %}
             data-sort-position="{{ forloop.index }}"
             data-sort-price="{{ product.price | default: 0 }}"
             data-sort-title="{{ product.title | strip_html | escape | downcase }}"
@@ -564,87 +200,6 @@
   </div>
 </div>
 
-{%- if gift_modal_enabled -%}
-  {%- assign modal_logo = s.gift_modal_logo | default: settings.logo -%}
-  <div class="rakhi-gift-modal" data-gift-modal hidden>
-    <div class="rakhi-gift-modal__overlay" data-gift-modal-close>.</div>
-    <div
-      class="rakhi-gift-modal__dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="GiftModalHeading-{{ section.id }}"
-    >
-      <div class="rakhi-gift-modal__head">
-        {%- if modal_logo != blank -%}
-          <img
-            class="rakhi-gift-modal__logo"
-            src="{{ modal_logo | image_url: width: 300 }}"
-            alt="{{ shop.name | escape }}"
-            width="{{ modal_logo.width }}"
-            height="{{ modal_logo.height }}"
-            loading="lazy"
-          >
-        {%- else -%}
-          <span class="rakhi-gift-modal__logo-text">{{ shop.name }}</span>
-        {%- endif -%}
-
-        <button
-          type="button"
-          class="rakhi-gift-modal__close"
-          data-gift-modal-close
-          aria-label="{{ 'accessibility.close' | t }}"
-        >
-          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
-            <path d="M4 4 L20 20 M20 4 L4 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          </svg>
-        </button>
-      </div>
-
-      {%- if s.gift_modal_eyebrow != blank -%}
-        <p class="rakhi-gift-modal__eyebrow">{{ s.gift_modal_eyebrow }}</p>
-      {%- endif -%}
-      <h2 class="rakhi-gift-modal__heading" id="GiftModalHeading-{{ section.id }}">{{ s.gift_modal_heading }}</h2>
-
-      <div class="rakhi-gift-modal__body">
-        <div class="rakhi-gift-modal__media">
-          {%- comment -%} src/alt are filled in by JS from the clicked card. {%- endcomment -%}
-          <img data-gift-modal-image src="" alt="" width="800" height="800" loading="lazy">
-        </div>
-
-        <div class="rakhi-gift-modal__content">
-          <p class="rakhi-gift-modal__product" data-gift-modal-title></p>
-
-          <label class="visually-hidden" for="GiftNote-{{ section.id }}">{{ s.gift_modal_heading }}</label>
-          <textarea
-            id="GiftNote-{{ section.id }}"
-            class="rakhi-gift-modal__note"
-            data-gift-modal-note
-            rows="5"
-            maxlength="{{ s.gift_note_max }}"
-            placeholder="{{ s.gift_modal_placeholder | escape }}"
-          ></textarea>
-
-          <label class="rakhi-gift-modal__giftbox" data-gift-modal-giftbox-wrap hidden>
-            <input type="checkbox" data-gift-modal-giftbox value="">
-            <span data-gift-modal-giftbox-label>{{ s.gift_box_label }}</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="rakhi-gift-modal__actions">
-        <button type="button" class="rakhi-gift-modal__submit" data-gift-modal-submit disabled>{{ s.gift_modal_button }}</button>
-        <button type="button" class="rakhi-gift-modal__skip" data-gift-modal-skip>{{ s.gift_modal_skip }}</button>
-      </div>
-
-      <p class="rakhi-gift-modal__error" data-gift-modal-error hidden role="alert"></p>
-
-      <div class="rakhi-gift-modal__loading" data-gift-modal-loading hidden aria-live="polite">
-        <span class="rakhi-gift-modal__spinner" aria-hidden="true"></span>
-        <span>{{ s.gift_modal_loading_text }}</span>
-      </div>
-    </div>
-  </div>
-{%- endif -%}
 
 <script>
   (() => {
@@ -688,273 +243,6 @@
       setSlide(0);
     });
 
-    // --- Gift note popup ---
-    const modal = scope.querySelector('[data-gift-modal]');
-    const modalGrid = scope.querySelector('[data-rakhi-grid]');
-
-    if (modal && modalGrid) {
-      const imageEl = modal.querySelector('[data-gift-modal-image]');
-      const titleEl = modal.querySelector('[data-gift-modal-title]');
-      const noteEl = modal.querySelector('[data-gift-modal-note]');
-      const giftBoxEl = modal.querySelector('[data-gift-modal-giftbox]');
-      const giftBoxWrap = modal.querySelector('[data-gift-modal-giftbox-wrap]');
-      const giftBoxLabel = modal.querySelector('[data-gift-modal-giftbox-label]');
-      const giftBoxLabelText = {{ s.gift_box_label | json }};
-      const submitEl = modal.querySelector('[data-gift-modal-submit]');
-      const skipEl = modal.querySelector('[data-gift-modal-skip]');
-      const errorEl = modal.querySelector('[data-gift-modal-error]');
-      const notePropertyName = {{ s.gift_note_property | json }};
-
-      let activeVariantId = null;
-      let lastFocused = null;
-      let previousOverflow = '';
-      let closing = false;
-
-      const overlayEl = modal.querySelector('.rakhi-gift-modal__overlay');
-      const dialogEl = modal.querySelector('.rakhi-gift-modal__dialog');
-
-      // GSAP is deferred, so it may not be parsed yet on a very fast first click.
-      const gsapReady = () => typeof window.gsap !== 'undefined';
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const animate = () => gsapReady() && !reduceMotion;
-
-      const revealTargets = () => [
-        modal.querySelector('.rakhi-gift-modal__head'),
-        modal.querySelector('.rakhi-gift-modal__eyebrow'),
-        modal.querySelector('.rakhi-gift-modal__heading'),
-        modal.querySelector('.rakhi-gift-modal__media'),
-        modal.querySelector('.rakhi-gift-modal__content'),
-        modal.querySelector('.rakhi-gift-modal__actions'),
-      ].filter(Boolean);
-
-      const playOpen = () => {
-        if (!animate()) return;
-        gsap.killTweensOf([overlayEl, dialogEl, ...revealTargets()]);
-        gsap.fromTo(overlayEl, { opacity: 0 }, { opacity: 1, duration: 0.32, ease: 'power2.out' });
-        gsap.fromTo(
-          dialogEl,
-          { opacity: 0, y: 24, scale: 0.97 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: 'power3.out' }
-        );
-        gsap.fromTo(
-          revealTargets(),
-          { opacity: 0, y: 14 },
-          { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out', stagger: 0.05, delay: 0.08 }
-        );
-      };
-
-      const playClose = (done) => {
-        if (!animate()) {
-          done();
-          return;
-        }
-        closing = true;
-        gsap.killTweensOf([overlayEl, dialogEl]);
-        gsap.to(overlayEl, { opacity: 0, duration: 0.24, ease: 'power2.in' });
-        gsap.to(dialogEl, {
-          opacity: 0,
-          y: 16,
-          scale: 0.98,
-          duration: 0.26,
-          ease: 'power2.in',
-          onComplete: () => {
-            gsap.set([overlayEl, dialogEl], { clearProps: 'all' });
-            closing = false;
-            done();
-          },
-        });
-      };
-
-      const loadingEl = modal.querySelector('[data-gift-modal-loading]');
-      const spinnerEl = modal.querySelector('.rakhi-gift-modal__spinner');
-      let spinTween = null;
-
-      const setLoading = (on) => {
-        if (!loadingEl) return;
-
-        if (on) {
-          loadingEl.hidden = false;
-          if (animate()) {
-            gsap.fromTo(loadingEl, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' });
-            // Hand the spin to GSAP so it stays in step with the rest of the flow.
-            spinnerEl.style.animation = 'none';
-            spinTween = gsap.to(spinnerEl, { rotate: 360, duration: 0.8, ease: 'none', repeat: -1 });
-          }
-          return;
-        }
-
-        if (spinTween) {
-          spinTween.kill();
-          spinTween = null;
-          gsap.set(spinnerEl, { clearProps: 'transform' });
-          spinnerEl.style.animation = '';
-        }
-        if (animate()) {
-          gsap.to(loadingEl, {
-            opacity: 0,
-            duration: 0.18,
-            ease: 'power2.in',
-            onComplete: () => {
-              loadingEl.hidden = true;
-              gsap.set(loadingEl, { clearProps: 'opacity' });
-            },
-          });
-        } else {
-          loadingEl.hidden = true;
-        }
-      };
-
-      // Add Note stays disabled until a message is written; Skip for Now does not.
-      const syncSubmitState = () => {
-        if (!submitEl) return;
-        const hasNote = Boolean(noteEl && noteEl.value.trim());
-        if (submitEl.disabled === !hasNote) return;
-        submitEl.disabled = !hasNote;
-        if (animate()) {
-          gsap.fromTo(submitEl, { scale: 0.99 }, { scale: 1, duration: 0.25, ease: 'power2.out' });
-        }
-      };
-
-      noteEl && noteEl.addEventListener('input', syncSubmitState);
-
-      giftBoxEl &&
-        giftBoxEl.addEventListener('change', () => {
-          if (!animate()) return;
-          gsap.fromTo(
-            giftBoxEl,
-            { scale: 0.8 },
-            { scale: 1, duration: 0.3, ease: 'back.out(3)' }
-          );
-        });
-
-      const showError = (message) => {
-        if (!errorEl) return;
-        errorEl.textContent = message;
-        errorEl.hidden = !message;
-      };
-
-      const openModal = (item, variantId) => {
-        activeVariantId = variantId;
-        showError('');
-
-        if (titleEl) titleEl.textContent = item.dataset.giftProductTitle || '';
-        if (imageEl) {
-          imageEl.src = item.dataset.giftProductImage || '';
-          imageEl.alt = item.dataset.giftProductImageAlt || '';
-        }
-        if (noteEl) noteEl.value = '';
-
-        // Each product carries its own gift wrap, so the checkbox is rebuilt per open
-        // and stays hidden for products without one.
-        const giftVariant = item.dataset.giftBoxVariant || '';
-        const giftPrice = item.dataset.giftBoxPrice || '';
-        if (giftBoxEl) {
-          giftBoxEl.checked = false;
-          giftBoxEl.value = giftVariant;
-        }
-        if (giftBoxLabel) {
-          giftBoxLabel.textContent = giftPrice ? `${giftBoxLabelText} ${giftPrice}` : giftBoxLabelText;
-        }
-        if (giftBoxWrap) giftBoxWrap.hidden = !giftVariant;
-
-        syncSubmitState();
-
-        lastFocused = document.activeElement;
-        modal.hidden = false;
-        previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-
-        playOpen();
-        if (noteEl) noteEl.focus();
-      };
-
-      const finishClose = () => {
-        modal.hidden = true;
-        activeVariantId = null;
-        document.body.style.overflow = previousOverflow;
-        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
-      };
-
-      const closeModal = () => {
-        if (closing) return;
-        playClose(finishClose);
-      };
-
-      const addToCart = (includeExtras) => {
-        if (!activeVariantId) return;
-
-        const miniCart = document.querySelector('mini-cart');
-        const sections = miniCart ? miniCart.getSectionsToRender().map((section) => section.id) : [];
-
-        const line = { id: activeVariantId, quantity: 1 };
-        if (includeExtras) {
-          const note = ((noteEl && noteEl.value) || '').trim();
-          if (note) line.properties = { [notePropertyName]: note };
-        }
-
-        const items = [line];
-        // Skipping must never add the gift box, even if it was ticked first.
-        if (includeExtras && giftBoxEl && giftBoxEl.checked && giftBoxEl.value) {
-          // Underscore prefix hides it from the customer-facing property list, and lets the
-          // cart cap the wrap's quantity against the product it belongs to.
-          items.push({
-            id: giftBoxEl.value,
-            quantity: 1,
-            properties: { _gift_wrap_for: String(activeVariantId) },
-          });
-        }
-
-        const addUrl = (window.theme && theme.routes && theme.routes.cart_add_url) || '/cart/add';
-        const body = JSON.stringify({ items, sections, sections_url: window.location.pathname });
-        const config = typeof fetchConfig === 'function'
-          ? { ...fetchConfig('javascript'), body }
-          : { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body };
-
-        submitEl.setAttribute('aria-busy', 'true');
-        showError('');
-        setLoading(true);
-
-        fetch(addUrl, config)
-          .then((response) => response.json())
-          .then((state) => {
-            if (state.status === 422 || state.status === 404 || state.status === 400) {
-              showError(state.description || state.message || 'This item could not be added to your cart.');
-              return;
-            }
-            closeModal();
-            if (miniCart) miniCart.renderContents(state);
-            document.dispatchEvent(new CustomEvent('ajaxProduct:added', { detail: { product: state } }));
-          })
-          .catch(() => showError('Something went wrong. Please try again.'))
-          .finally(() => {
-            submitEl.removeAttribute('aria-busy');
-            setLoading(false);
-          });
-      };
-
-      // Capture phase so this runs before <add-to-cart>'s own click handler,
-      // which is bound directly on the element and would otherwise add straight away.
-      modalGrid.addEventListener('click', (event) => {
-        const item = event.target.closest('[data-gift-modal-trigger]');
-        if (!item) return;
-        const trigger = event.target.closest('add-to-cart[data-variant-id]');
-        if (!trigger) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-        openModal(item, trigger.dataset.variantId);
-      }, true);
-
-      modal.querySelectorAll('[data-gift-modal-close]').forEach((el) => {
-        el.addEventListener('click', closeModal);
-      });
-      submitEl && submitEl.addEventListener('click', () => addToCart(true));
-      skipEl && skipEl.addEventListener('click', () => addToCart(false));
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !modal.hidden) closeModal();
-      });
-    }
 
     // --- Sorting ---
     const sortEl = scope.querySelector('[data-rakhi-sort]');
@@ -1043,9 +331,18 @@
       "id": "heading_tag",
       "label": "Heading HTML tag",
       "options": [
-        { "value": "h2", "label": "h2" },
-        { "value": "h3", "label": "h3" },
-        { "value": "div", "label": "div" }
+        {
+          "value": "h2",
+          "label": "h2"
+        },
+        {
+          "value": "h3",
+          "label": "h3"
+        },
+        {
+          "value": "div",
+          "label": "div"
+        }
       ],
       "default": "h2"
     },
@@ -1103,11 +400,26 @@
       "id": "heading_weight",
       "label": "Heading weight",
       "options": [
-        { "value": "300", "label": "Light" },
-        { "value": "400", "label": "Regular" },
-        { "value": "500", "label": "Medium" },
-        { "value": "600", "label": "Semi bold" },
-        { "value": "700", "label": "Bold" }
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
       ],
       "default": "700"
     },
@@ -1165,8 +477,14 @@
       "id": "columns_mobile",
       "label": "Products per row (mobile)",
       "options": [
-        { "value": "1", "label": "1 column" },
-        { "value": "2", "label": "2 columns" }
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
       ],
       "default": "2"
     },
@@ -1220,8 +538,14 @@
       "label": "Image fit",
       "info": "Cover fills the frame and crops the edges. Contain shows the whole image with space around it.",
       "options": [
-        { "value": "cover", "label": "Cover (fill the frame)" },
-        { "value": "contain", "label": "Contain (show whole image)" }
+        {
+          "value": "cover",
+          "label": "Cover (fill the frame)"
+        },
+        {
+          "value": "contain",
+          "label": "Contain (show whole image)"
+        }
       ],
       "default": "cover"
     },
@@ -1231,15 +555,42 @@
       "label": "Image position",
       "info": "Which part of the image stays visible when it is cropped.",
       "options": [
-        { "value": "top left", "label": "Top left" },
-        { "value": "top center", "label": "Top center" },
-        { "value": "top right", "label": "Top right" },
-        { "value": "center left", "label": "Middle left" },
-        { "value": "center center", "label": "Middle center" },
-        { "value": "center right", "label": "Middle right" },
-        { "value": "bottom left", "label": "Bottom left" },
-        { "value": "bottom center", "label": "Bottom center" },
-        { "value": "bottom right", "label": "Bottom right" }
+        {
+          "value": "top left",
+          "label": "Top left"
+        },
+        {
+          "value": "top center",
+          "label": "Top center"
+        },
+        {
+          "value": "top right",
+          "label": "Top right"
+        },
+        {
+          "value": "center left",
+          "label": "Middle left"
+        },
+        {
+          "value": "center center",
+          "label": "Middle center"
+        },
+        {
+          "value": "center right",
+          "label": "Middle right"
+        },
+        {
+          "value": "bottom left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom right",
+          "label": "Bottom right"
+        }
       ],
       "default": "center center"
     },
@@ -1267,8 +618,14 @@
       "id": "size_source",
       "label": "Size label source",
       "options": [
-        { "value": "variant", "label": "Product variants" },
-        { "value": "metafield", "label": "Product metafield" }
+        {
+          "value": "variant",
+          "label": "Product variants"
+        },
+        {
+          "value": "metafield",
+          "label": "Product metafield"
+        }
       ],
       "default": "variant"
     },
@@ -1285,156 +642,6 @@
       "label": "Sub-title fallback text",
       "info": "Shown under the product name when a product has no Concerns set.",
       "default": "Suitable for normal, dry and sensitive skin."
-    },
-    {
-      "type": "header",
-      "content": "Gift note popup"
-    },
-    {
-      "type": "paragraph",
-      "content": "Add a \"Gift note product\" block below for each product that should open the popup. Every other product adds to cart normally."
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_gift_modal",
-      "label": "Enable gift note popup",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "gift_note_property",
-      "label": "Note saved as",
-      "info": "Name of the line item property shown on the order.",
-      "default": "Gift Message"
-    },
-    {
-      "type": "range",
-      "id": "gift_note_max",
-      "min": 50,
-      "max": 500,
-      "step": 10,
-      "unit": "ch",
-      "label": "Maximum note length",
-      "default": 250
-    },
-    {
-      "type": "image_picker",
-      "id": "gift_modal_logo",
-      "label": "Popup logo",
-      "info": "Falls back to the theme logo when empty."
-    },
-    {
-      "type": "text",
-      "id": "gift_modal_eyebrow",
-      "label": "Small heading",
-      "default": "A little something from you"
-    },
-    {
-      "type": "text",
-      "id": "gift_modal_heading",
-      "label": "Heading",
-      "default": "Add A Message To Your Gift"
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_heading_size",
-      "min": 20,
-      "max": 60,
-      "step": 1,
-      "unit": "px",
-      "label": "Popup heading size (desktop)",
-      "default": 40
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_heading_size_mobile",
-      "min": 16,
-      "max": 40,
-      "step": 1,
-      "unit": "px",
-      "label": "Popup heading size (mobile)",
-      "default": 26
-    },
-    {
-      "type": "text",
-      "id": "gift_modal_placeholder",
-      "label": "Message placeholder",
-      "default": "Write a message..."
-    },
-    {
-      "type": "text",
-      "id": "gift_box_label",
-      "label": "Gift box checkbox label",
-      "info": "The gift wrap price is added after this text automatically.",
-      "default": "Add Gift Box for"
-    },
-    {
-      "type": "color",
-      "id": "gift_box_label_color",
-      "label": "Gift box label color",
-      "default": "#0107EF"
-    },
-    {
-      "type": "text",
-      "id": "gift_modal_button",
-      "label": "Confirm button label",
-      "default": "Add Note"
-    },
-    {
-      "type": "text",
-      "id": "gift_modal_skip",
-      "label": "Skip link label",
-      "default": "Skip for Now"
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_width",
-      "min": 500,
-      "max": 1200,
-      "step": 10,
-      "unit": "px",
-      "label": "Popup maximum width",
-      "default": 930
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_image_width",
-      "min": 120,
-      "max": 360,
-      "step": 10,
-      "unit": "px",
-      "label": "Product image width",
-      "default": 200
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_logo_height",
-      "min": 20,
-      "max": 90,
-      "step": 2,
-      "unit": "px",
-      "label": "Popup logo height",
-      "default": 46
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_blur",
-      "min": 0,
-      "max": 20,
-      "step": 1,
-      "unit": "px",
-      "label": "Background blur",
-      "default": 6
-    },
-    {
-      "type": "range",
-      "id": "gift_modal_overlay_opacity",
-      "min": 0,
-      "max": 90,
-      "step": 5,
-      "unit": "%",
-      "label": "Background dim",
-      "default": 45
     },
     {
       "type": "header",
@@ -1461,27 +668,6 @@
       "default": 60
     }
   ],
-  "blocks": [
-    {
-      "type": "gift_product",
-      "name": "Gift note product",
-      "settings": [
-        {
-          "type": "product",
-          "id": "product",
-          "label": "Product",
-          "info": "Add to cart on this product opens the gift note popup instead."
-        },
-        {
-          "type": "product",
-          "id": "gift_box_product",
-          "label": "Gift wrap product",
-          "info": "Added alongside it when the gift box is ticked. Leave empty to hide the checkbox for this product."
-        }
-      ]
-    }
-  ],
-  "max_blocks": 20,
   "presets": [
     {
       "name": "Rakhi Product Grid"
