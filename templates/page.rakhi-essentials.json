@@ -49,7 +49,7 @@
     "rakhi_grid": {
       "type": "rakhi-product-grid",
       "settings": {
-        "collection": "frontpage",
+        "collection": "combos",
         "heading": "Shop Combos",
         "heading_tag": "h2",
         "products_to_show": 8,
