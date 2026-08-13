@@ -574,7 +574,19 @@
           imageEl.alt = item.dataset.giftProductImageAlt || '';
         }
         if (noteEl) noteEl.value = '';
-        if (giftBoxEl) giftBoxEl.checked = false;
+
+        // Each product carries its own gift wrap, so the checkbox is rebuilt per open
+        // and stays hidden for products without one.
+        const giftVariant = item.dataset.giftBoxVariant || '';
+        const giftPrice = item.dataset.giftBoxPrice || '';
+        if (giftBoxEl) {
+          giftBoxEl.checked = false;
+          giftBoxEl.value = giftVariant;
+        }
+        if (giftBoxLabel) {
+          giftBoxLabel.textContent = giftPrice ? `${giftBoxLabelText} ${giftPrice}` : giftBoxLabelText;
+        }
+        if (giftBoxWrap) giftBoxWrap.hidden = !giftVariant;
 
         lastFocused = document.activeElement;
         modal.hidden = false;
