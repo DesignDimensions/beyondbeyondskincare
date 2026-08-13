@@ -44,10 +44,16 @@
     Line item properties are shown in the same pill as the variant title when a product has
     no variants of its own, so a personalised item still reads as configurable at a glance.
   endcomment
+  comment
+    The gift note gets its own multi-row block below, so keep it out of the
+    single-line pill where it would be truncated.
+  endcomment
+  assign gift_note_key = 'Gift Message'
+
   assign custom_properties = ''
   for property in item.properties
     assign property_first_char = property.first | slice: 0
-    if property.last != blank and property_first_char != '_'
+    if property.last != blank and property_first_char != '_' and property.first != gift_note_key
       assign custom_properties = custom_properties | append: property.first | append: ': ' | append: property.last | append: ' · '
     endif
   endfor
@@ -200,6 +206,8 @@
         {%- else -%}
           <span class="cart-item__variant-spacer"></span>
         {%- endif -%}
+
+        {% render 'cart-gift-note', item: item, line: line, note_property: gift_note_key %}
 
         <div class="cart-item__actions">
           {%- if is_gift_tier -%}
