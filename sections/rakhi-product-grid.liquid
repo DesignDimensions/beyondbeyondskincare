@@ -28,29 +28,7 @@
   }
 
   #shopify-section-{{ section.id }} .rakhi-grid__sort {
-    position: relative;
     flex: 0 0 auto;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-grid__sort select {
-    appearance: none;
-    -webkit-appearance: none;
-    background: transparent;
-    border: {{ s.sort_border_width }}px solid currentColor;
-    border-radius: {{ s.sort_border_radius }}px;
-    padding: {{ s.sort_padding_y }}px {{ s.sort_padding_x }}px;
-    font-size: {{ s.sort_font_size }}px;
-    font-family: inherit;
-    letter-spacing: {{ s.sort_letter_spacing }}px;
-    {% if s.sort_uppercase %}text-transform: uppercase;{% endif %}
-    color: inherit;
-    cursor: pointer;
-    line-height: 1.2;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-grid__sort select:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
   }
 
   /* The shared carousel grid hard-codes 64px side padding and auto-fit columns.
