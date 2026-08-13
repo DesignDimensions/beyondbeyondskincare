@@ -241,7 +241,16 @@
                     endif
                   -%}
                   <td class="cart-item__quantity{% if has_qty_rules or has_vol_pricing %} cart-item__quantity--info{% endif %}">
-                    {%- if item.properties._gift_tier != blank -%}
+                    {%- comment -%}
+                      A gift-note wrap's quantity follows the product it is bound to,
+                      so it is shown read-only rather than as an editable stepper.
+                    {%- endcomment -%}
+                    {%- if item.properties._gift_wrap_for != blank -%}
+                      <span class="quantity quantity--gift cart-item__locked-qty">
+                        <span class="visually-hidden">{{ 'products.product.quantity.label' | t }}</span>
+                        {{ item.quantity }}
+                      </span>
+                    {%- elsif item.properties._gift_tier != blank -%}
                       <span class="quantity quantity--gift">
                         <span class="visually-hidden">{{ 'products.product.quantity.label' | t }}</span>
                         {{ item.quantity }}
@@ -435,7 +444,7 @@
                       {%- endif -%}
                     </div>
 
-                    {%- unless item.properties._gift_tier != blank -%}
+                    {%- unless item.properties._gift_tier != blank or item.properties._gift_wrap_for != blank -%}
                       {%- if gift_wrap_id == nil or item.id != gift_wrap_id -%}
                         <cart-remove-button id="Remove-{{ item.index | plus: 1 }}" data-index="{{ item.index | plus: 1 }}">
                           <a href="{{ item.url_to_remove }}" class="button button--tertiary" aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}">
