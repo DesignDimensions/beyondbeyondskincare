@@ -174,11 +174,12 @@
     }
 
     /* Fixed media column keeps the image from ballooning as the dialog widens. */
+    /* Stretch so the media column matches the content column's height exactly. */
     #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
       display: grid;
       grid-template-columns: {{ s.gift_modal_image_width }}px minmax(0, 1fr);
       gap: 28px;
-      align-items: start;
+      align-items: stretch;
     }
     .rakhi-gift-modal__content{
           height: 100%;
@@ -186,15 +187,22 @@
     flex-flow: column;
     justify-content: center;
     }
+    /* The image is absolutely positioned so it contributes no intrinsic height —
+       the row height comes purely from the content column, and the image fills it. */
     #shopify-section-{{ section.id }} .rakhi-gift-modal__media {
-          aspect-ratio: 183 / 230;
+      position: relative;
+      min-height: 100%;
+      background: #f2f4f7;
+      overflow: hidden;
     }
+
     #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
+      position: absolute;
+      inset: 0;
       display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      background: #f2f4f7;
     }
 
     #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
