@@ -23,7 +23,7 @@
       "settings": {
         "heading": "Love, Care & Protection",
         "heading_tag": "h1",
-        "subtext": "- Powered By <strong>NAD+<\/strong>",
+        "subtext": "- Powered By <strong>NAD+</strong>",
         "background_color": "#0a0af0",
         "text_color": "#ffffff",
         "image_position": "center center",
@@ -49,6 +49,7 @@
     "rakhi_grid": {
       "type": "rakhi-product-grid",
       "settings": {
+        "collection": "frontpage",
         "heading": "Shop Combos",
         "heading_tag": "h2",
         "products_to_show": 8,
