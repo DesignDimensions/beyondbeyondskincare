@@ -230,30 +230,38 @@
     });
 
     // --- Sorting ---
-    const select = scope.querySelector('[data-rakhi-sort]');
+    const sortEl = scope.querySelector('[data-rakhi-sort]');
     const grid = scope.querySelector('[data-rakhi-grid]');
-    if (!select || !grid) return;
+    if (!sortEl || !grid) return;
 
     const num = (el, attr) => Number(el.getAttribute(attr)) || 0;
     const str = (el, attr) => el.getAttribute(attr) || '';
 
+    // Keys match Shopify's own sort_by values so the labels and behaviour line up
+    // with the collection page.
     const comparators = {
       manual: (a, b) => num(a, 'data-sort-position') - num(b, 'data-sort-position'),
       'price-ascending': (a, b) => num(a, 'data-sort-price') - num(b, 'data-sort-price'),
       'price-descending': (a, b) => num(b, 'data-sort-price') - num(a, 'data-sort-price'),
       'title-ascending': (a, b) => str(a, 'data-sort-title').localeCompare(str(b, 'data-sort-title')),
       'title-descending': (a, b) => str(b, 'data-sort-title').localeCompare(str(a, 'data-sort-title')),
-      'date-descending': (a, b) => num(b, 'data-sort-date') - num(a, 'data-sort-date'),
-      'date-ascending': (a, b) => num(a, 'data-sort-date') - num(b, 'data-sort-date'),
+      'created-ascending': (a, b) => num(a, 'data-sort-date') - num(b, 'data-sort-date'),
+      'created-descending': (a, b) => num(b, 'data-sort-date') - num(a, 'data-sort-date'),
     };
 
-    select.addEventListener('change', () => {
-      const compare = comparators[select.value] || comparators.manual;
+    sortEl.addEventListener('change', (event) => {
+      const input = event.target;
+      if (!input || input.name.indexOf('rakhi_sort_by_') !== 0) return;
+
+      const compare = comparators[input.value] || comparators.manual;
       const items = Array.from(grid.children);
       items.sort(compare);
       const fragment = document.createDocumentFragment();
       items.forEach((item) => fragment.appendChild(item));
       grid.appendChild(fragment);
+
+      // Match the collection page: picking an option closes the disclosure.
+      sortEl.open = false;
     });
   })();
 </script>
