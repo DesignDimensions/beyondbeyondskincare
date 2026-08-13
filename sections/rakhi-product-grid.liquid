@@ -302,6 +302,11 @@
       gap: 18px;
     }
 
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
+      max-width: {{ s.gift_modal_image_width }}px;
+      margin: 0 auto;
+    }
+
     #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
       font-size: 19px;
     }
@@ -1046,7 +1051,7 @@
       "step": 1,
       "unit": "px",
       "label": "Popup heading size (desktop)",
-      "default": 44
+      "default": 40
     },
     {
       "type": "range",
