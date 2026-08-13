@@ -308,11 +308,11 @@
       .gift-note-modal__eyebrow {
         margin-top: 18px;
         letter-spacing: 3px;
-        font-size: 11px;
+        font-size: 13px;
       }
 
       .gift-note-modal__heading {
-        font-size: {{ settings.gift_note_heading_size_mobile }}px;
+        font-size: 30px;
         margin: 10px 0 18px;
       }
 
@@ -362,7 +362,12 @@
           <span class="gift-note-modal__logo-text">{{ shop.name }}</span>
         {%- endif -%}
 
-        <button type="button" class="gift-note-modal__close" data-gift-note-close aria-label="{{ 'accessibility.close' | t }}">
+        <button
+          type="button"
+          class="gift-note-modal__close"
+          data-gift-note-close
+          aria-label="{{ 'accessibility.close' | t }}"
+        >
           <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
             <path d="M4 4 L20 20 M20 4 L4 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
           </svg>
