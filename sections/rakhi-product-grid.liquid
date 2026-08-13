@@ -186,7 +186,6 @@
               Emits nothing unless this product qualifies. Config lives in
               Theme settings -> "Gift note popup", shared with the product page.
             {%- endcomment -%}
-            {% render 'gift-note-trigger', product: product %}
             data-sort-position="{{ forloop.index }}"
             data-sort-price="{{ product.price | default: 0 }}"
             data-sort-title="{{ product.title | strip_html | escape | downcase }}"
