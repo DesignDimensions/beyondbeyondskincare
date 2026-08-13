@@ -665,6 +665,85 @@
       let activeVariantId = null;
       let lastFocused = null;
       let previousOverflow = '';
+      let closing = false;
+
+      const overlayEl = modal.querySelector('.rakhi-gift-modal__overlay');
+      const dialogEl = modal.querySelector('.rakhi-gift-modal__dialog');
+
+      // GSAP is deferred, so it may not be parsed yet on a very fast first click.
+      const gsapReady = () => typeof window.gsap !== 'undefined';
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const animate = () => gsapReady() && !reduceMotion;
+
+      const revealTargets = () => [
+        modal.querySelector('.rakhi-gift-modal__head'),
+        modal.querySelector('.rakhi-gift-modal__eyebrow'),
+        modal.querySelector('.rakhi-gift-modal__heading'),
+        modal.querySelector('.rakhi-gift-modal__media'),
+        modal.querySelector('.rakhi-gift-modal__content'),
+        modal.querySelector('.rakhi-gift-modal__actions'),
+      ].filter(Boolean);
+
+      const playOpen = () => {
+        if (!animate()) return;
+        gsap.killTweensOf([overlayEl, dialogEl, ...revealTargets()]);
+        gsap.fromTo(overlayEl, { opacity: 0 }, { opacity: 1, duration: 0.32, ease: 'power2.out' });
+        gsap.fromTo(
+          dialogEl,
+          { opacity: 0, y: 24, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: 'power3.out' }
+        );
+        gsap.fromTo(
+          revealTargets(),
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out', stagger: 0.05, delay: 0.08 }
+        );
+      };
+
+      const playClose = (done) => {
+        if (!animate()) {
+          done();
+          return;
+        }
+        closing = true;
+        gsap.killTweensOf([overlayEl, dialogEl]);
+        gsap.to(overlayEl, { opacity: 0, duration: 0.24, ease: 'power2.in' });
+        gsap.to(dialogEl, {
+          opacity: 0,
+          y: 16,
+          scale: 0.98,
+          duration: 0.26,
+          ease: 'power2.in',
+          onComplete: () => {
+            gsap.set([overlayEl, dialogEl], { clearProps: 'all' });
+            closing = false;
+            done();
+          },
+        });
+      };
+
+      // Add Note stays disabled until a message is written; Skip for Now does not.
+      const syncSubmitState = () => {
+        if (!submitEl) return;
+        const hasNote = Boolean(noteEl && noteEl.value.trim());
+        if (submitEl.disabled === !hasNote) return;
+        submitEl.disabled = !hasNote;
+        if (animate()) {
+          gsap.fromTo(submitEl, { scale: 0.99 }, { scale: 1, duration: 0.25, ease: 'power2.out' });
+        }
+      };
+
+      noteEl && noteEl.addEventListener('input', syncSubmitState);
+
+      giftBoxEl &&
+        giftBoxEl.addEventListener('change', () => {
+          if (!animate()) return;
+          gsap.fromTo(
+            giftBoxEl,
+            { scale: 0.8 },
+            { scale: 1, duration: 0.3, ease: 'back.out(3)' }
+          );
+        });
 
       const showError = (message) => {
         if (!errorEl) return;
