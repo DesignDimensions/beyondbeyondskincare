@@ -504,7 +504,9 @@
 
 <script>
   (() => {
-    const scope = document.currentScript && document.currentScript.previousElementSibling;
+    // Resolve by section id rather than previousElementSibling: this script has more
+    // than one sibling (grid + popup), so a positional lookup silently picks the wrong one.
+    const scope = document.getElementById('shopify-section-{{ section.id }}');
     if (!scope || scope.dataset.rakhiGridInit === '1') return;
     scope.dataset.rakhiGridInit = '1';
 
