@@ -382,10 +382,21 @@
               endif
             endif
 
-            assign gift_token = '|' | append: product.handle | append: '|'
             assign opens_gift_modal = false
-            if gift_modal_enabled and gift_handles contains gift_token
-              assign opens_gift_modal = true
+            assign card_gift_variant = blank
+            assign card_gift_price = blank
+            if gift_modal_enabled
+              for gift_block in section.blocks
+                if gift_block.settings.product != blank and gift_block.settings.product.handle == product.handle
+                  assign opens_gift_modal = true
+                  assign block_gift_variant = gift_block.settings.gift_box_product.selected_or_first_available_variant
+                  if block_gift_variant != blank
+                    assign card_gift_variant = block_gift_variant.id
+                    assign card_gift_price = block_gift_variant.price | money
+                  endif
+                  break
+                endif
+              endfor
             endif
           -%}
           <div
