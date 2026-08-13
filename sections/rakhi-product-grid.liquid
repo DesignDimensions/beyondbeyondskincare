@@ -179,9 +179,21 @@
                 assign card_skin_text = product_concerns | join: ', '
               endif
             endif
+
+            assign gift_token = '|' | append: product.handle | append: '|'
+            assign opens_gift_modal = false
+            if gift_modal_enabled and gift_handles contains gift_token
+              assign opens_gift_modal = true
+            endif
           -%}
           <div
             class="rakhi-grid__item"
+            {% if opens_gift_modal %}
+              data-gift-modal-trigger
+              data-gift-product-title="{{ product.title | escape }}"
+              data-gift-product-image="{{ product.featured_image | image_url: width: 800 }}"
+              data-gift-product-image-alt="{{ product.featured_image.alt | default: product.title | escape }}"
+            {% endif %}
             data-sort-position="{{ forloop.index }}"
             data-sort-price="{{ product.price | default: 0 }}"
             data-sort-title="{{ product.title | strip_html | escape | downcase }}"
