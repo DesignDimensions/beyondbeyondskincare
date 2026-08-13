@@ -169,6 +169,14 @@
   if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined') {
     subscribe(PUB_SUB_EVENTS.cartUpdate, () => reconcileWraps());
   }
+
+  // Backstop for any cart path that changes a quantity without publishing
+  // cartUpdate: re-check shortly after the theme's own request settles.
+  document.addEventListener('change', (event) => {
+    if (!event.target.closest('.quantity__input, quantity-input, cart-remove-button')) return;
+    setTimeout(() => reconcileWraps(), 600);
+  });
+
   document.addEventListener('DOMContentLoaded', () => reconcileWraps());
   if (document.readyState !== 'loading') reconcileWraps();
 })();
