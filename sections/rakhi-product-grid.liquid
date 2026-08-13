@@ -120,17 +120,44 @@
         {%- endif -%}
 
         {%- if s.show_sorting -%}
-          <div class="rakhi-grid__sort">
-            <label class="visually-hidden" for="RakhiSort-{{ section.id }}">{{ s.sort_label }}</label>
-            <select id="RakhiSort-{{ section.id }}" data-rakhi-sort>
-              <option value="manual">{{ s.sort_label }}</option>
-              <option value="price-ascending">Price: Low to High</option>
-              <option value="price-descending">Price: High to Low</option>
-              <option value="title-ascending">Alphabetically: A–Z</option>
-              <option value="title-descending">Alphabetically: Z–A</option>
-              <option value="date-descending">Newest first</option>
-              <option value="date-ascending">Oldest first</option>
-            </select>
+          {%- comment -%}
+            Same markup as the collection page sort control in snippets/facets.liquid.
+            Options come from the collection so the labels match, minus the ones that
+            need server data (best selling, relevance) — this sorts in the browser.
+          {%- endcomment -%}
+          {%- assign supported_sorts = 'manual,title-ascending,title-descending,price-ascending,price-descending,created-ascending,created-descending' | split: ',' -%}
+          <div class="sorting rakhi-grid__sort">
+            <div class="facet-filters__field">
+              <details class="disclosure-has-popup facets__disclosure facet-filters__sort" data-rakhi-sort>
+                <summary class="facets__summary">
+                  <span class="button button--secondary button--small">
+                    {{- 'products.facets.sort_by_label' | t -}}
+                    {%- render 'icon', icon: 'caret' -%}
+                  </span>
+                </summary>
+                <div class="facets__display">
+                  <ul class="facets__list list-unstyled" role="list">
+                    {%- for option in product_collection.sort_options -%}
+                      {%- if supported_sorts contains option.value -%}
+                        <li class="list-menu__item facets__item">
+                          <label for="RakhiSort-{{ section.id }}-{{ option.value | escape }}" class="facet-checkbox">
+                            <input
+                              type="radio"
+                              name="rakhi_sort_by_{{ section.id }}"
+                              value="{{ option.value | escape }}"
+                              id="RakhiSort-{{ section.id }}-{{ option.value | escape }}"
+                              {% if option.value == 'manual' %}checked="checked"{% endif %}
+                              class="visually-hidden"
+                            >
+                            <span class="label">{{ option.name | escape }}</span>
+                          </label>
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </details>
+            </div>
           </div>
         {%- endif -%}
       </div>
