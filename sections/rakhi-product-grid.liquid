@@ -113,6 +113,8 @@
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, {{ s.gift_modal_overlay_opacity | divided_by: 100.0 }});
+    backdrop-filter: blur({{ s.gift_modal_blur }}px);
+    -webkit-backdrop-filter: blur({{ s.gift_modal_blur }}px);
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__dialog {
