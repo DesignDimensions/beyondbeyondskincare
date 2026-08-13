@@ -1,0 +1,50 @@
+{% comment %}
+  Emits the data attributes that turn an element into a gift-note trigger.
+
+  Put it on a wrapper that CONTAINS the add-to-cart control. Any click on that
+  control opens the popup instead of adding straight to cart.
+
+  A product qualifies when the gift-note popup is enabled and the product belongs
+  to the collection chosen in Theme settings -> "Gift note popup". Its gift wrap
+  comes from the product's own `custom.gift_wrap` metafield, so the pairing lives
+  with the product rather than in any one template.
+
+  Accepts:
+  - product: {Object} Product to test
+  - variant: {Object} Variant to add. Optional — on the product page the form's own
+    hidden input wins, so this is only the fallback for cards.
+
+  Usage:
+  <div {% render 'gift-note-trigger', product: product %}> ... add to cart ... </div>
+{% endcomment %}
+
+{%- liquid
+  assign qualifies = false
+
+  if settings.gift_note_enabled and settings.gift_note_collection != blank and product != blank
+    for product_collection in product.collections
+      if product_collection.handle == settings.gift_note_collection.handle
+        assign qualifies = true
+        break
+      endif
+    endfor
+  endif
+
+  if qualifies
+    assign trigger_variant = variant | default: product.selected_or_first_available_variant
+    assign wrap_product = product.metafields.custom.gift_wrap.value
+    assign wrap_variant = wrap_product.selected_or_first_available_variant
+  endif
+-%}
+
+{%- if qualifies -%}
+  data-gift-note-trigger
+  data-gift-note-title="{{ product.title | escape }}"
+  data-gift-note-image="{{ product.featured_image | image_url: width: 800 }}"
+  data-gift-note-image-alt="{{ product.featured_image.alt | default: product.title | escape }}"
+  {%- if trigger_variant != blank %} data-gift-note-variant="{{ trigger_variant.id }}"{% endif -%}
+  {%- if wrap_variant != blank %}
+    data-gift-note-wrap-variant="{{ wrap_variant.id }}"
+    data-gift-note-wrap-price="{{ wrap_variant.price | money }}"
+  {%- endif -%}
+{%- endif -%}
