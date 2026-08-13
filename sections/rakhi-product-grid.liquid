@@ -362,9 +362,14 @@
         gap: 18px;
       }
 
-      #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
+      /* Stacked on mobile there is no side column to borrow height from, so the
+         media needs its own ratio to stay visible. */
+      #shopify-section-{{ section.id }} .rakhi-gift-modal__media {
+        min-height: 0;
+        width: 100%;
         max-width: {{ s.gift_modal_image_width }}px;
         margin: 0 auto;
+        aspect-ratio: 183 / 230;
       }
 
       #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
