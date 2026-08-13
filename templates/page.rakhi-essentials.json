@@ -84,7 +84,8 @@
         "gift_modal_logo_height": 46,
         "gift_modal_overlay_opacity": 45,
         "gift_modal_logo": "shopify://shop_images/Frame_511.svg",
-        "gift_modal_blur": 6
+        "gift_modal_blur": 6,
+        "gift_modal_loading_text": "Adding product to cart..."
       },
       "blocks": {
         "gift-radiance": {
