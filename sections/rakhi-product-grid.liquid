@@ -209,6 +209,10 @@
     min-height: 150px;
   }
 
+  #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox[hidden] {
+    display: none;
+  }
+
   #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox {
     display: flex;
     align-items: center;
@@ -542,6 +546,9 @@
       const titleEl = modal.querySelector('[data-gift-modal-title]');
       const noteEl = modal.querySelector('[data-gift-modal-note]');
       const giftBoxEl = modal.querySelector('[data-gift-modal-giftbox]');
+      const giftBoxWrap = modal.querySelector('[data-gift-modal-giftbox-wrap]');
+      const giftBoxLabel = modal.querySelector('[data-gift-modal-giftbox-label]');
+      const giftBoxLabelText = {{ s.gift_box_label | json }};
       const submitEl = modal.querySelector('[data-gift-modal-submit]');
       const skipEl = modal.querySelector('[data-gift-modal-skip]');
       const errorEl = modal.querySelector('[data-gift-modal-error]');
