@@ -236,12 +236,45 @@
       font-weight: 600;
     }
 
+    /* accent-color only tints the checked fill, leaving a grey border when empty.
+       Drawing the box manually keeps it the label colour in both states. */
     #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input {
-      width: 15px;
-      height: 15px;
-      accent-color: {{ s.gift_box_label_color }};
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      border: 1.5px solid {{ s.gift_box_label_color }};
+      border-radius: 2px;
+      background: transparent;
       cursor: pointer;
       flex: 0 0 auto;
+      display: inline-grid;
+      place-content: center;
+peer      position: relative;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input::before {
+      content: '';
+      width: 9px;
+      height: 5px;
+      border-left: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      transform: rotate(-45deg) translate(1px, -1px);
+      opacity: 0;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input:checked {
+      background: {{ s.gift_box_label_color }};
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input:checked::before {
+      opacity: 1;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox input:focus-visible {
+      outline: 2px solid {{ s.gift_box_label_color }};
+      outline-offset: 2px;
     }
 
     #shopify-section-{{ section.id }} .rakhi-gift-modal__actions {
