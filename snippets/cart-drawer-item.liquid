@@ -308,12 +308,13 @@
       <p class="cart-item__error form__message errors" id="Line-item-error-{{ line }}">
         <span class="cart-item__error-text"></span>
       </p>
-    </div>
 
-    {%- comment -%}
-      Sits outside .cart-item__content so it wraps onto its own full-width row of the
-      card, rather than sharing the controls row with the quantity stepper.
-    {%- endcomment -%}
-    {% render 'cart-gift-note', item: item, line: line, note_property: gift_note_key %}
+      {%- comment -%}
+        Last child of .cart-item__content, which is a flex column, so the note gets its
+        own row at the full width of the details area. It must stay inside this column:
+        making .cart-item__body wrap instead pushes the image onto its own row.
+      {%- endcomment -%}
+      {% render 'cart-gift-note', item: item, line: line, note_property: gift_note_key %}
+    </div>
   </div>
 </li>
