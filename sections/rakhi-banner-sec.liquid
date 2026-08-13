@@ -1,125 +1,98 @@
 {%- liquid
   assign s = section.settings
+  assign desktop_image = s.image_desktop
+  assign mobile_image = s.image_mobile | default: s.image_desktop
 -%}
 
 {%- style -%}
-  #shopify-section-{{ section.id }} {
-    --rakhi-banner-bg: {{ s.background_color }};
-    --rakhi-banner-text: {{ s.text_color }};
-    --rakhi-banner-pt: {{ s.padding_top }}px;
-    --rakhi-banner-pb: {{ s.padding_bottom }}px;
-    --rakhi-banner-min-h: {{ s.min_height }}px;
-    --rakhi-banner-min-h-mobile: {{ s.min_height_mobile }}px;
-    --rakhi-banner-heading-size: {{ s.heading_size }}px;
-    --rakhi-banner-heading-size-mobile: {{ s.heading_size_mobile }}px;
-    --rakhi-banner-heading-weight: {{ s.heading_weight }};
-    --rakhi-banner-heading-spacing: {{ s.heading_letter_spacing }}px;
-    --rakhi-banner-subtext-size: {{ s.subtext_size }}px;
-    --rakhi-banner-subtext-size-mobile: {{ s.subtext_size_mobile }}px;
-  }
-
   #shopify-section-{{ section.id }} .rakhi-banner {
-    position: relative;
-    background-color: var(--rakhi-banner-bg);
-    color: var(--rakhi-banner-text);
-    padding-top: var(--rakhi-banner-pt);
-    padding-bottom: var(--rakhi-banner-pb);
-    min-height: var(--rakhi-banner-min-h);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-banner__bg-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: {{ s.image_position }};
-    z-index: 0;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-banner__overlay {
-    position: absolute;
-    inset: 0;
     background-color: {{ s.background_color }};
-    opacity: {{ s.overlay_opacity | divided_by: 100.0 }};
-    z-index: 1;
+    padding-top: {{ s.padding_top }}px;
+    padding-bottom: {{ s.padding_bottom }}px;
   }
 
-  #shopify-section-{{ section.id }} .rakhi-banner__inner {
-    position: relative;
-    z-index: 2;
+  #shopify-section-{{ section.id }} .rakhi-banner__media {
+    display: block;
     width: 100%;
+    height: auto;
+    border-radius: {{ s.border_radius }}px;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-banner__link {
+    display: block;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-banner__placeholder {
     display: flex;
-    flex-direction: column;
-    gap: {{ s.gap }}px;
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-banner__heading {
-    margin: 0;
-    color: var(--rakhi-banner-text);
-    font-size: var(--rakhi-banner-heading-size);
-    font-weight: var(--rakhi-banner-heading-weight);
-    letter-spacing: var(--rakhi-banner-heading-spacing);
-    line-height: 1.1;
-    text-align: {{ s.heading_alignment }};
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-banner__subtext {
-    color: var(--rakhi-banner-text);
-    font-size: var(--rakhi-banner-subtext-size);
-    line-height: 1.3;
-    text-align: {{ s.subtext_alignment }};
-  }
-
-  #shopify-section-{{ section.id }} .rakhi-banner__subtext strong,
-  #shopify-section-{{ section.id }} .rakhi-banner__subtext b {
-    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #ffffff;
+    text-align: center;
+    padding: 24px;
   }
 
   @media screen and (max-width: 749px) {
     #shopify-section-{{ section.id }} .rakhi-banner {
-      min-height: var(--rakhi-banner-min-h-mobile);
+      padding-top: {{ s.padding_top_mobile }}px;
+      padding-bottom: {{ s.padding_bottom_mobile }}px;
     }
 
-    #shopify-section-{{ section.id }} .rakhi-banner__heading {
-      font-size: var(--rakhi-banner-heading-size-mobile);
-      text-align: {{ s.heading_alignment_mobile }};
-    }
-
-    #shopify-section-{{ section.id }} .rakhi-banner__subtext {
-      font-size: var(--rakhi-banner-subtext-size-mobile);
-      text-align: {{ s.subtext_alignment_mobile }};
+    #shopify-section-{{ section.id }} .rakhi-banner__media {
+      border-radius: {{ s.border_radius_mobile }}px;
     }
   }
 {%- endstyle -%}
 
 <div class="rakhi-banner">
-  {%- if s.background_image != blank -%}
-    {{
-      s.background_image
-      | image_url: width: 3000
-      | image_tag:
-        loading: 'eager',
-        fetchpriority: 'high',
-        class: 'rakhi-banner__bg-image',
-        sizes: '100vw',
-        widths: '750, 1100, 1500, 1780, 2000, 3000',
-        alt: s.background_image.alt | default: s.heading | strip_html
-    }}
-    <div class="rakhi-banner__overlay"></div>
-  {%- endif -%}
-
   <div class="rakhi-banner__inner{% unless s.full_width %} page-width{% endunless %}">
-    {%- if s.heading != blank -%}
-      <{{ s.heading_tag }} class="rakhi-banner__heading">{{ s.heading }}</{{ s.heading_tag }}>
-    {%- endif -%}
+    {%- if desktop_image != blank or mobile_image != blank -%}
+      {%- capture banner_media -%}
+        <picture>
+          {%- if mobile_image != blank and desktop_image != blank -%}
+            <source
+              media="(max-width: 749px)"
+              srcset="
+                {{ mobile_image | image_url: width: 500 }} 500w,
+                {{ mobile_image | image_url: width: 750 }} 750w,
+                {{ mobile_image | image_url: width: 1100 }} 1100w,
+                {{ mobile_image | image_url: width: 1500 }} 1500w
+              "
+              sizes="100vw"
+              width="{{ mobile_image.width }}"
+              height="{{ mobile_image.height }}"
+            >
+          {%- endif -%}
+          {%- assign primary_image = desktop_image | default: mobile_image -%}
+          <img
+            class="rakhi-banner__media"
+            src="{{ primary_image | image_url: width: 2000 }}"
+            srcset="
+              {{ primary_image | image_url: width: 750 }} 750w,
+              {{ primary_image | image_url: width: 1100 }} 1100w,
+              {{ primary_image | image_url: width: 1500 }} 1500w,
+              {{ primary_image | image_url: width: 2000 }} 2000w,
+              {{ primary_image | image_url: width: 3000 }} 3000w
+            "
+            sizes="{% if s.full_width %}100vw{% else %}(min-width: {{ settings.page_width }}px) {{ settings.page_width }}px, 100vw{% endif %}"
+            width="{{ primary_image.width }}"
+            height="{{ primary_image.height }}"
+            alt="{{ s.image_alt | default: primary_image.alt | escape }}"
+            loading="eager"
+            fetchpriority="high"
+          >
+        </picture>
+      {%- endcapture -%}
 
-    {%- if s.subtext != blank -%}
-      <div class="rakhi-banner__subtext">{{ s.subtext }}</div>
+      {%- if s.link != blank -%}
+        <a href="{{ s.link }}" class="rakhi-banner__link">{{ banner_media }}</a>
+      {%- else -%}
+        {{ banner_media }}
+      {%- endif -%}
+    {%- else -%}
+      <div class="rakhi-banner__placeholder">
+        <p>Add a desktop and mobile image in the section settings.</p>
+      </div>
     {%- endif -%}
   </div>
 </div>
@@ -131,239 +104,64 @@
   "class": "section rakhi-banner-section",
   "settings": [
     {
-      "type": "inline_richtext",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Love, Care & Protection"
-    },
-    {
-      "type": "select",
-      "id": "heading_tag",
-      "label": "Heading HTML tag",
-      "info": "Use h1 only if this is the main heading of the page.",
-      "options": [
-        { "value": "h1", "label": "h1" },
-        { "value": "h2", "label": "h2" },
-        { "value": "h3", "label": "h3" },
-        { "value": "div", "label": "div" }
-      ],
-      "default": "h2"
-    },
-    {
-      "type": "inline_richtext",
-      "id": "subtext",
-      "label": "Sub text",
-      "info": "Select text and use the bold button to emphasise part of it, e.g. NAD+.",
-      "default": "- Powered By <strong>NAD+</strong>"
-    },
-    {
-      "type": "header",
-      "content": "Colors"
-    },
-    {
-      "type": "color",
-      "id": "background_color",
-      "label": "Background color",
-      "default": "#0a0af0"
-    },
-    {
-      "type": "color",
-      "id": "text_color",
-      "label": "Text color",
-      "default": "#ffffff"
-    },
-    {
-      "type": "header",
-      "content": "Background image",
-      "info": "Optional. Leave empty to use a solid background color."
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop image"
     },
     {
       "type": "image_picker",
-      "id": "background_image",
-      "label": "Background image"
+      "id": "image_mobile",
+      "label": "Mobile image",
+      "info": "Shown at 749px and below. Falls back to the desktop image when empty."
     },
     {
-      "type": "select",
-      "id": "image_position",
-      "label": "Image position",
-      "options": [
-        { "value": "top left", "label": "Top left" },
-        { "value": "top center", "label": "Top center" },
-        { "value": "top right", "label": "Top right" },
-        { "value": "center left", "label": "Middle left" },
-        { "value": "center center", "label": "Middle center" },
-        { "value": "center right", "label": "Middle right" },
-        { "value": "bottom left", "label": "Bottom left" },
-        { "value": "bottom center", "label": "Bottom center" },
-        { "value": "bottom right", "label": "Bottom right" }
-      ],
-      "default": "center center"
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "info": "Describes the banner for screen readers and search engines."
     },
     {
-      "type": "range",
-      "id": "overlay_opacity",
-      "min": 0,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "label": "Background color overlay opacity",
-      "info": "Only applies when a background image is set.",
-      "default": 0
+      "type": "url",
+      "id": "link",
+      "label": "Banner link",
+      "info": "Optional. Makes the whole banner clickable."
     },
     {
       "type": "header",
       "content": "Layout"
     },
     {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#0107EF"
+    },
+    {
       "type": "checkbox",
       "id": "full_width",
-      "label": "Make text full width",
+      "label": "Make image full width",
+      "info": "Off keeps the image inside the page width.",
       "default": false
     },
     {
-      "type": "select",
-      "id": "heading_alignment",
-      "label": "Heading alignment",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "center"
-    },
-    {
-      "type": "select",
-      "id": "subtext_alignment",
-      "label": "Sub text alignment",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "right"
-    },
-    {
       "type": "range",
-      "id": "gap",
+      "id": "border_radius",
       "min": 0,
-      "max": 80,
+      "max": 60,
       "step": 2,
       "unit": "px",
-      "label": "Space between heading and sub text",
-      "default": 24
-    },
-    {
-      "type": "range",
-      "id": "min_height",
-      "min": 100,
-      "max": 700,
-      "step": 10,
-      "unit": "px",
-      "label": "Minimum height (desktop)",
-      "default": 220
-    },
-    {
-      "type": "range",
-      "id": "min_height_mobile",
-      "min": 100,
-      "max": 500,
-      "step": 10,
-      "unit": "px",
-      "label": "Minimum height (mobile)",
-      "default": 160
-    },
-    {
-      "type": "header",
-      "content": "Typography"
-    },
-    {
-      "type": "range",
-      "id": "heading_size",
-      "min": 20,
-      "max": 120,
-      "step": 2,
-      "unit": "px",
-      "label": "Heading size (desktop)",
-      "default": 64
-    },
-    {
-      "type": "range",
-      "id": "heading_size_mobile",
-      "min": 16,
-      "max": 64,
-      "step": 1,
-      "unit": "px",
-      "label": "Heading size (mobile)",
-      "default": 28
-    },
-    {
-      "type": "select",
-      "id": "heading_weight",
-      "label": "Heading weight",
-      "options": [
-        { "value": "300", "label": "Light" },
-        { "value": "400", "label": "Regular" },
-        { "value": "500", "label": "Medium" },
-        { "value": "600", "label": "Semi bold" },
-        { "value": "700", "label": "Bold" }
-      ],
-      "default": "300"
-    },
-    {
-      "type": "range",
-      "id": "heading_letter_spacing",
-      "min": -2,
-      "max": 10,
-      "step": 1,
-      "unit": "px",
-      "label": "Heading letter spacing",
+      "label": "Image corner radius (desktop)",
       "default": 0
     },
     {
       "type": "range",
-      "id": "subtext_size",
-      "min": 10,
-      "max": 48,
-      "step": 1,
+      "id": "border_radius_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
       "unit": "px",
-      "label": "Sub text size (desktop)",
-      "default": 22
-    },
-    {
-      "type": "range",
-      "id": "subtext_size_mobile",
-      "min": 10,
-      "max": 32,
-      "step": 1,
-      "unit": "px",
-      "label": "Sub text size (mobile)",
-      "default": 14
-    },
-    {
-      "type": "header",
-      "content": "Mobile alignment"
-    },
-    {
-      "type": "select",
-      "id": "heading_alignment_mobile",
-      "label": "Heading alignment (mobile)",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "center"
-    },
-    {
-      "type": "select",
-      "id": "subtext_alignment_mobile",
-      "label": "Sub text alignment (mobile)",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" },
-        { "value": "right", "label": "Right" }
-      ],
-      "default": "right"
+      "label": "Image corner radius (mobile)",
+      "default": 0
     },
     {
       "type": "header",
@@ -376,8 +174,8 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "label": "Padding top",
-      "default": 48
+      "label": "Padding top (desktop)",
+      "default": 0
     },
     {
       "type": "range",
@@ -386,8 +184,28 @@
       "max": 160,
       "step": 4,
       "unit": "px",
-      "label": "Padding bottom",
-      "default": 48
+      "label": "Padding bottom (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top (mobile)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom (mobile)",
+      "default": 0
     }
   ],
   "presets": [
