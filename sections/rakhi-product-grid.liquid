@@ -155,52 +155,61 @@
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__eyebrow {
-    margin: 12px 0 0;
+    margin: 8px 0 0;
     text-align: center;
     text-transform: uppercase;
-    letter-spacing: 5px;
-    font-size: 15px;
+    letter-spacing: 4px;
+    font-size: 13px;
+    font-weight: 500;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__heading {
-    margin: 10px 0 28px;
+    margin: 10px 0 26px;
     text-align: center;
     font-size: {{ s.gift_modal_heading_size }}px;
     font-weight: 700;
     line-height: 1.15;
   }
 
+  /* Fixed media column keeps the image from ballooning as the dialog widens. */
   #shopify-section-{{ section.id }} .rakhi-gift-modal__body {
     display: grid;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
-    gap: 32px;
+    grid-template-columns: {{ s.gift_modal_image_width }}px minmax(0, 1fr);
+    gap: 28px;
     align-items: start;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__media img {
     display: block;
     width: 100%;
+    aspect-ratio: 1 / 1.08;
     height: auto;
     object-fit: cover;
+    background: #f2f4f7;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__product {
-    margin: 0 0 14px;
-    font-size: 24px;
-    font-weight: 700;
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 600;
     line-height: 1.2;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__note {
+    display: block;
     width: 100%;
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    border-radius: 14px;
-    padding: 16px 18px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    padding: 14px 16px;
     font-family: inherit;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.4;
     resize: vertical;
-    min-height: 150px;
+    min-height: 148px;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-gift-modal__note::placeholder {
+    color: #9b9b9b;
   }
 
   #shopify-section-{{ section.id }} .rakhi-gift-modal__giftbox[hidden] {
