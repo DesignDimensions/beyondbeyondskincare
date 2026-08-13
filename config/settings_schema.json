@@ -1271,5 +1271,174 @@
         "default": 34
       }
     ]
+  },
+  {
+    "name": "Gift note popup",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shown when a shopper adds one of these products to cart, on product pages and in product grids. Attach a gift wrap to an individual product with its \"Gift wrap\" metafield."
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_note_enabled",
+        "label": "Enable gift note popup",
+        "default": true
+      },
+      {
+        "type": "collection",
+        "id": "gift_note_collection",
+        "label": "Products in this collection show the popup"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_property",
+        "label": "Note saved as",
+        "info": "Line item property name shown on the order.",
+        "default": "Gift Message"
+      },
+      {
+        "type": "range",
+        "id": "gift_note_max",
+        "min": 50,
+        "max": 500,
+        "step": 10,
+        "unit": "ch",
+        "label": "Maximum note length",
+        "default": 250
+      },
+      {
+        "type": "header",
+        "content": "Content"
+      },
+      {
+        "type": "image_picker",
+        "id": "gift_note_logo",
+        "label": "Logo"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_eyebrow",
+        "label": "Small heading",
+        "default": "A little something from you"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_heading",
+        "label": "Heading",
+        "default": "Add A Message To Your Gift"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_placeholder",
+        "label": "Message placeholder",
+        "default": "Write a message..."
+      },
+      {
+        "type": "text",
+        "id": "gift_note_box_label",
+        "label": "Gift box checkbox label",
+        "info": "The wrap price is appended automatically.",
+        "default": "Add Gift Box for"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_button",
+        "label": "Confirm button label",
+        "default": "Add Note"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_skip",
+        "label": "Skip link label",
+        "default": "Skip for Now"
+      },
+      {
+        "type": "text",
+        "id": "gift_note_loading",
+        "label": "Loading message",
+        "default": "Adding product to cart..."
+      },
+      {
+        "type": "header",
+        "content": "Appearance"
+      },
+      {
+        "type": "color",
+        "id": "gift_note_accent",
+        "label": "Accent color",
+        "default": "#0107EF"
+      },
+      {
+        "type": "range",
+        "id": "gift_note_width",
+        "min": 500,
+        "max": 1200,
+        "step": 10,
+        "unit": "px",
+        "label": "Popup maximum width",
+        "default": 930
+      },
+      {
+        "type": "range",
+        "id": "gift_note_image_width",
+        "min": 120,
+        "max": 360,
+        "step": 10,
+        "unit": "px",
+        "label": "Product image width",
+        "default": 200
+      },
+      {
+        "type": "range",
+        "id": "gift_note_logo_height",
+        "min": 20,
+        "max": 90,
+        "step": 2,
+        "unit": "px",
+        "label": "Logo height",
+        "default": 46
+      },
+      {
+        "type": "range",
+        "id": "gift_note_heading_size",
+        "min": 20,
+        "max": 60,
+        "step": 1,
+        "unit": "px",
+        "label": "Heading size (desktop)",
+        "default": 40
+      },
+      {
+        "type": "range",
+        "id": "gift_note_heading_size_mobile",
+        "min": 16,
+        "max": 40,
+        "step": 1,
+        "unit": "px",
+        "label": "Heading size (mobile)",
+        "default": 26
+      },
+      {
+        "type": "range",
+        "id": "gift_note_blur",
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "unit": "px",
+        "label": "Background blur",
+        "default": 6
+      },
+      {
+        "type": "range",
+        "id": "gift_note_dim",
+        "min": 0,
+        "max": 90,
+        "step": 5,
+        "unit": "%",
+        "label": "Background dim",
+        "default": 45
+      }
+    ]
   }
 ]

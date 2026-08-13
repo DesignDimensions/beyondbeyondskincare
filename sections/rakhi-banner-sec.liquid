@@ -1,0 +1,217 @@
+{%- liquid
+  assign s = section.settings
+  assign desktop_image = s.image_desktop
+  assign mobile_image = s.image_mobile | default: s.image_desktop
+-%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} .rakhi-banner {
+    background-color: {{ s.background_color }};
+    padding-top: {{ s.padding_top }}px;
+    padding-bottom: {{ s.padding_bottom }}px;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-banner__media {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: {{ s.border_radius }}px;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-banner__link {
+    display: block;
+  }
+
+  #shopify-section-{{ section.id }} .rakhi-banner__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #ffffff;
+    text-align: center;
+    padding: 24px;
+  }
+
+  @media screen and (max-width: 749px) {
+    #shopify-section-{{ section.id }} .rakhi-banner {
+      padding-top: {{ s.padding_top_mobile }}px;
+      padding-bottom: {{ s.padding_bottom_mobile }}px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-banner__media {
+      border-radius: {{ s.border_radius_mobile }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="rakhi-banner">
+  <div class="rakhi-banner__inner{% unless s.full_width %} page-width{% endunless %}">
+    {%- if desktop_image != blank or mobile_image != blank -%}
+      {%- capture banner_media -%}
+        <picture>
+          {%- if mobile_image != blank and desktop_image != blank -%}
+            <source
+              media="(max-width: 749px)"
+              srcset="
+                {{ mobile_image | image_url: width: 500 }} 500w,
+                {{ mobile_image | image_url: width: 750 }} 750w,
+                {{ mobile_image | image_url: width: 1100 }} 1100w,
+                {{ mobile_image | image_url: width: 1500 }} 1500w
+              "
+              sizes="100vw"
+              width="{{ mobile_image.width }}"
+              height="{{ mobile_image.height }}"
+            >
+          {%- endif -%}
+          {%- assign primary_image = desktop_image | default: mobile_image -%}
+          <img
+            class="rakhi-banner__media"
+            src="{{ primary_image | image_url: width: 2000 }}"
+            srcset="
+              {{ primary_image | image_url: width: 750 }} 750w,
+              {{ primary_image | image_url: width: 1100 }} 1100w,
+              {{ primary_image | image_url: width: 1500 }} 1500w,
+              {{ primary_image | image_url: width: 2000 }} 2000w,
+              {{ primary_image | image_url: width: 3000 }} 3000w
+            "
+            sizes="{% if s.full_width %}100vw{% else %}(min-width: {{ settings.page_width }}px) {{ settings.page_width }}px, 100vw{% endif %}"
+            width="{{ primary_image.width }}"
+            height="{{ primary_image.height }}"
+            alt="{{ s.image_alt | default: primary_image.alt | escape }}"
+            loading="eager"
+            fetchpriority="high"
+          >
+        </picture>
+      {%- endcapture -%}
+
+      {%- if s.link != blank -%}
+        <a href="{{ s.link }}" class="rakhi-banner__link">{{ banner_media }}</a>
+      {%- else -%}
+        {{ banner_media }}
+      {%- endif -%}
+    {%- else -%}
+      <div class="rakhi-banner__placeholder">
+        <p>Add a desktop and mobile image in the section settings.</p>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Rakhi Banner",
+  "tag": "section",
+  "class": "section rakhi-banner-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Desktop image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image",
+      "info": "Shown at 749px and below. Falls back to the desktop image when empty."
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text",
+      "info": "Describes the banner for screen readers and search engines."
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Banner link",
+      "info": "Optional. Makes the whole banner clickable."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#0107EF"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Make image full width",
+      "info": "Off keeps the image inside the page width.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Image corner radius (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "border_radius_mobile",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Image corner radius (mobile)",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom (desktop)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_top_mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top (mobile)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom_mobile",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom (mobile)",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rakhi Banner"
+    }
+  ]
+}
+{% endschema %}

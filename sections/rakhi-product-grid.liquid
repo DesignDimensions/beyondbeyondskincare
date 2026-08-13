@@ -1,0 +1,677 @@
+{%- liquid
+  assign s = section.settings
+  assign products_per_row = s.products_per_row
+  assign product_collection = s.collection
+-%}
+
+{%- style -%}
+    #shopify-section-{{ section.id }} {
+      --section-padding-top: {{ s.padding_top }}px;
+      --section-padding-bottom: {{ s.padding_bottom }}px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-grid__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: {{ s.heading_spacing }}px;
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-grid__heading {
+      margin: 0;
+      font-size: {{ s.heading_size }}px;
+      font-weight: {{ s.heading_weight }};
+      letter-spacing: {{ s.heading_letter_spacing }}px;
+      line-height: 1.2;
+      {% if s.heading_uppercase %}text-transform: uppercase;{% endif %}
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-grid__sort {
+      flex: 0 0 auto;
+    }
+
+    /* The shared carousel grid hard-codes 64px side padding and auto-fit columns.
+       This section sits inside .page-width, so reset both and drive the column
+       count from the section settings instead. */
+    #shopify-section-{{ section.id }} .shop-products-carousel__grid {
+      padding-left: 0;
+      padding-right: 0;
+      grid-template-columns: repeat({{ products_per_row }}, minmax(0, 1fr));
+      column-gap: {{ s.column_gap }}px;
+      row-gap: {{ s.row_gap }}px;
+    }
+
+    /* Wrapper exists only to carry sort data and be reorderable — it must not
+       create a box, or it would become the grid item instead of the card. */
+    #shopify-section-{{ section.id }} .rakhi-grid__item {
+      display: contents;
+    }
+
+    /* The carousel styles pin this to `contain` so 2:3 shots never stretch in a
+       fluid column. Overridden here (this section only) so images fill the frame. */
+    #shopify-section-{{ section.id }} .bestseller-card__image {
+      object-fit: {{ s.image_fit }};
+      object-position: {{ s.image_position }};
+    }
+
+    #shopify-section-{{ section.id }} .rakhi-grid__empty {
+      padding: 40px 0;
+      text-align: center;
+    }
+
+    @media screen and (max-width: 989px) {
+      #shopify-section-{{ section.id }} .shop-products-carousel__grid {
+        grid-template-columns: repeat({{ products_per_row | at_most: 3 }}, minmax(0, 1fr));
+      }
+    }
+
+    @media screen and (max-width: 749px) {
+      #shopify-section-{{ section.id }} .shop-products-carousel__grid {
+        grid-template-columns: repeat({{ s.columns_mobile }}, minmax(0, 1fr));
+        column-gap: {{ s.column_gap_mobile }}px;
+        row-gap: {{ s.row_gap_mobile }}px;
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-grid__header {
+        margin-bottom: {{ s.heading_spacing_mobile }}px;
+        {% if s.stack_header_mobile %}
+          flex-direction: column;
+          align-items: flex-start;
+        {% endif %}
+      }
+
+      #shopify-section-{{ section.id }} .rakhi-grid__heading {
+        font-size: {{ s.heading_size_mobile }}px;
+      }
+    }
+
+{%- endstyle -%}
+
+{%- if s.show_sorting -%}
+  {{ 'component-facets.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
+
+
+<div class="rakhi-grid section--padding">
+  <div class="page-width">
+    {%- if s.heading != blank or s.show_sorting -%}
+      <div class="rakhi-grid__header">
+        {%- if s.heading != blank -%}
+          <{{ s.heading_tag }} class="rakhi-grid__heading">{{ s.heading }}</{{ s.heading_tag }}>
+        {%- else -%}
+          <span></span>
+        {%- endif -%}
+
+        {%- if s.show_sorting -%}
+          {%- comment -%}
+            Same markup as the collection page sort control in snippets/facets.liquid.
+            Options come from the collection so the labels match, minus the ones that
+            need server data (best selling, relevance) — this sorts in the browser.
+          {%- endcomment -%}
+          {%- assign supported_sorts = 'manual,title-ascending,title-descending,price-ascending,price-descending,created-ascending,created-descending'
+            | split: ','
+          -%}
+          <div class="sorting rakhi-grid__sort">
+            <div class="facet-filters__field">
+              <details class="disclosure-has-popup facets__disclosure facet-filters__sort" data-rakhi-sort>
+                <summary class="facets__summary">
+                  <span class="button button--secondary button--small">
+                    {{- 'products.facets.sort_by_label' | t -}}
+                    {%- render 'icon', icon: 'caret' -%}
+                  </span>
+                </summary>
+                <div class="facets__display">
+                  <ul class="facets__list list-unstyled" role="list">
+                    {%- for option in product_collection.sort_options -%}
+                      {%- if supported_sorts contains option.value -%}
+                        <li class="list-menu__item facets__item">
+                          <label for="RakhiSort-{{ section.id }}-{{ option.value | escape }}" class="facet-checkbox">
+                            <input
+                              type="radio"
+                              name="rakhi_sort_by_{{ section.id }}"
+                              value="{{ option.value | escape }}"
+                              id="RakhiSort-{{ section.id }}-{{ option.value | escape }}"
+                              {% if option.value == 'manual' %}
+                                checked="checked"
+                              {% endif %}
+                              class="visually-hidden"
+                            >
+                            <span class="label">{{ option.name | escape }}</span>
+                          </label>
+                        </li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </details>
+            </div>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if product_collection == blank -%}
+      <div class="rakhi-grid__empty">
+        <p>Select a collection in the section settings to show products here.</p>
+      </div>
+    {%- elsif product_collection.products.size == 0 -%}
+      <div class="rakhi-grid__empty">
+        <p>{{ 'sections.collection_template.no_products' | t }}</p>
+      </div>
+    {%- else -%}
+      <div class="shop-products-carousel__grid" data-rakhi-grid>
+        {%- for product in product_collection.products limit: s.products_to_show -%}
+          {%- liquid
+            # Sub-title under the product name: prefer the product's own Concerns
+            # metafield so each card reads differently, fall back to the section text.
+            assign card_skin_text = s.skin_text
+            if s.use_concerns_metafield
+              assign product_concerns = product.metafields.custom.concerns.value
+              if product_concerns != blank
+                assign card_skin_text = product_concerns | join: ', '
+              endif
+            endif
+          -%}
+          <div
+            class="rakhi-grid__item"
+            {%- comment -%}
+              Emits nothing unless this product qualifies. Config lives in
+              Theme settings -> "Gift note popup", shared with the product page.
+            {%- endcomment -%}
+            {% render 'gift-note-trigger', product: product %}
+            data-sort-position="{{ forloop.index }}"
+            data-sort-price="{{ product.price | default: 0 }}"
+            data-sort-title="{{ product.title | strip_html | escape | downcase }}"
+            data-sort-date="{{ product.created_at | date: '%s' }}"
+          >
+            {% render 'bestseller-card',
+              product: product,
+              card_label: s.card_label,
+              show_add_to_cart: s.show_add_to_cart,
+              show_rating: s.show_rating,
+              skin_text: card_skin_text,
+              size_source: s.size_source
+            %}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+
+<script>
+  (() => {
+    // Resolve by section id rather than previousElementSibling: this script has more
+    // than one sibling (grid + popup), so a positional lookup silently picks the wrong one.
+    const scope = document.getElementById('shopify-section-{{ section.id }}');
+    if (!scope || scope.dataset.rakhiGridInit === '1') return;
+    scope.dataset.rakhiGridInit = '1';
+
+    // --- Card image slider (same behaviour as the Shop Products carousel) ---
+    scope.querySelectorAll('[data-bestseller-card]').forEach((card) => {
+      const slides = Array.from(card.querySelectorAll('[data-bestseller-slide]'));
+      const dotsWrap = card.querySelector('[data-bestseller-dots]');
+      const prev = card.querySelector('[data-bestseller-prev]');
+      const next = card.querySelector('[data-bestseller-next]');
+
+      if (!slides.length) return;
+
+      let idx = 0;
+      const setSlide = (n) => {
+        idx = (n + slides.length) % slides.length;
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+        if (dotsWrap) {
+          dotsWrap.querySelectorAll('button').forEach((d, i) => d.classList.toggle('is-active', i === idx));
+        }
+      };
+
+      if (dotsWrap) {
+        dotsWrap.innerHTML = slides.map((_, i) => `<button type="button" class="${i === 0 ? 'is-active' : ''}" aria-label="Slide ${i + 1}"></button>`).join('');
+        dotsWrap.querySelectorAll('button').forEach((dot, i) => dot.addEventListener('click', () => setSlide(i)));
+      }
+
+      if (slides.length < 2) {
+        if (prev) prev.style.display = 'none';
+        if (next) next.style.display = 'none';
+      } else {
+        prev && prev.addEventListener('click', (e) => { e.preventDefault(); setSlide(idx - 1); });
+        next && next.addEventListener('click', (e) => { e.preventDefault(); setSlide(idx + 1); });
+      }
+
+      setSlide(0);
+    });
+
+
+    // --- Sorting ---
+    const sortEl = scope.querySelector('[data-rakhi-sort]');
+    const grid = scope.querySelector('[data-rakhi-grid]');
+    if (!sortEl || !grid) return;
+
+    const num = (el, attr) => Number(el.getAttribute(attr)) || 0;
+    const str = (el, attr) => el.getAttribute(attr) || '';
+
+    // Keys match Shopify's own sort_by values so the labels and behaviour line up
+    // with the collection page.
+    const comparators = {
+      manual: (a, b) => num(a, 'data-sort-position') - num(b, 'data-sort-position'),
+      'price-ascending': (a, b) => num(a, 'data-sort-price') - num(b, 'data-sort-price'),
+      'price-descending': (a, b) => num(b, 'data-sort-price') - num(a, 'data-sort-price'),
+      'title-ascending': (a, b) => str(a, 'data-sort-title').localeCompare(str(b, 'data-sort-title')),
+      'title-descending': (a, b) => str(b, 'data-sort-title').localeCompare(str(a, 'data-sort-title')),
+      'created-ascending': (a, b) => num(a, 'data-sort-date') - num(b, 'data-sort-date'),
+      'created-descending': (a, b) => num(b, 'data-sort-date') - num(a, 'data-sort-date'),
+    };
+
+    sortEl.addEventListener('change', (event) => {
+      const input = event.target;
+      if (!input || input.name.indexOf('rakhi_sort_by_') !== 0) return;
+
+      const compare = comparators[input.value] || comparators.manual;
+      const items = Array.from(grid.children);
+      items.sort(compare);
+
+      const reorder = () => {
+        const fragment = document.createDocumentFragment();
+        items.forEach((item) => fragment.appendChild(item));
+        grid.appendChild(fragment);
+      };
+
+      // The wrappers are display:contents, so animate the cards themselves.
+      const cards = Array.from(grid.querySelectorAll('[data-bestseller-card]'));
+      if (typeof window.gsap === 'undefined'
+        || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        || !cards.length) {
+        reorder();
+      } else {
+        gsap.killTweensOf(cards);
+        gsap.to(cards, {
+          opacity: 0,
+          y: 10,
+          duration: 0.18,
+          ease: 'power2.in',
+          onComplete: () => {
+            reorder();
+            gsap.fromTo(
+              Array.from(grid.querySelectorAll('[data-bestseller-card]')),
+              { opacity: 0, y: 10 },
+              { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out', stagger: 0.04, clearProps: 'all' }
+            );
+          },
+        });
+      }
+
+      // Match the collection page: picking an option closes the disclosure.
+      sortEl.open = false;
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Rakhi Product Grid",
+  "tag": "section",
+  "class": "section shop-products-carousel rakhi-grid-section",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection",
+      "info": "Products from this collection are shown in the grid."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop Combos"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading HTML tag",
+      "options": [
+        {
+          "value": "h2",
+          "label": "h2"
+        },
+        {
+          "value": "h3",
+          "label": "h3"
+        },
+        {
+          "value": "div",
+          "label": "div"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 24,
+      "step": 1,
+      "label": "Maximum products to show",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Sorting"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sorting",
+      "label": "Show sort by",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Heading style"
+    },
+    {
+      "type": "checkbox",
+      "id": "heading_uppercase",
+      "label": "Uppercase heading",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 12,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size (desktop)",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size (mobile)",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading weight",
+      "options": [
+        {
+          "value": "300",
+          "label": "Light"
+        },
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "700"
+    },
+    {
+      "type": "range",
+      "id": "heading_letter_spacing",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading letter spacing",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below heading (desktop)",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "heading_spacing_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Space below heading (mobile)",
+      "default": 24
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_header_mobile",
+      "label": "Stack heading and sort on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Grid layout"
+    },
+    {
+      "type": "range",
+      "id": "products_per_row",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Products per row (desktop)",
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Products per row (mobile)",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 column"
+        },
+        {
+          "value": "2",
+          "label": "2 columns"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Column gap (desktop)",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "row_gap",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Row gap (desktop)",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "column_gap_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Column gap (mobile)",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "row_gap_mobile",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Row gap (mobile)",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Product card"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "info": "Cover fills the frame and crops the edges. Contain shows the whole image with space around it.",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover (fill the frame)"
+        },
+        {
+          "value": "contain",
+          "label": "Contain (show whole image)"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "info": "Which part of the image stays visible when it is cropped.",
+      "options": [
+        {
+          "value": "top left",
+          "label": "Top left"
+        },
+        {
+          "value": "top center",
+          "label": "Top center"
+        },
+        {
+          "value": "top right",
+          "label": "Top right"
+        },
+        {
+          "value": "center left",
+          "label": "Middle left"
+        },
+        {
+          "value": "center center",
+          "label": "Middle center"
+        },
+        {
+          "value": "center right",
+          "label": "Middle right"
+        },
+        {
+          "value": "bottom left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "text",
+      "id": "card_label",
+      "label": "Corner label",
+      "info": "Shown on products flagged as bestsellers.",
+      "default": "BESTSELLER"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_add_to_cart",
+      "label": "Show add to cart button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show product rating",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "size_source",
+      "label": "Size label source",
+      "options": [
+        {
+          "value": "variant",
+          "label": "Product variants"
+        },
+        {
+          "value": "metafield",
+          "label": "Product metafield"
+        }
+      ],
+      "default": "variant"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_concerns_metafield",
+      "label": "Use each product's Concerns metafield as the sub-title",
+      "info": "Falls back to the text below when a product has no Concerns set.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "skin_text",
+      "label": "Sub-title fallback text",
+      "info": "Shown under the product name when a product has no Concerns set.",
+      "default": "Suitable for normal, dry and sensitive skin."
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rakhi Product Grid"
+    }
+  ]
+}
+{% endschema %}

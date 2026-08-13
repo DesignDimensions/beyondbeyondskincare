@@ -1,0 +1,78 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "disabled": true,
+      "settings": {
+        "narrow": true,
+        "padding_top": 60,
+        "padding_bottom": 72
+      }
+    },
+    "rakhi_banner": {
+      "type": "rakhi-banner-sec",
+      "settings": {
+        "image_desktop": "shopify://shop_images/Desktop_-_54_1.png",
+        "image_mobile": "shopify://shop_images/Frame_1321318863.png",
+        "image_alt": "Love, Care & Protection - Powered By NAD+",
+        "link": "",
+        "background_color": "#0107ef",
+        "full_width": false,
+        "border_radius": 0,
+        "border_radius_mobile": 0,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "padding_top_mobile": 0,
+        "padding_bottom_mobile": 0
+      }
+    },
+    "rakhi_grid": {
+      "type": "rakhi-product-grid",
+      "settings": {
+        "collection": "rakhi-essentials",
+        "heading": "Shop Combos",
+        "heading_tag": "h2",
+        "products_to_show": 8,
+        "show_sorting": true,
+        "heading_uppercase": true,
+        "heading_size": 20,
+        "heading_size_mobile": 16,
+        "heading_weight": "700",
+        "heading_letter_spacing": 4,
+        "heading_spacing": 40,
+        "heading_spacing_mobile": 24,
+        "stack_header_mobile": false,
+        "products_per_row": 4,
+        "columns_mobile": "2",
+        "column_gap": 60,
+        "row_gap": 26,
+        "column_gap_mobile": 16,
+        "row_gap_mobile": 24,
+        "image_fit": "cover",
+        "image_position": "center center",
+        "card_label": "BESTSELLER",
+        "show_add_to_cart": true,
+        "show_rating": true,
+        "size_source": "variant",
+        "use_concerns_metafield": true,
+        "skin_text": "Suitable for normal, dry and sensitive skin.",
+        "padding_top": 60,
+        "padding_bottom": 60
+      }
+    }
+  },
+  "order": [
+    "main",
+    "rakhi_banner",
+    "rakhi_grid"
+  ]
+}

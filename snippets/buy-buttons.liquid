@@ -22,10 +22,15 @@
       assign show_dynamic_checkout = true
     endif
   -%}
-  <product-form 
+  <product-form
     class="product-form"
     data-hide-errors="{{ gift_card_recipient_feature_active }}"
     data-section-id="{{ section.id }}"
+    {%- comment -%}
+      Turns add-to-cart into the gift-note popup for qualifying products. Emits
+      nothing at all for everything else. See snippets/gift-note-modal.liquid.
+    {%- endcomment -%}
+    {% render 'gift-note-trigger', product: product %}
   >
     <div class="product-form__error-message-wrapper" role="alert" hidden>
       {%- render 'icon', icon: 'error-red' -%}

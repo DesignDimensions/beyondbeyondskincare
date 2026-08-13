@@ -25,6 +25,16 @@
     assign is_gift_tier = true
   endif
 
+  comment
+    A gift-note wrap is bound to the product it was added with. Its quantity is
+    driven by that product, so the shopper gets a read-only count and no remove
+    button — removing the product removes the wrap.
+  endcomment
+  assign is_gift_note_wrap = false
+  if item.properties._gift_wrap_for != blank
+    assign is_gift_note_wrap = true
+  endif
+
   assign has_qty_rules = false
   if item.variant.quantity_rule.increment > 1 or item.variant.quantity_rule.min > 1 or item.variant.quantity_rule.max != null
     assign has_qty_rules = true
@@ -44,10 +54,16 @@
     Line item properties are shown in the same pill as the variant title when a product has
     no variants of its own, so a personalised item still reads as configurable at a glance.
   endcomment
+  comment
+    The gift note gets its own multi-row block below, so keep it out of the
+    single-line pill where it would be truncated.
+  endcomment
+  assign gift_note_key = 'Gift Message'
+
   assign custom_properties = ''
   for property in item.properties
     assign property_first_char = property.first | slice: 0
-    if property.last != blank and property_first_char != '_'
+    if property.last != blank and property_first_char != '_' and property.first != gift_note_key
       assign custom_properties = custom_properties | append: property.first | append: ': ' | append: property.last | append: ' · '
     endif
   endfor
@@ -202,7 +218,12 @@
         {%- endif -%}
 
         <div class="cart-item__actions">
-          {%- if is_gift_tier -%}
+          {%- if is_gift_note_wrap -%}
+            <span class="cart-item__locked-qty" aria-label="{{ 'products.product.quantity.label' | t }}">
+              {{- 'products.product.quantity.label' | t }}: {{ item.quantity -}}
+            </span>
+            {%- render 'loading-spinner' -%}
+          {%- elsif is_gift_tier -%}
             <span class="cart-item__gift-badge">
               {% render 'icon', icon: 'gift' %}
               {{ 'sections.cart.gift_free' | t }}
@@ -288,5 +309,11 @@
         <span class="cart-item__error-text"></span>
       </p>
     </div>
+
+    {%- comment -%}
+      Sits outside .cart-item__content so it wraps onto its own full-width row of the
+      card, rather than sharing the controls row with the quantity stepper.
+    {%- endcomment -%}
+    {% render 'cart-gift-note', item: item, line: line, note_property: gift_note_key %}
   </div>
 </li>

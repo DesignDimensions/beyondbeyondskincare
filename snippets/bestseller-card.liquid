@@ -121,7 +121,12 @@
     {%- endif -%}
 
     {%- assign size_value = blank -%}
-    {%- assign metafield_size_value = current_product.metafields.custom.product_size | default: current_product.metafields.custom.size -%}
+    {%- comment -%}
+      Use bracket lookup for the "size" key: dot access resolves to Liquid's hash
+      .size (the number of metafields in the namespace), which renders as a stray
+      number on any product without a real size.
+    {%- endcomment -%}
+    {%- assign metafield_size_value = current_product.metafields.custom.product_size | default: current_product.metafields.custom["size"] -%}
     {%- if size_source == 'variant' -%}
       {%- assign variant_size_value = blank -%}
       {%- if display_variant != blank -%}
@@ -146,7 +151,8 @@
     {%- endif -%}
     {%- assign size_value = size_value | replace: ',', ' |' | replace: '| ', ' | ' | strip -%}
     {%- assign size_compact = size_value | strip | replace: ' ', '' | replace: '.', '' | replace: ',', '' | replace: '-', '' | replace: '/', '' | replace: '+', '' -%}
-    {%- if size_value == blank or size_compact == blank or size_compact == '0' or size_compact == '0.0' or size_compact == '0.00' -%}
+    {%- assign size_handle = size_value | downcase | strip -%}
+    {%- if size_value == blank or size_compact == blank or size_compact == '0' or size_compact == '0.0' or size_compact == '0.00' or size_handle == 'default title' or size_handle == 'title' -%}
       {%- assign size_value = blank -%}
     {%- endif -%}
     {%- assign size_parts = size_value | split: '|' -%}

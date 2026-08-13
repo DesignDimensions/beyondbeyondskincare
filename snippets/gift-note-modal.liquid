@@ -1,0 +1,711 @@
+{% comment %}
+  The gift-note popup, rendered once per page from layout/theme.liquid.
+
+  Everything it needs comes from Theme settings -> "Gift note popup", so the product
+  grid and the product page share one configuration and one piece of markup.
+
+  A trigger is any element carrying [data-gift-note-trigger] (see the
+  'gift-note-trigger' snippet) that contains the add-to-cart control. Clicks are
+  caught in the capture phase, so the theme's own add-to-cart never fires.
+
+  Usage:
+  {% render 'gift-note-modal' %}
+{% endcomment %}
+
+{%- liquid
+  assign enabled = settings.gift_note_enabled
+  if settings.gift_note_collection == blank
+    assign enabled = false
+  endif
+-%}
+
+{%- if enabled -%}
+  <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
+
+  {%- style -%}
+    .gift-note-modal[hidden] { display: none; }
+
+    .gift-note-modal {
+      position: fixed;
+      inset: 0;
+      /* The sticky header and drawers in this theme go up to 99999. */
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* base.css hides `div:empty` globally, which would swallow this backdrop.
+       A class+:empty selector outranks it without needing !important. */
+    .gift-note-modal__overlay,
+    .gift-note-modal__overlay:empty {
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, {{ settings.gift_note_dim | divided_by: 100.0 }});
+      backdrop-filter: blur({{ settings.gift_note_blur }}px);
+      -webkit-backdrop-filter: blur({{ settings.gift_note_blur }}px);
+    }
+
+    .gift-note-modal__dialog {
+      position: relative;
+      background: #ffffff;
+      width: 100%;
+      max-width: {{ settings.gift_note_width }}px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      padding: 26px 30px 30px;
+    }
+
+    .gift-note-modal__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .gift-note-modal__logo {
+      display: block;
+      width: auto;
+      height: {{ settings.gift_note_logo_height }}px;
+      max-width: 180px;
+      object-fit: contain;
+    }
+
+    .gift-note-modal__logo-text { font-size: 20px; font-weight: 700; }
+
+    .gift-note-modal__close {
+      background: none;
+      border: 0;
+      padding: 4px;
+      cursor: pointer;
+      color: inherit;
+      line-height: 0;
+    }
+
+    .gift-note-modal__eyebrow {
+      margin: 8px 0 0;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      font-size: 16px;
+      font-weight: 800;
+      color: #202020;
+    }
+
+    .gift-note-modal__heading {
+      margin: 15px 0 33px;
+      text-align: center;
+      font-size: {{ settings.gift_note_heading_size }}px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    /* Stretch so the media column matches the content column's height exactly. */
+    .gift-note-modal__body {
+      display: grid;
+      grid-template-columns: {{ settings.gift_note_image_width }}px minmax(0, 1fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .gift-note-modal__content {
+      height: 100%;
+      display: flex;
+      flex-flow: column;
+      justify-content: center;
+    }
+
+    /* Absolutely positioned so the image adds no intrinsic height: the row is sized
+       by the content column and the image fills whatever that comes to. */
+    .gift-note-modal__media {
+      position: relative;
+      min-height: 100%;
+      background: #f2f4f7;
+      overflow: hidden;
+    }
+
+    .gift-note-modal__media img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .gift-note-modal__product {
+      margin: 0 0 12px;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .gift-note-modal__note {
+      display: block;
+      width: 100%;
+      border: 1px solid #d7d7d7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1.4;
+      resize: vertical;
+      min-height: 148px;
+    }
+
+    .gift-note-modal__note::placeholder { color: #9b9b9b; }
+
+    /* Theme-wide focus styling puts a blue glow on inputs; not wanted here. */
+    .gift-note-modal__note:focus,
+    .gift-note-modal__note:focus-visible {
+      outline: none;
+      box-shadow: none;
+      border-color: #b5b5b5;
+    }
+
+    .gift-note-modal__giftbox[hidden] { display: none; }
+
+    .gift-note-modal__giftbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      cursor: pointer;
+      color: {{ settings.gift_note_accent }};
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* accent-color only tints the checked fill, leaving a grey border when empty. */
+    .gift-note-modal__giftbox input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      border: 2px solid {{ settings.gift_note_accent }};
+      border-radius: 2px;
+      background: transparent;
+      cursor: pointer;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-content: center;
+      position: relative;
+    }
+
+    .gift-note-modal__giftbox input::before {
+      content: '';
+      width: 9px;
+      height: 5px;
+      border-left: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      transform: rotate(-45deg) translate(1px, -1px);
+      opacity: 0;
+    }
+
+    .gift-note-modal__giftbox input:checked { background: {{ settings.gift_note_accent }}; }
+    .gift-note-modal__giftbox input:checked::before { opacity: 1; }
+
+    .gift-note-modal__giftbox input:focus-visible {
+      outline: 2px solid {{ settings.gift_note_accent }};
+      outline-offset: 2px;
+    }
+
+    .gift-note-modal__actions { margin-top: 24px; text-align: center; }
+
+    .gift-note-modal__submit {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: 1px solid #111111;
+      padding: 15px 20px;
+      font-family: inherit;
+      font-size: 15px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .gift-note-modal__submit[aria-busy='true'] { opacity: 0.6; pointer-events: none; }
+
+    /* Stays disabled until a message is typed; the skip link remains available. */
+    .gift-note-modal__submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .gift-note-modal__skip {
+      display: inline-block;
+      margin-top: 14px;
+      background: none;
+      border: 0;
+      padding: 4px;
+      font-family: inherit;
+      font-size: 14px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    .gift-note-modal__error {
+      margin: 14px 0 0;
+      text-align: center;
+      color: #d02c2c;
+    }
+
+    .gift-note-modal__error[hidden],
+    .gift-note-modal__loading[hidden] { display: none; }
+
+    .gift-note-modal__loading {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    .gift-note-modal__spinner {
+      width: 34px;
+      height: 34px;
+      border: 2px solid rgba(0, 0, 0, 0.15);
+      border-top-color: {{ settings.gift_note_accent }};
+      border-radius: 50%;
+      /* GSAP drives this when available; the keyframes are the fallback. */
+      animation: gift-note-spin 0.8s linear infinite;
+    }
+
+    @keyframes gift-note-spin { to { transform: rotate(360deg); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gift-note-modal__spinner { animation-duration: 1.6s; }
+    }
+
+    /* Mobile keeps a margin around the card and scrolls inside it rather than
+       going full-bleed, so a long note can never push the buttons off-screen. */
+    @media screen and (max-width: 749px) {
+      .gift-note-modal { padding: 16px; align-items: center; }
+
+      .gift-note-modal__dialog {
+        max-width: none;
+        min-height: 0;
+        /* dvh accounts for the mobile browser chrome; vh is the fallback. */
+        max-height: calc(100vh - 32px);
+        max-height: calc(100dvh - 32px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 20px 20px 24px;
+      }
+
+      .gift-note-modal__logo { height: 44px; max-width: 130px; }
+      .gift-note-modal__close svg { width: 26px; height: 26px; }
+
+      .gift-note-modal__eyebrow {
+        margin-top: 18px;
+        letter-spacing: 3px;
+        font-size: 13px;
+      }
+
+      .gift-note-modal__heading {
+        font-size: 30px;
+        margin: 10px 0 18px;
+      }
+
+      .gift-note-modal__body { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+
+      /* Stacked here, so it needs its own ratio instead of borrowing the
+         content column's height. */
+      .gift-note-modal__media {
+        min-height: 0;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        aspect-ratio: 16 / 10;
+      }
+
+      .gift-note-modal__product {
+        font-size: 16px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 12px;
+      }
+
+      .gift-note-modal__note { min-height: 130px; border-radius: 10px; font-size: 14px; }
+      .gift-note-modal__giftbox { font-size: 14px; margin-top: 12px; }
+      .gift-note-modal__giftbox input { width: 16px; height: 16px; }
+      .gift-note-modal__actions { margin-top: 18px; }
+      .gift-note-modal__submit { padding: 14px 18px; font-size: 14px; letter-spacing: 3px; }
+      .gift-note-modal__skip { font-size: 13px; margin-top: 12px; }
+    }
+  {%- endstyle -%}
+
+  {%- assign modal_logo = settings.gift_note_logo -%}
+  <div class="gift-note-modal" data-gift-note-modal hidden>
+    <div class="gift-note-modal__overlay" data-gift-note-close></div>
+    <div class="gift-note-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="GiftNoteHeading">
+      <div class="gift-note-modal__head">
+        {%- if modal_logo != blank -%}
+          <img
+            class="gift-note-modal__logo"
+            src="{{ modal_logo | image_url: width: 400 }}"
+            alt="{{ shop.name | escape }}"
+            width="{{ modal_logo.width }}"
+            height="{{ modal_logo.height }}"
+            loading="lazy"
+          >
+        {%- else -%}
+          <span class="gift-note-modal__logo-text">{{ shop.name }}</span>
+        {%- endif -%}
+
+        <button
+          type="button"
+          class="gift-note-modal__close"
+          data-gift-note-close
+          aria-label="{{ 'accessibility.close' | t }}"
+        >
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+            <path d="M4 4 L20 20 M20 4 L4 20" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          </svg>
+        </button>
+      </div>
+
+      {%- if settings.gift_note_eyebrow != blank -%}
+        <p class="gift-note-modal__eyebrow">{{ settings.gift_note_eyebrow }}</p>
+      {%- endif -%}
+      <h2 class="gift-note-modal__heading" id="GiftNoteHeading">{{ settings.gift_note_heading }}</h2>
+
+      <div class="gift-note-modal__body">
+        <div class="gift-note-modal__media">
+          {%- comment -%} src/alt are filled in by JS from the clicked trigger. {%- endcomment -%}
+          <img data-gift-note-image src="" alt="" width="800" height="800" loading="lazy">
+        </div>
+
+        <div class="gift-note-modal__content">
+          <p class="gift-note-modal__product" data-gift-note-title></p>
+
+          <label class="visually-hidden" for="GiftNoteInput">{{ settings.gift_note_heading }}</label>
+          <textarea
+            id="GiftNoteInput"
+            class="gift-note-modal__note"
+            data-gift-note-input
+            rows="5"
+            maxlength="{{ settings.gift_note_max }}"
+            placeholder="{{ settings.gift_note_placeholder | escape }}"
+          ></textarea>
+
+          <label class="gift-note-modal__giftbox" data-gift-note-giftbox-wrap hidden>
+            <input type="checkbox" data-gift-note-giftbox value="">
+            <span data-gift-note-giftbox-label>{{ settings.gift_note_box_label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="gift-note-modal__actions">
+        <button type="button" class="gift-note-modal__submit" data-gift-note-submit disabled>
+          {{- settings.gift_note_button -}}
+        </button>
+        <button type="button" class="gift-note-modal__skip" data-gift-note-skip>{{ settings.gift_note_skip }}</button>
+      </div>
+
+      <p class="gift-note-modal__error" data-gift-note-error hidden role="alert"></p>
+
+      <div class="gift-note-modal__loading" data-gift-note-loading hidden aria-live="polite">
+        <span class="gift-note-modal__spinner" aria-hidden="true"></span>
+        <span>{{ settings.gift_note_loading }}</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const modal = document.querySelector('[data-gift-note-modal]');
+      if (!modal || modal.dataset.giftNoteInit === '1') return;
+      modal.dataset.giftNoteInit = '1';
+
+      const notePropertyName = {{ settings.gift_note_property | json }};
+      const giftBoxLabelText = {{ settings.gift_note_box_label | json }};
+
+      const overlayEl = modal.querySelector('.gift-note-modal__overlay');
+      const dialogEl = modal.querySelector('.gift-note-modal__dialog');
+      const imageEl = modal.querySelector('[data-gift-note-image]');
+      const titleEl = modal.querySelector('[data-gift-note-title]');
+      const noteEl = modal.querySelector('[data-gift-note-input]');
+      const giftBoxEl = modal.querySelector('[data-gift-note-giftbox]');
+      const giftBoxWrap = modal.querySelector('[data-gift-note-giftbox-wrap]');
+      const giftBoxLabel = modal.querySelector('[data-gift-note-giftbox-label]');
+      const submitEl = modal.querySelector('[data-gift-note-submit]');
+      const skipEl = modal.querySelector('[data-gift-note-skip]');
+      const errorEl = modal.querySelector('[data-gift-note-error]');
+      const loadingEl = modal.querySelector('[data-gift-note-loading]');
+      const spinnerEl = modal.querySelector('.gift-note-modal__spinner');
+
+      let activeVariantId = null;
+      let lastFocused = null;
+      let closing = false;
+      let spinTween = null;
+      let lockedScrollY = 0;
+
+      // overflow:hidden on <body> alone does not hold on iOS and loses the scroll
+      // position, so pin the body and restore it on close.
+      const lockScroll = () => {
+        lockedScrollY = window.scrollY || window.pageYOffset || 0;
+        const body = document.body;
+        body.dataset.giftNotePrevPosition = body.style.position;
+        body.dataset.giftNotePrevTop = body.style.top;
+        body.dataset.giftNotePrevWidth = body.style.width;
+        body.dataset.giftNotePrevOverflow = body.style.overflow;
+        body.style.position = 'fixed';
+        body.style.top = `-${lockedScrollY}px`;
+        body.style.width = '100%';
+        body.style.overflow = 'hidden';
+      };
+
+      const unlockScroll = () => {
+        const body = document.body;
+        body.style.position = body.dataset.giftNotePrevPosition || '';
+        body.style.top = body.dataset.giftNotePrevTop || '';
+        body.style.width = body.dataset.giftNotePrevWidth || '';
+        body.style.overflow = body.dataset.giftNotePrevOverflow || '';
+        delete body.dataset.giftNotePrevPosition;
+        delete body.dataset.giftNotePrevTop;
+        delete body.dataset.giftNotePrevWidth;
+        delete body.dataset.giftNotePrevOverflow;
+        window.scrollTo(0, lockedScrollY);
+      };
+
+      // GSAP is deferred, so it may not be parsed yet on a very fast first click.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const animate = () => typeof window.gsap !== 'undefined' && !reduceMotion;
+
+      const showError = (message) => {
+        if (!errorEl) return;
+        errorEl.textContent = message || '';
+        errorEl.hidden = !message;
+      };
+
+      const revealTargets = () => [
+        modal.querySelector('.gift-note-modal__head'),
+        modal.querySelector('.gift-note-modal__eyebrow'),
+        modal.querySelector('.gift-note-modal__heading'),
+        modal.querySelector('.gift-note-modal__media'),
+        modal.querySelector('.gift-note-modal__content'),
+        modal.querySelector('.gift-note-modal__actions'),
+      ].filter(Boolean);
+
+      const playOpen = () => {
+        if (!animate()) return;
+        gsap.killTweensOf([overlayEl, dialogEl, ...revealTargets()]);
+        gsap.fromTo(overlayEl, { opacity: 0 }, { opacity: 1, duration: 0.32, ease: 'power2.out' });
+        gsap.fromTo(dialogEl, { opacity: 0, y: 24, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: 'power3.out' });
+        gsap.fromTo(revealTargets(), { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.38, ease: 'power2.out', stagger: 0.05, delay: 0.08 });
+      };
+
+      const playClose = (done) => {
+        if (!animate()) { done(); return; }
+        closing = true;
+        gsap.killTweensOf([overlayEl, dialogEl]);
+        gsap.to(overlayEl, { opacity: 0, duration: 0.24, ease: 'power2.in' });
+        gsap.to(dialogEl, {
+          opacity: 0, y: 16, scale: 0.98, duration: 0.26, ease: 'power2.in',
+          onComplete: () => {
+            gsap.set([overlayEl, dialogEl], { clearProps: 'all' });
+            closing = false;
+            done();
+          },
+        });
+      };
+
+      const setLoading = (on) => {
+        if (!loadingEl) return;
+        if (on) {
+          loadingEl.hidden = false;
+          if (animate()) {
+            gsap.fromTo(loadingEl, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' });
+            spinnerEl.style.animation = 'none';
+            spinTween = gsap.to(spinnerEl, { rotate: 360, duration: 0.8, ease: 'none', repeat: -1 });
+          }
+          return;
+        }
+        if (spinTween) {
+          spinTween.kill();
+          spinTween = null;
+          gsap.set(spinnerEl, { clearProps: 'transform' });
+          spinnerEl.style.animation = '';
+        }
+        if (animate()) {
+          gsap.to(loadingEl, {
+            opacity: 0, duration: 0.18, ease: 'power2.in',
+            onComplete: () => { loadingEl.hidden = true; gsap.set(loadingEl, { clearProps: 'opacity' }); },
+          });
+        } else {
+          loadingEl.hidden = true;
+        }
+      };
+
+      // Enabled once there is something to submit: a message, a ticked gift wrap,
+      // or both. With neither, Skip for Now is the equivalent action.
+      const syncSubmitState = () => {
+        if (!submitEl) return;
+        const hasNote = Boolean(noteEl && noteEl.value.trim());
+        const wantsWrap = Boolean(giftBoxEl && giftBoxEl.checked && giftBoxEl.value);
+        const enable = hasNote || wantsWrap;
+        if (submitEl.disabled === !enable) return;
+        submitEl.disabled = !enable;
+        if (animate()) gsap.fromTo(submitEl, { scale: 0.99 }, { scale: 1, duration: 0.25, ease: 'power2.out' });
+      };
+
+      noteEl && noteEl.addEventListener('input', syncSubmitState);
+
+      giftBoxEl && giftBoxEl.addEventListener('change', () => {
+        syncSubmitState();
+        if (!animate()) return;
+        gsap.fromTo(giftBoxEl, { scale: 0.8 }, { scale: 1, duration: 0.3, ease: 'back.out(3)' });
+      });
+
+      const openModal = (data) => {
+        activeVariantId = data.variantId;
+        showError('');
+
+        if (titleEl) titleEl.textContent = data.title || '';
+        if (imageEl) { imageEl.src = data.image || ''; imageEl.alt = data.imageAlt || ''; }
+        if (noteEl) noteEl.value = '';
+
+        if (giftBoxEl) { giftBoxEl.checked = false; giftBoxEl.value = data.wrapVariant || ''; }
+        if (giftBoxLabel) {
+          giftBoxLabel.textContent = data.wrapPrice ? `${giftBoxLabelText} ${data.wrapPrice}` : giftBoxLabelText;
+        }
+        if (giftBoxWrap) giftBoxWrap.hidden = !data.wrapVariant;
+
+        syncSubmitState();
+
+        lastFocused = document.activeElement;
+        modal.hidden = false;
+        lockScroll();
+
+        playOpen();
+        if (noteEl) noteEl.focus();
+      };
+
+      const finishClose = () => {
+        modal.hidden = true;
+        activeVariantId = null;
+        unlockScroll();
+        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      };
+
+      const closeModal = () => {
+        if (closing) return;
+        playClose(finishClose);
+      };
+
+      const addToCart = (includeExtras) => {
+        if (!activeVariantId) return;
+
+        const miniCart = document.querySelector('mini-cart');
+        const sections = miniCart && typeof miniCart.getSectionsToRender === 'function'
+          ? miniCart.getSectionsToRender().map((section) => section.id)
+          : [];
+
+        const line = { id: activeVariantId, quantity: 1 };
+        if (includeExtras) {
+          const note = ((noteEl && noteEl.value) || '').trim();
+          if (note) line.properties = { [notePropertyName]: note };
+        }
+
+        const items = [line];
+        // Skipping must never add the gift box, even if it was ticked first.
+        if (includeExtras && giftBoxEl && giftBoxEl.checked && giftBoxEl.value) {
+          items.push({
+            id: giftBoxEl.value,
+            quantity: 1,
+            properties: { _gift_wrap_for: String(activeVariantId) },
+          });
+        }
+
+        const addUrl = (window.theme && theme.routes && theme.routes.cart_add_url) || '/cart/add';
+        const body = JSON.stringify({ items, sections, sections_url: window.location.pathname });
+        const config = typeof fetchConfig === 'function'
+          ? { ...fetchConfig('javascript'), body }
+          : { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body };
+
+        submitEl.setAttribute('aria-busy', 'true');
+        showError('');
+        setLoading(true);
+
+        fetch(addUrl, config)
+          .then((response) => response.json())
+          .then((state) => {
+            if (state.status === 422 || state.status === 404 || state.status === 400) {
+              showError(state.description || state.message || 'This item could not be added to your cart.');
+              return;
+            }
+            closeModal();
+            if (miniCart) miniCart.renderContents(state);
+            document.dispatchEvent(new CustomEvent('ajaxProduct:added', { detail: { product: state } }));
+          })
+          .catch(() => showError('Something went wrong. Please try again.'))
+          .finally(() => {
+            submitEl.removeAttribute('aria-busy');
+            setLoading(false);
+          });
+      };
+
+      /* ---------------- trigger interception ---------------- */
+
+      // Reads the variant actually selected right now: the PDP form's hidden input
+      // when there is one, otherwise the value baked into the trigger.
+      const resolveVariantId = (trigger, clicked) => {
+        const form = clicked.closest('form[action*="/cart/add"]');
+        const formInput = form && form.querySelector('input[name="id"]');
+        if (formInput && formInput.value) return formInput.value;
+        return trigger.dataset.giftNoteVariant || '';
+      };
+
+      document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-gift-note-trigger]');
+        if (!trigger) return;
+
+        const control = event.target.closest(
+          'add-to-cart[data-variant-id], button[name="add"], .product-form__submit, [data-gift-note-atc]'
+        );
+        if (!control) return;
+        if (control.disabled) return;
+
+        const variantId = control.dataset.variantId || resolveVariantId(trigger, control);
+        if (!variantId) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        openModal({
+          variantId: variantId,
+          title: trigger.dataset.giftNoteTitle || '',
+          image: trigger.dataset.giftNoteImage || '',
+          imageAlt: trigger.dataset.giftNoteImageAlt || '',
+          wrapVariant: trigger.dataset.giftNoteWrapVariant || '',
+          wrapPrice: trigger.dataset.giftNoteWrapPrice || '',
+        });
+      }, true);
+
+      modal.querySelectorAll('[data-gift-note-close]').forEach((el) => el.addEventListener('click', closeModal));
+
+      // Clicking anywhere outside the dialog closes it.
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal || event.target.hasAttribute('data-gift-note-close')) closeModal();
+      });
+      submitEl && submitEl.addEventListener('click', () => addToCart(true));
+      skipEl && skipEl.addEventListener('click', () => addToCart(false));
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.hidden) closeModal();
+      });
+    })();
+  </script>
+{%- endif -%}

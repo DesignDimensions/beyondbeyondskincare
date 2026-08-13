@@ -73,6 +73,13 @@
     <link rel="stylesheet" href="{{ 'apps.css' | asset_url }}" media="print" fetchpriority="low" onload="this.media='all'">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.css" integrity="sha512-rd0qOHVMOcez6pLWPVFIv7EfSdGKLt+eafXh4RO/12Fgr41hDQxfGvoi1Vy55QIVcQEujUE1LQrATCLl2Fs+ag==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="{{ 'dev.css' | asset_url }}" rel="stylesheet" type="text/css">
+    <link href="{{ 'rakhi-cart.css' | asset_url }}" rel="stylesheet" type="text/css">
+    <script src="{{ 'rakhi-cart.js' | asset_url }}" defer="defer"></script>
+    {%- comment -%}
+      One popup for the whole storefront (product pages and product grids alike),
+      configured in Theme settings -> "Gift note popup".
+    {%- endcomment -%}
+    {% render 'gift-note-modal' %}
     
     {%- unless settings.type_body_font.system? -%}
       <link rel="preload" as="font" href="{{ settings.type_body_font | font_url }}" type="font/woff2" crossorigin>
