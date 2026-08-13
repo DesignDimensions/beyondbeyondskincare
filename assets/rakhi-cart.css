@@ -1,16 +1,5 @@
 /* Editable gift note on a cart line item (drawer + cart page). */
 
-/* .cart-item__body is a flex row (media | content). Allowing it to wrap lets the
-   note drop onto its own full-width row beneath both. */
-.cart-item__body {
-  flex-wrap: wrap;
-}
-
-.cart-item__body > .cart-gift-note {
-  flex: 0 0 100%;
-  width: 100%;
-}
-
 /* Gift wrap quantity is driven by the product it is bound to, so it reads as a
    plain count rather than an editable stepper. */
 .cart-item__locked-qty {
