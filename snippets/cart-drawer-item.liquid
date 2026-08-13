@@ -207,8 +207,6 @@
           <span class="cart-item__variant-spacer"></span>
         {%- endif -%}
 
-        {% render 'cart-gift-note', item: item, line: line, note_property: gift_note_key %}
-
         <div class="cart-item__actions">
           {%- if is_gift_tier -%}
             <span class="cart-item__gift-badge">
@@ -296,5 +294,11 @@
         <span class="cart-item__error-text"></span>
       </p>
     </div>
+
+    {%- comment -%}
+      Sits outside .cart-item__content so it wraps onto its own full-width row of the
+      card, rather than sharing the controls row with the quantity stepper.
+    {%- endcomment -%}
+    {% render 'cart-gift-note', item: item, line: line, note_property: gift_note_key %}
   </div>
 </li>
