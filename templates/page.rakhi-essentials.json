@@ -23,7 +23,7 @@
       "settings": {
         "heading": "Love, Care & Protection",
         "heading_tag": "h1",
-        "subtext": "- Powered By <strong>NAD+</strong>",
+        "subtext": "- Powered By <strong>NAD+<\/strong>",
         "background_color": "#0a0af0",
         "text_color": "#ffffff",
         "image_position": "center center",
@@ -72,9 +72,18 @@
         "stack_header_mobile": false,
         "products_per_row": 4,
         "columns_mobile": "2",
+        "column_gap": 60,
+        "row_gap": 26,
+        "column_gap_mobile": 16,
+        "row_gap_mobile": 24,
+        "image_fit": "cover",
+        "image_position": "center center",
+        "card_label": "BESTSELLER",
+        "show_add_to_cart": true,
+        "show_rating": true,
+        "size_source": "variant",
         "use_concerns_metafield": true,
         "skin_text": "Suitable for normal, dry and sensitive skin.",
-        "show_rating": true,
         "padding_top": 60,
         "padding_bottom": 60
       }
