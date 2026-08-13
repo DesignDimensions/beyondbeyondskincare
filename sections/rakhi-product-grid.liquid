@@ -873,6 +873,7 @@
 
         submitEl.setAttribute('aria-busy', 'true');
         showError('');
+        setLoading(true);
 
         fetch(addUrl, config)
           .then((response) => response.json())
@@ -886,7 +887,10 @@
             document.dispatchEvent(new CustomEvent('ajaxProduct:added', { detail: { product: state } }));
           })
           .catch(() => showError('Something went wrong. Please try again.'))
-          .finally(() => submitEl.removeAttribute('aria-busy'));
+          .finally(() => {
+            submitEl.removeAttribute('aria-busy');
+            setLoading(false);
+          });
       };
 
       // Capture phase so this runs before <add-to-cart>'s own click handler,
