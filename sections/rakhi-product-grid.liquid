@@ -981,6 +981,116 @@
     },
     {
       "type": "header",
+      "content": "Gift note popup"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add a \"Gift note product\" block below for each product that should open the popup. Every other product adds to cart normally."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_gift_modal",
+      "label": "Enable gift note popup",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_note_property",
+      "label": "Note saved as",
+      "info": "Name of the line item property shown on the order.",
+      "default": "Gift Message"
+    },
+    {
+      "type": "range",
+      "id": "gift_note_max",
+      "min": 50,
+      "max": 500,
+      "step": 10,
+      "unit": "ch",
+      "label": "Maximum note length",
+      "default": 250
+    },
+    {
+      "type": "image_picker",
+      "id": "gift_modal_logo",
+      "label": "Popup logo",
+      "info": "Falls back to the theme logo when empty."
+    },
+    {
+      "type": "text",
+      "id": "gift_modal_eyebrow",
+      "label": "Small heading",
+      "default": "A little something from you"
+    },
+    {
+      "type": "text",
+      "id": "gift_modal_heading",
+      "label": "Heading",
+      "default": "Add A Message To Your Gift"
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_heading_size",
+      "min": 20,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "label": "Popup heading size (desktop)",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_heading_size_mobile",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "label": "Popup heading size (mobile)",
+      "default": 26
+    },
+    {
+      "type": "text",
+      "id": "gift_modal_placeholder",
+      "label": "Message placeholder",
+      "default": "Write a message..."
+    },
+    {
+      "type": "text",
+      "id": "gift_box_label",
+      "label": "Gift box checkbox label",
+      "info": "The gift wrap price is added after this text automatically.",
+      "default": "Add Gift Box for"
+    },
+    {
+      "type": "color",
+      "id": "gift_box_label_color",
+      "label": "Gift box label color",
+      "default": "#0107EF"
+    },
+    {
+      "type": "text",
+      "id": "gift_modal_button",
+      "label": "Confirm button label",
+      "default": "Add Note"
+    },
+    {
+      "type": "text",
+      "id": "gift_modal_skip",
+      "label": "Skip link label",
+      "default": "Skip for Now"
+    },
+    {
+      "type": "range",
+      "id": "gift_modal_width",
+      "min": 500,
+      "max": 1200,
+      "step": 20,
+      "unit": "px",
+      "label": "Popup maximum width",
+      "default": 900
+    },
+    {
+      "type": "header",
       "content": "Padding"
     },
     {
