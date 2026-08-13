@@ -24,7 +24,8 @@
         "image_desktop": "shopify://shop_images/Desktop_-_54_1.png",
         "image_mobile": "shopify://shop_images/Frame_1321318863.png",
         "image_alt": "Love, Care & Protection - Powered By NAD+",
-        "background_color": "#0107EF",
+        "link": "",
+        "background_color": "#0107ef",
         "full_width": false,
         "border_radius": 0,
         "border_radius_mobile": 0,
@@ -37,7 +38,7 @@
     "rakhi_grid": {
       "type": "rakhi-product-grid",
       "settings": {
-        "collection": "combos",
+        "collection": "testing",
         "heading": "Shop Combos",
         "heading_tag": "h2",
         "products_to_show": 8,
