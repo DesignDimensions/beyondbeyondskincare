@@ -104,6 +104,26 @@
     "buyNowEnableBanner": false,
     "enableIntlFlow": false,
     "chat_logo": "shopify://shop_images/Frame_511.svg",
+    "gift_note_enabled": true,
+    "gift_note_collection": "rakhi-essentials",
+    "gift_note_property": "Gift Message",
+    "gift_note_max": 250,
+    "gift_note_logo": "shopify://shop_images/Frame_511.svg",
+    "gift_note_eyebrow": "A little something from you",
+    "gift_note_heading": "Add A Message To Your Gift",
+    "gift_note_placeholder": "Write a message...",
+    "gift_note_box_label": "Add Gift Box for",
+    "gift_note_button": "Add Note",
+    "gift_note_skip": "Skip for Now",
+    "gift_note_loading": "Adding product to cart...",
+    "gift_note_accent": "#0107EF",
+    "gift_note_width": 930,
+    "gift_note_image_width": 200,
+    "gift_note_logo_height": 46,
+    "gift_note_heading_size": 40,
+    "gift_note_heading_size_mobile": 26,
+    "gift_note_blur": 6,
+    "gift_note_dim": 45,
     "empty_cart_products": "",
     "sections": {
       "main-password-header": {
@@ -154,11 +174,6 @@
       "2567389343055140935": {
         "type": "shopify://apps/microsoft-clarity/blocks/clarity_js/31c3d126-8116-4b4a-8ba1-baeda7c4aeea",
         "disabled": false,
-        "settings": {}
-      },
-      "1409715032340194113": {
-        "type": "shopify://apps/gokwik-cart-slide-cart-drawer/blocks/app-embed/531cd8ff-cc36-43b1-9a44-c16d44927215",
-        "disabled": true,
         "settings": {}
       }
     }
