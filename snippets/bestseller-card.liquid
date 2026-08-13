@@ -121,7 +121,12 @@
     {%- endif -%}
 
     {%- assign size_value = blank -%}
-    {%- assign metafield_size_value = current_product.metafields.custom.product_size | default: current_product.metafields.custom.size -%}
+    {%- comment -%}
+      Use bracket lookup for the "size" key: dot access resolves to Liquid's hash
+      .size (the number of metafields in the namespace), which renders as a stray
+      number on any product without a real size.
+    {%- endcomment -%}
+    {%- assign metafield_size_value = current_product.metafields.custom.product_size | default: current_product.metafields.custom["size"] -%}
     {%- if size_source == 'variant' -%}
       {%- assign variant_size_value = blank -%}
       {%- if display_variant != blank -%}
