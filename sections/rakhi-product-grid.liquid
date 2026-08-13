@@ -765,6 +765,45 @@
         });
       };
 
+      const loadingEl = modal.querySelector('[data-gift-modal-loading]');
+      const spinnerEl = modal.querySelector('.rakhi-gift-modal__spinner');
+      let spinTween = null;
+
+      const setLoading = (on) => {
+        if (!loadingEl) return;
+
+        if (on) {
+          loadingEl.hidden = false;
+          if (animate()) {
+            gsap.fromTo(loadingEl, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: 'power2.out' });
+            // Hand the spin to GSAP so it stays in step with the rest of the flow.
+            spinnerEl.style.animation = 'none';
+            spinTween = gsap.to(spinnerEl, { rotate: 360, duration: 0.8, ease: 'none', repeat: -1 });
+          }
+          return;
+        }
+
+        if (spinTween) {
+          spinTween.kill();
+          spinTween = null;
+          gsap.set(spinnerEl, { clearProps: 'transform' });
+          spinnerEl.style.animation = '';
+        }
+        if (animate()) {
+          gsap.to(loadingEl, {
+            opacity: 0,
+            duration: 0.18,
+            ease: 'power2.in',
+            onComplete: () => {
+              loadingEl.hidden = true;
+              gsap.set(loadingEl, { clearProps: 'opacity' });
+            },
+          });
+        } else {
+          loadingEl.hidden = true;
+        }
+      };
+
       // Add Note stays disabled until a message is written; Skip for Now does not.
       const syncSubmitState = () => {
         if (!submitEl) return;
