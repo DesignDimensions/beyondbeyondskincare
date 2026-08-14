@@ -17,11 +17,6 @@
 {%- liquid
   assign note_key = note_property | default: 'Gift Message'
   assign note_value = item.properties[note_key]
-
-  # /cart/change.js replaces the whole property set, so hand the others to the
-  # script as JSON to send back. Liquid has no string escapes, so a hand-rolled
-  # delimited format would emit literal "\t"/"\n" text instead of separators.
-  assign other_properties = item.properties | json
 -%}
 
 {%- if note_value != blank -%}
@@ -30,7 +25,6 @@
     data-cart-gift-note
     data-line="{{ line }}"
     data-note-key="{{ note_key | escape }}"
-    data-other-properties="{{ other_properties | escape }}"
   >
     <div class="cart-gift-note__head">
       <span class="cart-gift-note__label">{{ note_key }}</span>

@@ -123,20 +123,15 @@
 
   /* ---------------- 2. inline gift note editing ---------------- */
 
-  // The line's other properties, so a save can resend them alongside the note.
-  const parseOtherProperties = (raw, noteKey) => {
-    let parsed;
-    try {
-      parsed = JSON.parse(raw || '{}');
-    } catch (error) {
-      return {};
-    }
-
+  // change.js overwrites the whole property set, so a save has to resend the rest
+  // of the line's properties. They come from live cart state rather than a data
+  // attribute because Liquid serialises `item.properties | json` as an array of
+  // [key, value] pairs (and as [] when empty), not as an object.
+  const otherProperties = (item, noteKey) => {
     const props = {};
-    Object.keys(parsed || {}).forEach((key) => {
-      if (key === noteKey) return;
-      const value = parsed[key];
-      if (value === null || value === '') return;
+    Object.keys((item && item.properties) || {}).forEach((key) => {
+      const value = item.properties[key];
+      if (key === noteKey || value === null || value === '') return;
       props[key] = value;
     });
     return props;
@@ -173,15 +168,18 @@
       const key = root.dataset.noteKey;
       const value = input.value.trim();
 
-      // change.js replaces the property set wholesale, so resend the others.
-      // Always send the note key: an empty string is what clears it, whereas
-      // omitting it leaves an empty hash that change.js ignores, so a cleared
-      // note would come back unchanged.
-      const properties = parseOtherProperties(root.dataset.otherProperties, key);
-      properties[key] = value;
-
       root.setAttribute('aria-busy', 'true');
-      changeLine({ line, properties })
+      getCart()
+        .then((cart) => {
+          const properties = otherProperties(((cart && cart.items) || [])[line - 1], key);
+
+          // The note key is always sent, blank included: change.js ignores an
+          // empty properties hash (so the old note would survive a clear), while
+          // a blank value does clear it and reads as blank to Liquid, which stops
+          // this block and the property pill from rendering.
+          properties[key] = value;
+          return changeLine({ line, properties });
+        })
         .then((state) => {
           if (!renderSections(state)) window.location.reload();
         })
