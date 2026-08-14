@@ -1,0 +1,468 @@
+{%- liquid
+  assign s = section.settings
+
+  assign gif_src = ''
+  if s.gif_url != blank
+    assign gif_src = s.gif_url
+  elsif s.gif != blank
+    comment
+      The raw CDN path, deliberately untransformed: putting an animated GIF
+      through image_url can flatten it to a single frame.
+    endcomment
+    assign gif_src = s.gif.src
+  endif
+-%}
+
+{%- if s.enabled and gif_src != blank -%}
+  {%- style -%}
+    .rakhi-intro {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: {{ s.background_color }};
+      opacity: 1;
+      transition: opacity {{ s.fade_ms }}ms ease;
+      overscroll-behavior: contain;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .no-js .rakhi-intro,
+    .rakhi-intro--skip .rakhi-intro {
+      display: none;
+    }
+
+    .rakhi-intro--out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .rakhi-intro__media {
+      display: block;
+      width: {{ s.media_width }}px;
+      max-width: 84vw;
+      max-height: 76vh;
+      height: auto;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 220ms ease;
+    }
+
+    .rakhi-intro__media.is-ready {
+      opacity: 1;
+    }
+
+    .rakhi-intro__skip {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border: 0;
+      background: none;
+      color: {{ s.skip_color }};
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 400ms ease;
+    }
+
+    .rakhi-intro__skip.is-ready {
+      opacity: 0.65;
+    }
+
+    .rakhi-intro__skip:hover,
+    .rakhi-intro__skip:focus-visible {
+      opacity: 1;
+    }
+
+    /* Holds the page still underneath while the intro plays. */
+    html.rakhi-intro-lock,
+    html.rakhi-intro-lock body {
+      overflow: hidden !important;
+    }
+
+    @media screen and (max-width: 749px) {
+      .rakhi-intro__media {
+        width: {{ s.media_width_mobile }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  {%- comment -%}
+    Runs while the document is still parsing so a repeat visitor never sees a
+    frame of the overlay, and so the page underneath is locked before paint.
+  {%- endcomment -%}
+  <script>
+    window.rakhiIntro = (function () {
+      var root = document.documentElement;
+      var cfg = {
+        id: {{ section.id | json }},
+        src: {{ gif_src | json }},
+        auto: {{ s.duration_mode | json }} === 'auto',
+        fallback: {{ s.duration_ms | json }},
+        hold: {{ s.hold_ms | json }},
+        fade: {{ s.fade_ms | json }},
+        freq: {{ s.frequency | json }},
+        skip: {{ s.allow_skip | json }},
+        design: !!(window.Shopify && window.Shopify.designMode)
+      };
+      cfg.key = 'rakhi-intro:' + cfg.id;
+
+      function reduced() {
+        return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
+
+      function seen() {
+        try {
+          if (cfg.freq === 'session') return !!sessionStorage.getItem(cfg.key);
+          if (cfg.freq === 'day') {
+            var at = parseInt(localStorage.getItem(cfg.key) || '0', 10);
+            return !!at && Date.now() - at < 86400000;
+          }
+        } catch (e) {}
+        return false;
+      }
+
+      cfg.play = cfg.design || (!reduced() && !seen());
+
+      if (cfg.play) {
+        root.classList.add('rakhi-intro-lock');
+        // Nothing may keep the page hostage: unlock no matter what goes wrong below.
+        setTimeout(function () {
+          root.classList.remove('rakhi-intro-lock');
+        }, 20000);
+      } else {
+        root.classList.add('rakhi-intro--skip');
+      }
+
+      return cfg;
+    })();
+  </script>
+
+  <div
+    id="RakhiIntro-{{ section.id }}"
+    class="rakhi-intro"
+    role="dialog"
+    aria-label="{{ 'accessibility.loading' | t | escape }}"
+  >
+    <img class="rakhi-intro__media" alt="" width="{{ s.gif.width | default: 600 }}" height="{{ s.gif.height | default: 600 }}">
+    {%- if s.allow_skip -%}
+      <button type="button" class="rakhi-intro__skip">{{ s.skip_text | escape }}</button>
+    {%- endif -%}
+  </div>
+
+  <script>
+    (function () {
+      var cfg = window.rakhiIntro;
+      var root = document.documentElement;
+      var el = document.getElementById('RakhiIntro-' + cfg.id);
+      if (!el) return;
+
+      if (!cfg.play) {
+        el.parentNode.removeChild(el);
+        return;
+      }
+
+      var img = el.querySelector('.rakhi-intro__media');
+      var skipBtn = el.querySelector('.rakhi-intro__skip');
+      var objectUrl = null;
+      var timer = null;
+      var finished = false;
+
+      /* An ancestor transform (the theme moves #MainContent when a drawer opens)
+         would break position:fixed, so the overlay lives on <body>. */
+      document.body.appendChild(el);
+
+      /* Sums the per-frame delays out of the GIF's own blocks, so one full
+         play-through is timed from the file rather than guessed at. */
+      function gifDuration(buffer) {
+        var b = new Uint8Array(buffer);
+        if (b.length < 14 || b[0] !== 0x47 || b[1] !== 0x49 || b[2] !== 0x46) return 0;
+
+        var p = 10;
+        if (b[p] & 0x80) p += 3 * (1 << ((b[p] & 0x07) + 1));
+        p += 3;
+
+        var total = 0;
+        var frames = 0;
+        var delay = 0;
+
+        while (p < b.length) {
+          var block = b[p];
+
+          if (block === 0x21) {
+            if (b[p + 1] === 0xf9) {
+              delay = b[p + 4] | (b[p + 5] << 8);
+              p += 8;
+              continue;
+            }
+            p += 2;
+            while (p < b.length && b[p] !== 0) p += b[p] + 1;
+            p++;
+          } else if (block === 0x2c) {
+            var packed = b[p + 9];
+            p += 10;
+            if (packed & 0x80) p += 3 * (1 << ((packed & 0x07) + 1));
+            p++;
+            while (p < b.length && b[p] !== 0) p += b[p] + 1;
+            p++;
+
+            var ms = delay * 10;
+            if (ms < 20) ms = 100; // browsers clamp 0 and 1 centisecond delays
+            total += ms;
+            frames++;
+            delay = 0;
+          } else if (block === 0x3b) {
+            break;
+          } else {
+            p++;
+          }
+        }
+
+        if (!frames || total < 200) return 0;
+        return Math.min(total, 30000);
+      }
+
+      /* Paints the frame that is on screen onto a canvas and swaps it in, so a
+         looping GIF cannot start over during the fade. */
+      function freeze() {
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          if (!canvas.width || !canvas.height) return;
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.className = img.className;
+          img.parentNode.replaceChild(canvas, img);
+        } catch (e) {}
+      }
+
+      function remember() {
+        if (cfg.design) return;
+        try {
+          if (cfg.freq === 'session') sessionStorage.setItem(cfg.key, '1');
+          else if (cfg.freq === 'day') localStorage.setItem(cfg.key, String(Date.now()));
+        } catch (e) {}
+      }
+
+      function finish(instant) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        remember();
+        if (!instant) freeze();
+        el.classList.add('rakhi-intro--out');
+
+        setTimeout(function () {
+          root.classList.remove('rakhi-intro-lock');
+          if (el.parentNode) el.parentNode.removeChild(el);
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+          document.dispatchEvent(new CustomEvent('rakhi:intro:done'));
+        }, cfg.fade + 60);
+      }
+
+      function play(src, duration) {
+        var run = function () {
+          img.classList.add('is-ready');
+          if (skipBtn) skipBtn.classList.add('is-ready');
+          var ms = duration || cfg.fallback;
+          timer = setTimeout(finish, ms + cfg.hold);
+        };
+
+        img.addEventListener('error', function () {
+          finish(true);
+        });
+        img.addEventListener('load', function () {
+          if (img.decode) img.decode().then(run).catch(run);
+          else run();
+        });
+        img.src = src;
+      }
+
+      /* Fetching the bytes first gives us the real length and guarantees the
+         animation starts at frame one the moment it is shown. */
+      if (cfg.auto && window.fetch && window.URL && window.URL.createObjectURL) {
+        var controller = window.AbortController ? new AbortController() : null;
+        var bail = setTimeout(function () {
+          if (controller) controller.abort();
+        }, 6000);
+
+        fetch(cfg.src, controller ? { signal: controller.signal } : undefined)
+          .then(function (res) {
+            if (!res.ok) throw new Error('intro gif ' + res.status);
+            return res.arrayBuffer();
+          })
+          .then(function (buffer) {
+            clearTimeout(bail);
+            var duration = gifDuration(buffer);
+            objectUrl = URL.createObjectURL(new Blob([buffer], { type: 'image/gif' }));
+            play(objectUrl, duration);
+          })
+          .catch(function () {
+            clearTimeout(bail);
+            if (!finished) play(cfg.src, 0);
+          });
+      } else {
+        play(cfg.src, 0);
+      }
+
+      if (cfg.skip) {
+        el.addEventListener('click', function () {
+          finish();
+        });
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape' || event.key === 'Esc') finish();
+        });
+      }
+    })();
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Rakhi Intro Animation",
+  "tag": "div",
+  "class": "rakhi-intro-section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Enable intro animation",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "image_picker",
+      "id": "gif",
+      "label": "GIF",
+      "info": "Played once in the centre of the screen. Upload the animated GIF here, or paste its URL below."
+    },
+    {
+      "type": "text",
+      "id": "gif_url",
+      "label": "GIF URL",
+      "info": "Optional. Paste the file URL from Settings → Files. Takes priority over the GIF above."
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#0107EF"
+    },
+    {
+      "type": "range",
+      "id": "media_width",
+      "min": 100,
+      "max": 900,
+      "step": 10,
+      "unit": "px",
+      "label": "GIF width (desktop)",
+      "default": 420
+    },
+    {
+      "type": "range",
+      "id": "media_width_mobile",
+      "min": 80,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "label": "GIF width (mobile)",
+      "default": 260
+    },
+    {
+      "type": "header",
+      "content": "Timing"
+    },
+    {
+      "type": "select",
+      "id": "duration_mode",
+      "label": "Animation length",
+      "options": [
+        { "value": "auto", "label": "Detect from the GIF" },
+        { "value": "manual", "label": "Set it manually" }
+      ],
+      "default": "auto",
+      "info": "Detection reads the GIF's own frame timings so it fades out after exactly one play."
+    },
+    {
+      "type": "range",
+      "id": "duration_ms",
+      "min": 500,
+      "max": 10500,
+      "step": 100,
+      "unit": "ms",
+      "label": "Manual length",
+      "default": 3000,
+      "info": "Used when the length is set manually, and as a fallback if detection fails."
+    },
+    {
+      "type": "range",
+      "id": "hold_ms",
+      "min": 0,
+      "max": 3000,
+      "step": 100,
+      "unit": "ms",
+      "label": "Hold on last frame",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "fade_ms",
+      "min": 100,
+      "max": 2000,
+      "step": 50,
+      "unit": "ms",
+      "label": "Fade out",
+      "default": 700
+    },
+    {
+      "type": "header",
+      "content": "Display"
+    },
+    {
+      "type": "select",
+      "id": "frequency",
+      "label": "Show the intro",
+      "options": [
+        { "value": "always", "label": "Every page load" },
+        { "value": "session", "label": "Once per visit" },
+        { "value": "day", "label": "Once a day" }
+      ],
+      "default": "always",
+      "info": "The theme editor always plays it so you can preview your changes."
+    },
+    {
+      "type": "checkbox",
+      "id": "allow_skip",
+      "label": "Let visitors skip",
+      "default": true,
+      "info": "Adds a skip button, and dismisses the intro on click or Esc."
+    },
+    {
+      "type": "text",
+      "id": "skip_text",
+      "label": "Skip button text",
+      "default": "Skip"
+    },
+    {
+      "type": "color",
+      "id": "skip_color",
+      "label": "Skip button color",
+      "default": "#FFFFFF"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rakhi Intro Animation"
+    }
+  ]
+}
+{% endschema %}
