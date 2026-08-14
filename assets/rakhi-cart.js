@@ -21,25 +21,44 @@
     Accept: 'application/json',
   };
 
-  const getSections = () => {
-    const miniCart = document.querySelector('mini-cart');
-    if (!miniCart || typeof miniCart.getSectionsToRender !== 'function') return { miniCart: null, ids: [] };
-    return { miniCart, ids: miniCart.getSectionsToRender().map((section) => section.id) };
+  // On the cart page <cart-items> re-renders the page's own line items as well as
+  // the drawer; everywhere else the drawer's <mini-cart> is all there is. Neither
+  // element's own renderContents() is used: mini-cart's pops the drawer open, and
+  // cart-items' looks sections up by DOM id rather than by section id.
+  const getSectionsToRender = () => {
+    const renderer = [document.querySelector('cart-items'), document.querySelector('mini-cart')].find(
+      (el) => el && typeof el.getSectionsToRender === 'function'
+    );
+    return renderer ? renderer.getSectionsToRender().filter((section) => section.section) : [];
   };
 
+  // Returns whether anything was actually re-rendered, so callers can fall back
+  // to a reload rather than leaving stale markup on screen.
   const renderSections = (state) => {
-    const { miniCart } = getSections();
-    if (miniCart && state && state.sections) miniCart.renderContents(state);
+    if (!state || !state.sections) return false;
+
+    let rendered = false;
+    getSectionsToRender().forEach((section) => {
+      const element = document.getElementById(section.id);
+      const html = state.sections[section.section];
+      if (!element || !html) return;
+
+      const parsed = new DOMParser().parseFromString(html, 'text/html').querySelector(section.selector);
+      if (!parsed) return;
+      (element.querySelector(section.selector) || element).innerHTML = parsed.innerHTML;
+      rendered = true;
+    });
+    return rendered;
   };
 
   const getCart = () => fetch(`${CART_URL}.js`, { headers: jsonHeaders }).then((r) => r.json());
 
   const changeLine = (payload) => {
-    const { ids } = getSections();
+    const sections = [...new Set(getSectionsToRender().map((section) => section.section))];
     return fetch(`${CHANGE_URL}.js`, {
       method: 'POST',
       headers: jsonHeaders,
-      body: JSON.stringify({ ...payload, sections: ids, sections_url: window.location.pathname }),
+      body: JSON.stringify({ ...payload, sections, sections_url: window.location.pathname }),
     }).then((r) => r.json());
   };
 
@@ -104,15 +123,22 @@
 
   /* ---------------- 2. inline gift note editing ---------------- */
 
-  const parseOtherProperties = (raw) => {
+  // The line's other properties, so a save can resend them alongside the note.
+  const parseOtherProperties = (raw, noteKey) => {
+    let parsed;
+    try {
+      parsed = JSON.parse(raw || '{}');
+    } catch (error) {
+      return {};
+    }
+
     const props = {};
-    (raw || '')
-      .split('\n')
-      .filter(Boolean)
-      .forEach((row) => {
-        const tab = row.indexOf('\t');
-        if (tab > 0) props[row.slice(0, tab)] = row.slice(tab + 1);
-      });
+    Object.keys(parsed || {}).forEach((key) => {
+      if (key === noteKey) return;
+      const value = parsed[key];
+      if (value === null || value === '') return;
+      props[key] = value;
+    });
     return props;
   };
 
@@ -148,14 +174,16 @@
       const value = input.value.trim();
 
       // change.js replaces the property set wholesale, so resend the others.
-      const properties = parseOtherProperties(root.dataset.otherProperties);
-      if (value) properties[key] = value;
+      // Always send the note key: an empty string is what clears it, whereas
+      // omitting it leaves an empty hash that change.js ignores, so a cleared
+      // note would come back unchanged.
+      const properties = parseOtherProperties(root.dataset.otherProperties, key);
+      properties[key] = value;
 
       root.setAttribute('aria-busy', 'true');
       changeLine({ line, properties })
         .then((state) => {
-          renderSections(state);
-          if (!state || !state.sections) window.location.reload();
+          if (!renderSections(state)) window.location.reload();
         })
         .catch(() => {
           root.removeAttribute('aria-busy');

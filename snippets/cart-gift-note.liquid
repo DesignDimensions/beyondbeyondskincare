@@ -18,13 +18,10 @@
   assign note_key = note_property | default: 'Gift Message'
   assign note_value = item.properties[note_key]
 
-  # /cart/change.js replaces the whole property set, so keep the others to send back.
-  assign other_properties = ''
-  for property in item.properties
-    if property.first != note_key and property.last != blank
-      assign other_properties = other_properties | append: property.first | append: '\t' | append: property.last | append: '\n'
-    endif
-  endfor
+  # /cart/change.js replaces the whole property set, so hand the others to the
+  # script as JSON to send back. Liquid has no string escapes, so a hand-rolled
+  # delimited format would emit literal "\t"/"\n" text instead of separators.
+  assign other_properties = item.properties | json
 -%}
 
 {%- if note_value != blank -%}
