@@ -199,6 +199,7 @@
       var objectUrl = null;
       var timer = null;
       var finished = false;
+      var frozen = false;
 
       /* An ancestor transform (the theme moves #MainContent when a drawer opens)
          would break position:fixed, so the overlay lives on <body>. */
@@ -254,9 +255,51 @@
         return Math.min(total, 30000);
       }
 
-      /* Paints the frame that is on screen onto a canvas and swaps it in, so a
-         looping GIF cannot start over during the fade. */
+      function looping(b, at) {
+        var name = '';
+        for (var i = 0; i < 11; i++) name += String.fromCharCode(b[at + i]);
+        return name === 'NETSCAPE2.0' || name === 'ANIMEXTS1.0';
+      }
+
+      /* Cuts the NETSCAPE2.0 looping block out of the file. Without it the GIF
+         plays through exactly once and holds its last frame, instead of
+         starting over underneath the fade. */
+      function stripLoop(buffer) {
+        var b = new Uint8Array(buffer);
+        if (b.length < 14 || b[0] !== 0x47 || b[1] !== 0x49 || b[2] !== 0x46) {
+          return { bytes: b, stripped: false };
+        }
+
+        var p = 10;
+        if (b[p] & 0x80) p += 3 * (1 << ((b[p] & 0x07) + 1));
+        p += 3;
+
+        /* The looping block always sits ahead of the first frame, so the walk
+           stops there; later application blocks (Adobe writes an XMP one at the
+           end of both of these files) are left untouched. */
+        while (p < b.length && b[p] === 0x21) {
+          var label = b[p + 1];
+          var end = p + 2;
+          while (end < b.length && b[end] !== 0) end += b[end] + 1;
+          end++;
+
+          if (label === 0xff && b[p + 2] === 0x0b && looping(b, p + 3)) {
+            var out = new Uint8Array(b.length - (end - p));
+            out.set(b.subarray(0, p), 0);
+            out.set(b.subarray(end), p);
+            return { bytes: out, stripped: true };
+          }
+
+          p = end;
+        }
+
+        return { bytes: b, stripped: false };
+      }
+
+      /* Paints the frame that is on screen onto a canvas and swaps it in, so
+         nothing can move underneath the fade. */
       function freeze() {
+        if (frozen) return;
         try {
           var canvas = document.createElement('canvas');
           canvas.width = img.naturalWidth || img.width;
@@ -264,7 +307,8 @@
           if (!canvas.width || !canvas.height) return;
           canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
           canvas.className = img.className;
-          img.parentNode.replaceChild(canvas, img);
+          if (img.parentNode) img.parentNode.replaceChild(canvas, img);
+          frozen = true;
         } catch (e) {}
       }
 
@@ -292,12 +336,27 @@
         }, cfg.fade + 60);
       }
 
-      function play(src, duration) {
+      /* The play-through is over: pin the final frame first, and only then sit
+         on it for the hold. Holding before the freeze is what let a looping
+         file get a few frames into its second run before it was covered. */
+      function settle() {
+        if (finished) return;
+        freeze();
+        timer = setTimeout(function () {
+          finish(true);
+        }, cfg.hold);
+      }
+
+      function play(src, duration, stops) {
         var run = function () {
           img.classList.add('is-ready');
           if (skipBtn) skipBtn.classList.add('is-ready');
+
           var ms = duration || cfg.fallback;
-          timer = setTimeout(finish, ms + cfg.hold);
+          /* If the loop could not be taken out, land a few frames early: a
+             timer only ever fires late, and late means the restart is showing. */
+          if (!stops && duration) ms = Math.max(200, ms - 80);
+          timer = setTimeout(settle, ms);
         };
 
         img.addEventListener('error', function () {
@@ -310,9 +369,10 @@
         img.src = src;
       }
 
-      /* Fetching the bytes first gives us the real length and guarantees the
-         animation starts at frame one the moment it is shown. */
-      if (cfg.auto && window.fetch && window.URL && window.URL.createObjectURL) {
+      /* Fetching the bytes first gives us the real length, lets us take the
+         loop out, and guarantees the animation starts at frame one the moment
+         it is shown. */
+      if (window.fetch && window.URL && window.URL.createObjectURL) {
         var controller = window.AbortController ? new AbortController() : null;
         var bail = setTimeout(function () {
           if (controller) controller.abort();
@@ -325,16 +385,17 @@
           })
           .then(function (buffer) {
             clearTimeout(bail);
-            var duration = gifDuration(buffer);
-            objectUrl = URL.createObjectURL(new Blob([buffer], { type: 'image/gif' }));
-            play(objectUrl, duration);
+            var duration = cfg.auto ? gifDuration(buffer) : 0;
+            var once = stripLoop(buffer);
+            objectUrl = URL.createObjectURL(new Blob([once.bytes], { type: 'image/gif' }));
+            play(objectUrl, duration, once.stripped);
           })
           .catch(function () {
             clearTimeout(bail);
-            if (!finished) play(cfg.src, 0);
+            if (!finished) play(cfg.src, 0, false);
           });
       } else {
-        play(cfg.src, 0);
+        play(cfg.src, 0, false);
       }
 
       if (cfg.skip) {
