@@ -131,7 +131,7 @@
 
   <div class="cart-card cart-item__body">
     {%- if item.image -%}
-      <a href="{{ item.url }}" class="cart-item__media">
+      <div class="cart-item__media">
         <img
           srcset="{{ item.image | image_url: width: 140 }} 1x, {{ item.image | image_url: width: 280 }} 2x"
           src="{{ item.image | image_url: width: 140 }}"
@@ -141,12 +141,12 @@
           loading="lazy"
           is="lazy-image"
         />
-      </a>
+      </div>
     {%- endif -%}
 
     <div class="cart-item__content">
       <div class="cart-item__head">
-        <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
+        <span class="cart-item__title">{{ item.product.title }}</span>
         <span class="cart-item__price">
           {%- if compare_price > 0 -%}
             <s class="cart-item__price-compare">

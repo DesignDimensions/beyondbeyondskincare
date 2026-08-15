@@ -566,12 +566,6 @@ a.mini-cart__promo-banner:hover {
   transition: transform var(--duration-long) ease;
 }
 
-@media screen and (hover: hover) {
-  .cart-item__media:hover img {
-    transform: scale(1.06);
-  }
-}
-
 .cart-item__content {
   flex: 1 1 auto;
   min-width: 0;
@@ -600,12 +594,6 @@ a.mini-cart__promo-banner:hover {
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-top: 5px;
-}
-
-@media screen and (hover: hover) {
-  .cart-item__title:hover {
-    text-decoration: underline;
-  }
 }
 
 .cart-item__price {
