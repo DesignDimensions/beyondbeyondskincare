@@ -13,11 +13,9 @@
       "type": "rakhi-intro-loader",
       "settings": {
         "enabled": true,
-        "gif": "shopify://shop_images/Rakhi_Animation1_1.gif",
-        "gif_url": "https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Rakhi_Animation_1.gif?v=1786718013",
+        "gif_url": "https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Rakhi_Desktop.gif?v=1786765970",
+        "gif_url_mobile": "https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Rakhi_Mobile.gif?v=1786765968",
         "background_color": "#0107ef",
-        "media_width": 200,
-        "media_width_mobile": 260,
         "duration_mode": "auto",
         "duration_ms": 3000,
         "hold_ms": 200,

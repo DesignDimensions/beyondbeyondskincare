@@ -11,6 +11,23 @@
     endcomment
     assign gif_src = s.gif.src
   endif
+
+  assign gif_src_mobile = ''
+  if s.gif_url_mobile != blank
+    assign gif_src_mobile = s.gif_url_mobile
+  elsif s.gif_mobile != blank
+    assign gif_src_mobile = s.gif_mobile.src
+  endif
+
+  comment
+    Either one on its own is enough: whichever is missing falls back to the other.
+  endcomment
+  if gif_src_mobile == blank
+    assign gif_src_mobile = gif_src
+  endif
+  if gif_src == blank
+    assign gif_src = gif_src_mobile
+  endif
 -%}
 
 {%- if s.enabled and gif_src != blank -%}
@@ -25,6 +42,7 @@
       background-color: {{ s.background_color }};
       opacity: 1;
       transition: opacity {{ s.fade_ms }}ms ease;
+      overflow: hidden;
       overscroll-behavior: contain;
       -webkit-tap-highlight-color: transparent;
     }
@@ -39,13 +57,14 @@
       pointer-events: none;
     }
 
+    /* Full-bleed: the GIF spans the viewport edge to edge and the flex
+       container centres whatever height its aspect ratio gives it. */
     .rakhi-intro__media {
       display: block;
-      width: {{ s.media_width }}px;
-      max-width: 84vw;
-      max-height: 76vh;
+      flex: 0 0 auto;
+      width: 100%;
+      max-width: none;
       height: auto;
-      object-fit: contain;
       opacity: 0;
       transition: opacity 220ms ease;
     }
@@ -85,12 +104,6 @@
     html.rakhi-intro-lock body {
       overflow: hidden !important;
     }
-
-    @media screen and (max-width: 749px) {
-      .rakhi-intro__media {
-        width: {{ s.media_width_mobile }}px;
-      }
-    }
   {%- endstyle -%}
 
   {%- comment -%}
@@ -102,7 +115,8 @@
       var root = document.documentElement;
       var cfg = {
         id: {{ section.id | json }},
-        src: {{ gif_src | json }},
+        srcDesktop: {{ gif_src | json }},
+        srcMobile: {{ gif_src_mobile | json }},
         auto: {{ s.duration_mode | json }} === 'auto',
         fallback: {{ s.duration_ms | json }},
         hold: {{ s.hold_ms | json }},
@@ -112,6 +126,14 @@
         design: !!(window.Shopify && window.Shopify.designMode)
       };
       cfg.key = 'rakhi-intro:' + cfg.id;
+
+      /* Picked once, before the fetch below, so only the artwork that will
+         actually be shown is downloaded. */
+      function mobile() {
+        return !!(window.matchMedia && window.matchMedia('(max-width: 749px)').matches);
+      }
+
+      cfg.src = mobile() ? cfg.srcMobile : cfg.srcDesktop;
 
       function reduced() {
         return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -150,7 +172,11 @@
     role="dialog"
     aria-label="{{ 'accessibility.loading' | t | escape }}"
   >
-    <img class="rakhi-intro__media" alt="" width="{{ s.gif.width | default: 600 }}" height="{{ s.gif.height | default: 600 }}">
+    {%- comment -%}
+      No width/height attributes: the desktop and mobile files have different
+      aspect ratios, so the box is left to the loaded file itself.
+    {%- endcomment -%}
+    <img class="rakhi-intro__media" alt="">
     {%- if s.allow_skip -%}
       <button type="button" class="rakhi-intro__skip">{{ s.skip_text | escape }}</button>
     {%- endif -%}
@@ -340,43 +366,40 @@
       "content": "Animation"
     },
     {
+      "type": "paragraph",
+      "content": "The GIF is played once at the full width of the screen, edge to edge, centred vertically."
+    },
+    {
       "type": "image_picker",
       "id": "gif",
-      "label": "GIF",
-      "info": "Played once in the centre of the screen. Upload the animated GIF here, or paste its URL below."
+      "label": "GIF (desktop)",
+      "info": "Upload the animated GIF here, or paste its URL below."
     },
     {
       "type": "text",
       "id": "gif_url",
-      "label": "GIF URL",
-      "default": "https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Rakhi_Animation_1.gif?v=1786718013",
+      "label": "GIF URL (desktop)",
+      "default": "https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Rakhi_Desktop.gif?v=1786765970",
       "info": "Paste the file URL from Settings → Files. Takes priority over the GIF above."
+    },
+    {
+      "type": "image_picker",
+      "id": "gif_mobile",
+      "label": "GIF (mobile)",
+      "info": "Shown below 750px. Falls back to the desktop GIF if left empty."
+    },
+    {
+      "type": "text",
+      "id": "gif_url_mobile",
+      "label": "GIF URL (mobile)",
+      "default": "https://cdn.shopify.com/s/files/1/0715/1157/2666/files/Rakhi_Mobile.gif?v=1786765968",
+      "info": "Takes priority over the mobile GIF above."
     },
     {
       "type": "color",
       "id": "background_color",
       "label": "Background color",
       "default": "#0107EF"
-    },
-    {
-      "type": "range",
-      "id": "media_width",
-      "min": 100,
-      "max": 900,
-      "step": 10,
-      "unit": "px",
-      "label": "GIF width (desktop)",
-      "default": 420
-    },
-    {
-      "type": "range",
-      "id": "media_width_mobile",
-      "min": 80,
-      "max": 600,
-      "step": 10,
-      "unit": "px",
-      "label": "GIF width (mobile)",
-      "default": 260
     },
     {
       "type": "header",
