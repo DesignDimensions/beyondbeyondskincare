@@ -6,6 +6,8 @@
   assign card_label = card_label | default: 'BESTSELLER'
   assign card_sizes = card_sizes | default: '(min-width: 1200px) 276px, 22vw'
   assign size_source = size_source | default: 'metafield'
+  {%- comment -%} allow_false so a caller can opt out; a plain default: would flip false back to true {%- endcomment -%}
+  assign show_discount_badge = show_discount_badge | default: true, allow_false: true
   assign available_variants_count = 0
   assign first_available_variant = blank
 
@@ -43,7 +45,7 @@
     <a href="{{ current_product.url }}" class="bestseller-card__media-link" aria-label="{{ current_product.title | escape }}">
       <div class="bestseller-card__badges">
         <span class="bestseller-card__badge">{{ card_label }}</span>
-        {%- if display_variant != blank and display_variant.compare_at_price > display_variant.price -%}
+        {%- if show_discount_badge and display_variant != blank and display_variant.compare_at_price > display_variant.price -%}
           {%- assign diff = display_variant.compare_at_price | minus: display_variant.price -%}
           {%- assign pct = diff | times: 100 | divided_by: display_variant.compare_at_price -%}
           <span class="bestseller-card__badge bestseller-card__badge--offer">-{{ pct }}% OFF</span>
