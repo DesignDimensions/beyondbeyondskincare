@@ -51,7 +51,6 @@
       "blocks": {
         "banner_X9azw4": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/DAYCREAM_BANNER.png",
             "mobile_banner": "shopify://shop_images/day_cream-mobile.png",
@@ -63,7 +62,6 @@
         },
         "banner_hdddek": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/ENZYME_CLEANSER_BANNER.png",
             "mobile_banner": "shopify://shop_images/enzyme_cleanser-mobile.png",
@@ -75,7 +73,6 @@
         },
         "banner_NPCmdk": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/SUNSCREEN_BANNER.png",
             "mobile_banner": "shopify://shop_images/F2_7_mobie.png",
@@ -87,7 +84,6 @@
         },
         "banner_UjrPnc": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/NIGHT_CREAM_BANNER.png",
             "mobile_banner": "shopify://shop_images/night_cream-mobile.png",
@@ -99,7 +95,6 @@
         },
         "banner_tnLxm8": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/ANTIOXIDANT_DEFENCE_VITAMIN_C_SERUM_BANNER.png",
             "mobile_banner": "shopify://shop_images/advance_defense-mobile.png",
@@ -111,7 +106,6 @@
         },
         "banner_ViBbzU": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/HYDRATION_REPAIR_HYALURONIC_ACID_SERUM_BANNER.png",
             "mobile_banner": "shopify://shop_images/advanced_serum-mobile.png",
@@ -123,7 +117,6 @@
         },
         "banner_n9eiAd": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/10__OFF_SUMMER_SALE_BANNER.png",
             "mobile_banner": "shopify://shop_images/All_products-mobile.png",
@@ -135,7 +128,6 @@
         },
         "banner_z4iAaj": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Enzyme_cleanser_desktop_1_7bc3d2c7-04a5-4741-8a2b-29fd8fd57b36.png",
             "mobile_banner": "shopify://shop_images/enzyme_cleanser_mob_1_afcc0aef-4109-4195-b445-c995088dc9f4.png",
@@ -147,7 +139,6 @@
         },
         "banner_bfxNXe": {
           "type": "banner",
-          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Prime_banner_01_web-2_7194c437-a669-49a6-a5f3-54ee3eb672e5.png",
             "mobile_banner": "shopify://shop_images/Prime_banner_01_mobile-2_b564df63-125e-4ebb-aa9c-a8f9753a55cf.png",
@@ -159,6 +150,7 @@
         },
         "banner_pLyFtP": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Combo_banner_WEB.png",
             "mobile_banner": "shopify://shop_images/Combo_Banner_mob.png",
@@ -170,6 +162,7 @@
         },
         "banner_aAD9cG": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Independence_sale_Oligio_mist.png",
             "mobile_banner": "shopify://shop_images/Independence_sale_Oligio_mist_mob.png",
@@ -181,6 +174,7 @@
         },
         "banner_EP68Le": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Independence_sale_Lip_butter.png",
             "mobile_banner": "shopify://shop_images/Independence_sale_Lip_butter_mob.png",
@@ -192,6 +186,7 @@
         },
         "banner_n9hUUn": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Independence_sale_Sunspray.png",
             "mobile_banner": "shopify://shop_images/Independence_sale_sunspray_mob.png",
@@ -203,6 +198,7 @@
         },
         "banner_XGdVyw": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/Independence_sale_Cleanser_Jelly.png",
             "mobile_banner": "shopify://shop_images/Independence_sale_Cleanser_Jelly_mob.png",
@@ -214,6 +210,7 @@
         },
         "banner_bBtUar": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/20__off_web.png",
             "mobile_banner": "shopify://shop_images/20__off_mob.png",
