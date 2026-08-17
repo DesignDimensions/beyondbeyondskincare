@@ -63,7 +63,7 @@
     "empty_cart_message": "<p>Not sure where to start?<br/>Try these brands:</p>",
     "empty_cart_button_secondary": true,
     "cart_promo_banner_enabled": true,
-    "cart_promo_banner_text": "Get <strong>20% OFF</strong> sitewide",
+    "cart_promo_banner_text": "Get <strong>10% OFF</strong> sitewide",
     "gift_tiers_enabled": false,
     "gift_tiers_heading": "Unlock complimentary gifts as your cart value grows.",
     "gift_tier_1_product": "beauty-bag",

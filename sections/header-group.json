@@ -17,8 +17,8 @@
         "announcement_figma_primary": {
           "type": "announcement",
           "settings": {
-            "text": "Flat <strong>20% OFF</strong> sitewide",
-            "text_on_mobile": "Flat <strong>20% OFF</strong> sitewide",
+            "text": "Flat <strong>10% OFF</strong> sitewide",
+            "text_on_mobile": "Flat <strong>10% OFF</strong> sitewide",
             "text_size": 15,
             "link": "shopify://collections/all"
           }
