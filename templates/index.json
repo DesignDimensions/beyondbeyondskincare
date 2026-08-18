@@ -49,6 +49,17 @@
     "home_main_slider_LXhr7p": {
       "type": "home-main-slider",
       "blocks": {
+        "banner_D8mA47": {
+          "type": "banner",
+          "settings": {
+            "desktop_banner": "shopify://shop_images/Rakhi_Combo_Banner_web.png",
+            "mobile_banner": "shopify://shop_images/Rakhi_Combo_Banner_mob.png",
+            "title": "",
+            "description": "",
+            "link_text": "",
+            "link": "shopify://pages/rakhi-essentials"
+          }
+        },
         "banner_X9azw4": {
           "type": "banner",
           "settings": {
@@ -224,6 +235,7 @@
         }
       },
       "block_order": [
+        "banner_D8mA47",
         "banner_X9azw4",
         "banner_hdddek",
         "banner_NPCmdk",
