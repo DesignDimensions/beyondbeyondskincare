@@ -42,6 +42,24 @@ window.metaPixel.normalizeCurrency = function (currencyValue) {
     return /^[A-Z]{3}$/.test(normalizedValue) ? normalizedValue : null;
 };
 
+// Meta ignores a second `fbq('init', ...)` for a pixel that is already
+// initialized, so identity learned mid-session cannot be re-inited onto this
+// page. It is persisted for the next page view's init and, as a supplement,
+// passed here as hashed `user_data` on the event itself.
+window.metaPixel.trackOptions = function () {
+    const userData = window.metaPixelUserData || {};
+    return Object.keys(userData).length ? { user_data: userData } : null;
+};
+
+window.metaPixel.fireTrack = function (eventName, payload) {
+    const options = window.metaPixel.trackOptions();
+    if (options) {
+        fbq('track', eventName, payload, options);
+    } else {
+        fbq('track', eventName, payload);
+    }
+};
+
 window.metaPixel.safeTrack = function (eventName, payload = {}) {
 
     const cleaned = {};
@@ -75,7 +93,7 @@ window.metaPixel.safeTrack = function (eventName, payload = {}) {
 
     // fbq may not be available yet (consent managers, deferred loads). Queue and flush.
     if (typeof fbq === "function") {
-        fbq("track", eventName, cleaned);
+        window.metaPixel.fireTrack(eventName, cleaned);
         return;
     }
 
@@ -93,7 +111,7 @@ window.metaPixel.safeTrack = function (eventName, payload = {}) {
                 window.__metaPixelFbqQueue = [];
                 q.forEach(function (args) {
                     try {
-                        fbq("track", args[0], args[1]);
+                        window.metaPixel.fireTrack(args[0], args[1]);
                     } catch (e) {
                         // no-op
                     }
@@ -454,7 +472,7 @@ window.metaPixel.identityKeyForField = function (field) {
 
 window.metaPixel.captureIdentityFromForm = function (form) {
     if (!(form instanceof HTMLFormElement)) return;
-    if (typeof window.metaPixel.rememberAdvancedMatching !== 'function') return;
+    if (typeof window.metaPixel.identify !== 'function') return;
 
     const identity = {};
     Array.prototype.forEach.call(form.querySelectorAll('input, select'), function (field) {
@@ -467,7 +485,7 @@ window.metaPixel.captureIdentityFromForm = function (form) {
 
     if (!Object.keys(identity).length) return;
 
-    const matched = window.metaPixel.rememberAdvancedMatching(identity);
+    const matched = window.metaPixel.identify(identity);
     console.info('[Meta Pixel] advanced matching updated', Object.keys(matched));
 };
 
@@ -487,7 +505,7 @@ function initMetaPixel() {
     document.addEventListener('blur', function (event) {
         const field = event.target;
         if (!(field instanceof HTMLInputElement) && !(field instanceof HTMLSelectElement)) return;
-        if (typeof window.metaPixel.rememberAdvancedMatching !== 'function') return;
+        if (typeof window.metaPixel.identify !== 'function') return;
 
         const value = typeof field.value === 'string' ? field.value.trim() : '';
         if (!value) return;
@@ -497,7 +515,7 @@ function initMetaPixel() {
 
         const identity = {};
         identity[key] = value;
-        window.metaPixel.rememberAdvancedMatching(identity);
+        window.metaPixel.identify(identity);
     }, true);
 
     // Shopify newsletter forms often redirect with `?customer_posted=true`
