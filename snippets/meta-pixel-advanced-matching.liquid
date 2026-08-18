@@ -1,0 +1,166 @@
+{%- comment -%}
+  Manual advanced matching for the Meta pixel.
+
+  Builds `window.metaPixelAdvancedMatching`, the object passed as the third
+  parameter to `fbq('init', ...)`. Must be rendered BEFORE the pixel base code
+  so the data is present on the very first init call.
+
+  Values are normalized here (lowercased, punctuation stripped, phone reduced to
+  digits with a country code) exactly as Meta requires. The pixel hashes every
+  field with SHA-256 in the browser, so no raw PII is sent to Meta.
+
+  Sources, in increasing order of precedence:
+    1. The logged-in customer object (below).
+    2. Details the shopper typed on this device earlier — newsletter signups,
+       cart/checkout forms — remembered by `metaPixel.rememberAdvancedMatching`
+       in `meta-pixel.js` and kept in localStorage.
+{%- endcomment -%}
+<script>
+  window.metaPixel = window.metaPixel || {};
+
+  (function () {
+    // Fallback dialling code for phone numbers stored without one (store is IN).
+    var DEFAULT_DIAL_CODE = '91';
+    var STORAGE_KEY = 'metaPixelAdvancedMatching';
+
+    function text(value) {
+      if (typeof value === 'number') return String(value);
+      return typeof value === 'string' ? value.trim() : '';
+    }
+
+    // Letters only: Meta strips punctuation, digits and whitespace from names.
+    function name(value) {
+      return text(value)
+        .toLowerCase()
+        .replace(/[^a-zÀ-ɏ]/g, '');
+    }
+
+    function email(value) {
+      var normalized = text(value).toLowerCase();
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) ? normalized : '';
+    }
+
+    function phone(value) {
+      var digits = text(value).replace(/\D/g, '').replace(/^0+/, '');
+      if (!digits) return '';
+      // A bare national number needs its country code prepended.
+      if (digits.length === 10) digits = DEFAULT_DIAL_CODE + digits;
+      return digits.length >= 8 && digits.length <= 15 ? digits : '';
+    }
+
+    function city(value) {
+      return text(value)
+        .toLowerCase()
+        .replace(/[^a-zÀ-ɏ]/g, '');
+    }
+
+    function state(value) {
+      return text(value)
+        .toLowerCase()
+        .replace(/[^a-zÀ-ɏ]/g, '');
+    }
+
+    function zip(value, countryCode) {
+      var normalized = text(value).toLowerCase().replace(/\s/g, '');
+      // Meta wants only the 5-digit base ZIP for the US.
+      if (countryCode === 'us') return normalized.split('-')[0].slice(0, 5);
+      return normalized;
+    }
+
+    function country(value) {
+      var normalized = text(value).toLowerCase();
+      return /^[a-z]{2}$/.test(normalized) ? normalized : '';
+    }
+
+    function gender(value) {
+      var normalized = text(value).toLowerCase().charAt(0);
+      return normalized === 'f' || normalized === 'm' ? normalized : '';
+    }
+
+    function birthday(value) {
+      var digits = text(value).replace(/\D/g, '');
+      return digits.length === 8 ? digits : '';
+    }
+
+    // Turns loose input (`{ email, phone, firstName, ... }` or already-keyed
+    // `{ em, ph, fn, ... }`) into the exact keys the pixel expects.
+    window.metaPixel.normalizeAdvancedMatching = function (raw) {
+      var input = raw || {};
+      var countryCode = country(input.country || input.countryCode);
+
+      var normalized = {
+        em: email(input.em || input.email),
+        ph: phone(input.ph || input.phone),
+        fn: name(input.fn || input.firstName),
+        ln: name(input.ln || input.lastName),
+        ct: city(input.ct || input.city),
+        st: state(input.st || input.province || input.state),
+        zp: zip(input.zp || input.zip || input.postcode, countryCode),
+        country: countryCode,
+        ge: gender(input.ge || input.gender),
+        db: birthday(input.db || input.birthday),
+        external_id: text(input.external_id || input.externalId || input.customerId)
+      };
+
+      Object.keys(normalized).forEach(function (key) {
+        if (!normalized[key] || normalized[key] === '0') delete normalized[key];
+      });
+
+      return normalized;
+    };
+
+    window.metaPixel.readStoredAdvancedMatching = function () {
+      try {
+        return JSON.parse(window.localStorage.getItem(STORAGE_KEY)) || {};
+      } catch (_) {
+        return {};
+      }
+    };
+
+    // Remembers newly learned details and re-inits the pixel so subsequent
+    // events on this page carry the matching data too.
+    window.metaPixel.rememberAdvancedMatching = function (raw) {
+      var normalized = window.metaPixel.normalizeAdvancedMatching(raw);
+      if (!Object.keys(normalized).length) return {};
+
+      var merged = Object.assign({}, window.metaPixel.readStoredAdvancedMatching(), normalized);
+
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch (_) {
+        // Private mode / storage full — matching still applies for this page.
+      }
+
+      var changed = Object.keys(normalized).some(function (key) {
+        return (window.metaPixelAdvancedMatching || {})[key] !== normalized[key];
+      });
+
+      window.metaPixelAdvancedMatching = merged;
+
+      if (changed && typeof window.fbq === 'function' && window.metaPixelId) {
+        window.fbq('init', window.metaPixelId, merged);
+      }
+
+      return merged;
+    };
+
+    var customer = window.metaPixel.normalizeAdvancedMatching({
+      email: {{ customer.email | json }},
+      phone: {{ customer.phone | default: customer.default_address.phone | json }},
+      firstName: {{ customer.first_name | json }},
+      lastName: {{ customer.last_name | json }},
+      city: {{ customer.default_address.city | json }},
+      province: {{ customer.default_address.province_code | default: customer.default_address.province | json }},
+      zip: {{ customer.default_address.zip | json }},
+      country: {{ customer.default_address.country_code | json }},
+      externalId: {{ customer.id | default: '' | json }}
+    });
+
+    // The signed-in customer is the more trustworthy source, so it wins.
+    window.metaPixelAdvancedMatching = Object.assign(
+      {},
+      window.metaPixel.readStoredAdvancedMatching(),
+      customer
+    );
+  })();
+</script>

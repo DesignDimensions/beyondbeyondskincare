@@ -415,6 +415,62 @@ window.metaPixel.trackEventFromForm = function (form, eventName, payload) {
     return normalizedPayload;
 };
 
+// Advanced matching: pick up whatever identity the shopper types into a form
+// (newsletter, account, address) and hand it to the pixel. Normalization and
+// storage live in the `meta-pixel-advanced-matching` snippet, which also
+// re-inits the pixel so later events on this page are matched too.
+window.metaPixel.IDENTITY_FIELD_MAP = [
+    { key: 'email', match: /(^|\b)(email|e-mail|mail)\b/i, type: 'email' },
+    { key: 'phone', match: /(^|\b)(phone|mobile|tel|contact_number)\b/i, type: 'tel' },
+    { key: 'firstName', match: /(first[_-]?name|fname)/i },
+    { key: 'lastName', match: /(last[_-]?name|lname|surname)/i },
+    { key: 'city', match: /\bcity\b/i },
+    { key: 'province', match: /(province|state|region)/i },
+    { key: 'zip', match: /(zip|postal|pincode|pin[_-]?code)/i },
+    { key: 'country', match: /country/i }
+];
+
+window.metaPixel.identityKeyForField = function (field) {
+    if (!field || field.disabled) return '';
+    if (field.type === 'password' || field.type === 'hidden') return '';
+
+    const haystack = [
+        field.getAttribute('name') || '',
+        field.getAttribute('id') || '',
+        field.getAttribute('autocomplete') || '',
+        field.getAttribute('placeholder') || ''
+    ].join(' ');
+
+    const byType = window.metaPixel.IDENTITY_FIELD_MAP.find(function (entry) {
+        return entry.type && field.type === entry.type;
+    });
+    if (byType) return byType.key;
+
+    const byName = window.metaPixel.IDENTITY_FIELD_MAP.find(function (entry) {
+        return entry.match.test(haystack);
+    });
+    return byName ? byName.key : '';
+};
+
+window.metaPixel.captureIdentityFromForm = function (form) {
+    if (!(form instanceof HTMLFormElement)) return;
+    if (typeof window.metaPixel.rememberAdvancedMatching !== 'function') return;
+
+    const identity = {};
+    Array.prototype.forEach.call(form.querySelectorAll('input, select'), function (field) {
+        const value = typeof field.value === 'string' ? field.value.trim() : '';
+        if (!value) return;
+
+        const key = window.metaPixel.identityKeyForField(field);
+        if (key && !identity[key]) identity[key] = value;
+    });
+
+    if (!Object.keys(identity).length) return;
+
+    const matched = window.metaPixel.rememberAdvancedMatching(identity);
+    console.info('[Meta Pixel] advanced matching updated', Object.keys(matched));
+};
+
 function initMetaPixel() {
     if (window.metaPixelInitialized) {
         return;
@@ -425,6 +481,24 @@ function initMetaPixel() {
     window.metaPixel.trackViewPage();
     window.metaPixel.trackSearchResultsPage();
     window.metaPixel.observeSearchModal();
+
+    // Fields are often filled but never submitted (cart drawers, multi-step
+    // forms), so match on blur as well as on submit.
+    document.addEventListener('blur', function (event) {
+        const field = event.target;
+        if (!(field instanceof HTMLInputElement) && !(field instanceof HTMLSelectElement)) return;
+        if (typeof window.metaPixel.rememberAdvancedMatching !== 'function') return;
+
+        const value = typeof field.value === 'string' ? field.value.trim() : '';
+        if (!value) return;
+
+        const key = window.metaPixel.identityKeyForField(field);
+        if (!key) return;
+
+        const identity = {};
+        identity[key] = value;
+        window.metaPixel.rememberAdvancedMatching(identity);
+    }, true);
 
     // Shopify newsletter forms often redirect with `?customer_posted=true`
     // only after a successful subscription. Track that success state once.
@@ -450,6 +524,10 @@ function initMetaPixel() {
     document.addEventListener('submit', function (event) {
         const form = event.target;
         if (!(form instanceof HTMLFormElement)) return;
+
+        if (!window.metaPixel.isSearchForm(form)) {
+            window.metaPixel.captureIdentityFromForm(form);
+        }
 
         if (window.metaPixel.isSearchForm(form)) {
             console.info('[Meta Pixel] search form submitted', {
