@@ -62,6 +62,7 @@
         },
         "banner_X9azw4": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/DAYCREAM_BANNER.png",
             "mobile_banner": "shopify://shop_images/day_cream-mobile.png",
@@ -73,6 +74,7 @@
         },
         "banner_hdddek": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/ENZYME_CLEANSER_BANNER.png",
             "mobile_banner": "shopify://shop_images/enzyme_cleanser-mobile.png",
@@ -84,6 +86,7 @@
         },
         "banner_NPCmdk": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/SUNSCREEN_BANNER.png",
             "mobile_banner": "shopify://shop_images/F2_7_mobie.png",
@@ -95,6 +98,7 @@
         },
         "banner_UjrPnc": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/NIGHT_CREAM_BANNER.png",
             "mobile_banner": "shopify://shop_images/night_cream-mobile.png",
@@ -106,6 +110,7 @@
         },
         "banner_tnLxm8": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/ANTIOXIDANT_DEFENCE_VITAMIN_C_SERUM_BANNER.png",
             "mobile_banner": "shopify://shop_images/advance_defense-mobile.png",
@@ -117,6 +122,7 @@
         },
         "banner_ViBbzU": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/HYDRATION_REPAIR_HYALURONIC_ACID_SERUM_BANNER.png",
             "mobile_banner": "shopify://shop_images/advanced_serum-mobile.png",
@@ -128,6 +134,7 @@
         },
         "banner_n9eiAd": {
           "type": "banner",
+          "disabled": true,
           "settings": {
             "desktop_banner": "shopify://shop_images/10__OFF_SUMMER_SALE_BANNER.png",
             "mobile_banner": "shopify://shop_images/All_products-mobile.png",
