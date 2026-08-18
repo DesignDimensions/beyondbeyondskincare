@@ -262,7 +262,7 @@
       "name": "Home Main Slideshow",
       "settings": {
         "show_home_slideshow": true,
-        "show_pagination": true
+        "show_pagination": false
       }
     },
     "featured_collection_slider_fF7je8": {
