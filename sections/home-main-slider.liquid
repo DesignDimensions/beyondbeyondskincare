@@ -40,6 +40,7 @@
             </div>
             {% endfor %}
         </div>
+        {% if section.blocks.size > 1 %}
         <div class="arrow_d">
           <div class="swiper-button-prevB leftswiperArrow">
             <svg width="11" height="18" viewBox="0 0 11 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +53,8 @@
             </svg>
           </div>
         </div>
-        {% if section.settings.show_pagination %}
+        {% endif %}
+        {% if section.settings.show_pagination and section.blocks.size > 1 %}
           <div class="swiper-paginationHS swiper-pagination-beyond">
             <span class="swiper-paginationHS__thumb"></span>
           </div>
@@ -93,13 +95,13 @@
     }
 
     new Swiper(sliderSelector, {
-    loop: true,
+    loop: {% if section.blocks.size > 1 %}true{% else %}false{% endif %},
     navigation: {
       nextEl: sliderSelector + ' .swiper-button-nextB',
       prevEl: sliderSelector + ' .swiper-button-prevB',
       disabledClass: "is-disabled"
     },
-    {% if section.settings.show_pagination %}
+    {% if section.settings.show_pagination and section.blocks.size > 1 %}
     on: {
       init: updatePaginationThumb,
       slideChange: function () {
