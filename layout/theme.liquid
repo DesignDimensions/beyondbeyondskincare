@@ -238,6 +238,18 @@
     </script>
     <!-- End Google Tag Manager -->
   <script src="https://analytics.ahrefs.com/analytics.js" data-key="X2sH3aHE1P0xIcsX0Hko6w" async></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (new URLSearchParams(window.location.search).get('opencart') === 'true') {
+      setTimeout(function () {
+        var trigger = document.querySelector('#cart-icon-bubble')
+          || document.querySelector('[href="/cart"]')
+          || document.querySelector('.header__icon--cart');
+        if (trigger) trigger.click();
+      }, 400);
+    }
+  });
+</script>
   </head>
 
   <body
