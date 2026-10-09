@@ -49,6 +49,17 @@
     "home_main_slider_LXhr7p": {
       "type": "home-main-slider",
       "blocks": {
+        "banner_NEpj83": {
+          "type": "banner",
+          "settings": {
+            "desktop_banner": "shopify://shop_images/BB_Banenr_options_page-0001.jpg",
+            "mobile_banner": "shopify://shop_images/Mobile_Banner.png",
+            "title": "",
+            "description": "",
+            "link_text": "",
+            "link": ""
+          }
+        },
         "banner_D8mA47": {
           "type": "banner",
           "disabled": true,
@@ -236,6 +247,7 @@
         }
       },
       "block_order": [
+        "banner_NEpj83",
         "banner_D8mA47",
         "banner_X9azw4",
         "banner_hdddek",
